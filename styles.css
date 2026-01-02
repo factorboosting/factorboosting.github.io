@@ -306,6 +306,96 @@ body {
     color: var(--text-secondary);
 }
 
+/* Downloads Section */
+.downloads-intro {
+    background-color: var(--bg-light);
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.downloads-intro p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+
+.download-table {
+    font-size: 0.875rem;
+}
+
+.download-table .dataset-name {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.download-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.download-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.download-btn:active {
+    transform: translateY(0);
+}
+
+.download-notes {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: var(--bg-light);
+    border-radius: 6px;
+}
+
+.download-notes h3 {
+    font-size: 1.125rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.download-notes ul {
+    margin-left: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.download-notes li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+/* Responsive adjustments for download section */
+@media (max-width: 768px) {
+    .download-table {
+        font-size: 0.75rem;
+    }
+
+    .download-btn {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .downloads-intro {
+        padding: 0.875rem 1rem;
+    }
+
+    .download-notes {
+        padding: 1rem;
+    }
+}
+
 /* Footer */
 .footer {
     background-color: var(--bg-white);
