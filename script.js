@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function downloadFile(filename) {
     const link = document.createElement('a');
-    link.href = `./data/Factor_Data/${filename}`;
+    link.href = filename;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
