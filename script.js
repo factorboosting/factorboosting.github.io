@@ -9,8 +9,8 @@ const publicationsData = [
         citations: 0,
         type: "conference",
         links: {
-            paper: "Data/Papers/AMES_Portfolio_Optimization.pdf",
-            code: "Data/Papers/SCDLDS__Code_Doc (1).pdf"
+            paper: "#",
+            code: "#"
         }
     },
     {
@@ -157,3 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initSmoothScroll();
 });
+
+function downloadFile(filename) {
+    const link = document.createElement('a');
+    link.href = `./data/${filename}`;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
