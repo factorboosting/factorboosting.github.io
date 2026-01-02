@@ -235,6 +235,208 @@
             </div>
         </section>
 
+                <section id="downloads" class="section">
+            <h2 class="section-title">Downloadable Data Files</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="returns">Returns Data</button>
+                <button class="tab-btn" data-tab="portfolios">Individual Portfolios</button>
+                <button class="tab-btn" data-tab="labelling">Stock Labelling</button>
+            </div>
+
+            <!-- Returns Data Tab -->
+            <div class="tab-content active" data-content="returns">
+                <div class="downloads-intro">
+                    <p>Download time-series returns data for research factors and portfolios. All files are in CSV format with monthly frequency.</p>
+                </div>
+                <div class="table-container">
+                    <table class="data-table download-table">
+                        <thead>
+                            <tr>
+                                <th>Dataset</th>
+                                <th>Description</th>
+                                <th>Period</th>
+                                <th>Frequency</th>
+                                <th>Size</th>
+                                <th>Download</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="dataset-name">FF3_Factors_Monthly.csv</td>
+                                <td>Fama-French 3 Factor returns (Rm-Rf, SMB, HML)</td>
+                                <td>1926-2025</td>
+                                <td>Monthly</td>
+                                <td>245 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('FF3_Factors_Monthly.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">FF5_Factors_Monthly.csv</td>
+                                <td>Fama-French 5 Factor returns (Rm-Rf, SMB, HML, RMW, CMA)</td>
+                                <td>1963-2025</td>
+                                <td>Monthly</td>
+                                <td>312 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('FF5_Factors_Monthly.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Market_Returns_Daily.csv</td>
+                                <td>Daily market returns and risk-free rate</td>
+                                <td>1926-2025</td>
+                                <td>Daily</td>
+                                <td>1.2 MB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Market_Returns_Daily.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Industry_Returns.csv</td>
+                                <td>Returns for 49 industry portfolios</td>
+                                <td>1926-2025</td>
+                                <td>Monthly</td>
+                                <td>890 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Industry_Returns.csv')">Download CSV</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Individual Portfolios Tab -->
+            <div class="tab-content" data-content="portfolios">
+                <div class="downloads-intro">
+                    <p>Download returns data for individual portfolios sorted by various characteristics. Files contain detailed portfolio-level data.</p>
+                </div>
+                <div class="table-container">
+                    <table class="data-table download-table">
+                        <thead>
+                            <tr>
+                                <th>Dataset</th>
+                                <th>Description</th>
+                                <th>Period</th>
+                                <th>Frequency</th>
+                                <th>Size</th>
+                                <th>Download</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="dataset-name">Size_BM_Portfolios.csv</td>
+                                <td>6 Size x Book-to-Market portfolios (2x3)</td>
+                                <td>1926-2025</td>
+                                <td>Monthly</td>
+                                <td>156 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Size_BM_Portfolios.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Size_OP_Portfolios.csv</td>
+                                <td>6 Size x Operating Profitability portfolios (2x3)</td>
+                                <td>1963-2025</td>
+                                <td>Monthly</td>
+                                <td>178 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Size_OP_Portfolios.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Size_INV_Portfolios.csv</td>
+                                <td>6 Size x Investment portfolios (2x3)</td>
+                                <td>1963-2025</td>
+                                <td>Monthly</td>
+                                <td>165 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Size_INV_Portfolios.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Momentum_Portfolios.csv</td>
+                                <td>10 portfolios formed on prior returns (2-12 months)</td>
+                                <td>1926-2025</td>
+                                <td>Monthly</td>
+                                <td>234 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Momentum_Portfolios.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">25_Size_BM_Portfolios.csv</td>
+                                <td>25 Size x Book-to-Market portfolios (5x5)</td>
+                                <td>1926-2025</td>
+                                <td>Monthly</td>
+                                <td>567 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('25_Size_BM_Portfolios.csv')">Download CSV</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Stock Labelling Tab -->
+            <div class="tab-content" data-content="labelling">
+                <div class="downloads-intro">
+                    <p>Download stock assignment data showing which stocks belong to which portfolios. Useful for replicating portfolio construction.</p>
+                </div>
+                <div class="table-container">
+                    <table class="data-table download-table">
+                        <thead>
+                            <tr>
+                                <th>Dataset</th>
+                                <th>Description</th>
+                                <th>Period</th>
+                                <th>Frequency</th>
+                                <th>Size</th>
+                                <th>Download</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="dataset-name">Stock_Assignments_Size_BM.csv</td>
+                                <td>Stock assignments to Size-BM portfolios with breakpoints</td>
+                                <td>1926-2025</td>
+                                <td>Annual</td>
+                                <td>3.4 MB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Stock_Assignments_Size_BM.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Stock_Assignments_Industry.csv</td>
+                                <td>Stock to industry classification mapping (49 industries)</td>
+                                <td>1926-2025</td>
+                                <td>Monthly</td>
+                                <td>8.7 MB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Stock_Assignments_Industry.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Breakpoints_Size_BM.csv</td>
+                                <td>Historical breakpoints for Size and Book-to-Market</td>
+                                <td>1926-2025</td>
+                                <td>Annual</td>
+                                <td>89 KB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Breakpoints_Size_BM.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Stock_Characteristics.csv</td>
+                                <td>Comprehensive stock-level characteristics data</td>
+                                <td>1926-2025</td>
+                                <td>Monthly</td>
+                                <td>15.2 MB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Stock_Characteristics.csv')">Download CSV</button></td>
+                            </tr>
+                            <tr>
+                                <td class="dataset-name">Portfolio_Weights.csv</td>
+                                <td>Value-weighted portfolio weights for all stocks</td>
+                                <td>1926-2025</td>
+                                <td>Monthly</td>
+                                <td>12.8 MB</td>
+                                <td><button class="download-btn" onclick="downloadFile('Portfolio_Weights.csv')">Download CSV</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="download-notes">
+                <h3>Data Notes</h3>
+                <ul>
+                    <li>All returns are in percentage form</li>
+                    <li>Missing values are indicated by -99.99 or -999</li>
+                    <li>Data is updated monthly, typically on the 5th business day</li>
+                    <li>For detailed variable definitions, see our <a href="#" class="link">documentation</a></li>
+                    <li>Please cite the appropriate papers when using this data in research</li>
+                </ul>
+            </div>
+        </section>
+
         <section id="publications" class="section">
             <h2 class="section-title">Publications</h2>
             
