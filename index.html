@@ -7,13 +7,16 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <nav class="navbar">
+<nav class="navbar">
         <div class="nav-container">
             <div class="logo">SCDLDS @ Ashoka</div>
             <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#factors">Factors</a></li>
+                <li><a href="#downloads">Data Download</a></li>
+                <li><a href="working_paper.html">Working Paper</a></li>
                 <li><a href="#publications">Publications</a></li>
-                <li><a href="#projects">Projects</a></li>
-                <li><a href="#talks">Talks</a></li>
+                <!-- <li><a href="#projects">Projects</a></li> -->
                 <li><a href="#about">About</a></li>
             </ul>
         </div>
@@ -21,13 +24,13 @@
 
     <header class="hero">
         <div class="hero-content">
-            <h1>Data Library</h1>
-            <p class="subtitle">Financial Factor Data for Indian Market</p>
-            <p class="affiliation">Safexpress Center for Data Learning and Decision Sciences, Ashoka University</p>
-            <p>The explanatory power of Fama-French factors in capturing stock returns variation is well established in the literature. Furthermore, recent advances in deep learning techniques for time-series forecasting have outperformed regression-based models on a variety of datasets.</p>
+            <h1>Factor Research Data Library</h1>
+            <p class="subtitle">Safexpress Center for Data Learning and Decision Sciences, Ashoka University</p>
             <br>
-            <p>This library bridges the gap between traditional empirical asset pricing and modern deep learning within Indian equity markets. Spanning from April 2000, the dataset curates the factor based data for all liquid BSE listed firms, capturing country-specific nuances often overlooked in global studies. It provides monthly rebalanced Fama-French factors like Value, Size, Momentum, Investment, and Operating Profitability, etc. These factors are specifically engineered to train advanced architectures like the iTransformer for optimizing long-short trading strategies.</p>
-            <div class="hero-meta">
+            <p>This website is dedicated to the <strong>Fama-French Factors for the Indian equity markets.</strong> The explanatory power of Fama-French factors in capturing stock returns variation is well established in the literature. This goal of the data library is to serve academicians and practitioners who want a clean and investible factor data series. Reproducibility has been a key part of our efforts, we have laid out the methodology for factor construction in a transparent manner. Our methodology is in line with the academic literature and it also captures the nuances of Indian equity. Broadly, the data library contains the Fama-French Factors namely Value, Size, Investment, Operating Profitability along with Momentum for the firms listed on the Bombay Stock Exchange. Our factor coverage starts from April 2001 and is updated monthly, we have used the <strong>CMIE Prowess</strong> database for the factor construction. </p>
+            <br>
+            <p>Along with the long-short portfolio returns at the monthly level, we provide returns of various portfolios constructed using combinations of multiple factors. Each portfolio requires an empirically grounded breakpoint considering the market structure. Extensive data cleaning checks have been applied to make sure we have a clean time-series which is not influenced by outliers. Please find the detailed documentation on the methodology here.</p>
+            <br>
                 <span>Last updated: <span id="lastUpdated"></span></span>
             </div>
         </div>
@@ -235,7 +238,7 @@
             </div>
         </section>
 
-                <section id="downloads" class="section">
+        <section id="downloads" class="section">
             <h2 class="section-title">Downloadable Data Files</h2>
             
             <div class="tabs">
@@ -524,7 +527,7 @@
             </div>
         </section>
 
-        <section id="projects" class="section">
+        <!-- <section id="projects" class="section">
             <h2 class="section-title">Research Projects</h2>
             <div class="projects-grid">
                 <div class="project-card">
@@ -552,7 +555,7 @@
                     </div>
                 </div>
             </div>
-        </section>
+        </section> -->
 
         <section id="talks" class="section">
             <h2 class="section-title">Talks & Presentations</h2>
