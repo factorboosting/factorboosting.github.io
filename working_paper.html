@@ -1,0 +1,228 @@
+<!-- working-paper.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Working Paper | Factor Research Data Library</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">SCDLDS @ Ashoka</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#factors">Research Factors</a></li>
+                <li><a href="index.html#downloads">Data Downloads</a></li>
+                <li><a href="working-paper.html" class="active">Working Paper</a></li>
+                <li><a href="index.html#publications">Publications</a></li>
+                <li><a href="index.html#projects">Projects</a></li>
+                <li><a href="index.html#about">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero paper-hero">
+        <div class="hero-content">
+            <div class="paper-badge">Working Paper</div>
+            <h1 class="paper-title">Portfolio Optimization using Anomalies: A Deep Learning Approach</h1>
+            <div class="paper-authors">
+                <span class="author">Aman Foujdar<sup>1</sup></span>, 
+                <span class="author">Sandeep Juneja<sup>1</sup></span>,
+                <span class="author">Atish Kumar<sup>2</sup></span>,
+                <span class="author">Nagpurnanand Prabhala<sup>3</sup></span>,
+                <span class="author">Sidharth Wagle<sup>1</sup></span>
+            </div>
+            <div class="paper-affiliations">
+                <p><sup>1</sup>Safexpress Centre for Data Learning and Decision Sciences, Ashoka University, India</p>
+                <p><sup>2</sup>Indraprastha Institute of Information Technology, Delhi, India</p>
+                <p><sup>3</sup>Carey Business School, Johns Hopkins University, USA</p>
+            </div>
+            <div class="paper-meta">
+                <span>Latest Version: December 2025</span>
+                <span class="meta-separator">•</span>
+                <!-- <span>JEL Codes: G12, G14, C58</span> -->
+            </div>
+            <div class="paper-actions">
+                <button class="action-btn primary" onclick="downloadPaper()">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 11L4 7H6V3H10V7H12L8 11Z" fill="currentColor"/>
+                        <path d="M2 13H14V15H2V13Z" fill="currentColor"/>
+                    </svg>
+                    Download PDF
+                </button>
+                <button class="action-btn secondary" onclick="window.open('#', '_blank')">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 3C6.67392 3 5.40215 3.52678 4.46447 4.46447C3.52678 5.40215 3 6.67392 3 8C3 9.32608 3.52678 10.5979 4.46447 11.5355C5.40215 12.4732 6.67392 13 8 13C9.32608 13 10.5979 12.4732 11.5355 11.5355C12.4732 10.5979 13 9.32608 13 8C13 6.67392 12.4732 5.40215 11.5355 4.46447C10.5979 3.52678 9.32608 3 8 3ZM1 8C1 6.14348 1.7375 4.36301 3.05025 3.05025C4.36301 1.7375 6.14348 1 8 1C9.85652 1 11.637 1.7375 12.9497 3.05025C14.2625 4.36301 15 6.14348 15 8C15 9.85652 14.2625 11.637 12.9497 12.9497C11.637 14.2625 9.85652 15 8 15C6.14348 15 4.36301 14.2625 3.05025 12.9497C1.7375 11.637 1 9.85652 1 8Z" fill="currentColor"/>
+                        <path d="M8 5V8L10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    SSRN
+                </button>
+                <button class="action-btn secondary" onclick="window.open('#', '_blank')">Code & Data</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="paper-content">
+            <section class="paper-section">
+                <h2 class="section-title">Abstract</h2>
+                <div class="abstract-box">
+                    <p>
+                        The explanatory power of Fama-French factors in capturing stock returns variation is well established in the literature. Furthermore, recent advances in deep learning techniques for time-series forecasting have outperformed regression-based models on a variety of datasets.
+                    </p>
+                    <p>
+                        In this paper, we construct factors related to Indian equity markets leveraging annual firm balance-sheet and daily stock level data. In addition, we propose a novel approach to portfolio optimization by training a deep learning model using Fama-French factors. We select the top 300 firms on the basis of market capitalization and build a long-short trading strategy where the portfolio is rebalanced every month. Our trading strategy generates an economically significant alpha and is easily implementable in practice.
+                    </p>
+
+                </div>
+            </section>
+
+            <section class="paper-section">
+                <h2 class="section-title">Key Findings</h2>
+                <div class="findings-grid">
+                    <div class="finding-card">
+                        <div class="finding-number">01</div>
+                        <h3>iTransformer Generates Alpha</h3>
+                        <p>The proposed iTransformer trading strategy generates a significant alpha, achieving an average monthly return of 1.25% and a Sharpe ratio of 2.1.</p>
+                    </div>
+                    <div class="finding-card">
+                        <div class="finding-number">02</div>
+                        <h3>Small-Winner Portfolio Outperforms</h3>
+                        <p>Stocks classified as "small" in size and "winners" in momentum delivered a 38% CAGR over 11 years, substantially outperforming the benchmark NIFTY50 index.</p>
+                    </div>
+                    <div class="finding-card">
+                        <div class="finding-number">03</div>
+                        <h3>Equal-Weighting Boosts Returns</h3>
+                        <p>Equal-weighting the portfolio increases returns by reducing concentration risk and improving diversification, leading to a more robust and stable investment strategy.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="paper-section">
+                <h2 class="section-title">Research Overview</h2>
+                
+                <div class="overview-content">
+                    <h3>Motivation</h3>
+                    <p>
+                        While the explanatory power of Fama-French factors is well-established, traditional linear models often fail to capture the complex, non-linear relationships in stock returns, an area where deep learning techniques are increasingly proving superior.
+                    </p>
+                    <p>
+                        Furthermore, existing global studies often overlook India specific nuances, such as the high concentration of small firms in India, making broad methodologies difficult to replicate locally. This paper addresses these gaps by constructing an Indian-specific dataset and applying a novel deep learning architecture (iTransformer) to optimize portfolios, aiming to bridge the divide between theoretical asset pricing and practical, investment-friendly trading strategies.
+                    </p>
+
+                    <h3>Data & Methodology</h3>
+                    <p>
+                        We give a brief overview of our data pipeline:
+                    </p>
+                    <ul>
+                        <li><strong>Data Universe & Source:</strong> The study analyzes the top 300 firms listed on the Bombay Stock Exchange (BSE) by market capitalization, covering approximately 90% of the total market cap to ensure liquidity. The data is sourced from the CMIE Prowess DX database, spanning over 25 years from April 2000 to March 2025</li>
+                        <li><strong>Factor Construction:</strong> The authors construct Fama-French factors like Value, Size, Momentum, Investment, and Operating Profitability, tailored to the Indian context (e.g., using an 80th percentile cutoff for "Big" vs. "Small" firms rather than the median).</li>
+                        <li><strong>Model Architecture:</strong> The strategy utilizes the iTransformer, a time-series transformer model that employs an "inverted embedding" to capture multivariate correlations between assets and features rather than just temporal dependencies.</li>
+                        <li><strong>Trading Strategy:</strong> The model is trained to minimize the negative Sharpe ratio, outputting a net-zero, long-short portfolio that is rebalanced monthly.</li>
+                    </ul>
+                    <p>
+                        Explain your empirical methodology. What econometric or statistical techniques do you use? Why are these methods appropriate for your research question?
+                    </p>
+
+                    <h3>Main Results & Implications</h3>
+                    <p>
+                        The deep learning strategy proved highly effective, generating an average monthly return of 1.25% and a Sharpe ratio of 2.1. In the test period (2023–2025), the model achieved an annualized return of 16% with a maximum monthly loss of only 1.66%. 
+                    </p>
+                    <p>
+                        A key finding was the dominance of the "Small-Winner" portfolio (small-cap stocks with high momentum), which delivered a 38% CAGR over 11 years, vastly outperforming the NIFTY50 benchmark. The study implies that transformer-based architectures are viable for empirical asset pricing in emerging markets and that equal-weighted portfolios are superior to value-weighted ones in India for capturing the size premium.
+                    </p>
+                    </p>
+                </div>
+            </section>
+
+            <section class="paper-section">
+                <h2 class="section-title">Tables & Figures</h2>
+                <div class="tables-info">
+                    <p>Key tables and figures from the paper are available in the full PDF. These include:</p>
+                    <ul>
+                        <li>Table 1: Summary Statistics</li>
+                        <li>Table 2: Main Regression Results</li>
+                        <li>Table 3: Robustness Tests</li>
+                        <li>Figure 1: Time Series Visualization</li>
+                        <li>Figure 2: Cross-Sectional Analysis</li>
+                    </ul>
+                    <button class="action-btn secondary" onclick="downloadPaper()">View Full Paper with Tables</button>
+                </div>
+            </section>
+
+            <section class="paper-section">
+                <h2 class="section-title">Citation</h2>
+                <div class="citation-box">
+                    <p class="citation-text">
+                        Foujdar, A., Juneja, S., Kumar, A., Prabhala, N., & Wagle, S. (2025). Portfolio optimization using anomalies: A deep learning approach. Working paper (Submitted).
+                    </p>
+                    <button class="copy-btn" onclick="copyCitation()">Copy Citation</button>
+                </div>
+                
+                <div class="bibtex-section">
+                    <h4>BibTeX</h4>
+                    <div class="code-box">
+                        <code>
+@article{finfactor2025paper,<br>
+&nbsp;&nbsp;title={Portfolio optimization using anomalies: A deep learning approach},<br>
+&nbsp;&nbsp;author={Foujdar, A., Juneja, S., Kumar, A., Prabhala, N., & Wagle, S.},<br>
+&nbsp;&nbsp;year={2025},<br>
+&nbsp;&nbsp;note={Working Paper}<br>
+}
+                        </code>
+                        <button class="copy-btn-small" onclick="copyBibtex()">Copy</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="paper-section">
+                <h2 class="section-title">Presentations</h2>
+                <div class="presentations-list">
+                    <div class="presentation-item">
+                        <div class="presentation-venue">American Finance Association Annual Meeting</div>
+                        <div class="presentation-details">
+                            <span>San Francisco, CA</span>
+                            <span class="meta-separator">•</span>
+                            <span>January 2025</span>
+                        </div>
+                    </div>
+                    <div class="presentation-item">
+                        <div class="presentation-venue">Western Finance Association Conference</div>
+                        <div class="presentation-details">
+                            <span>Seattle, WA</span>
+                            <span class="meta-separator">•</span>
+                            <span>June 2024</span>
+                        </div>
+                    </div>
+                    <div class="presentation-item">
+                        <div class="presentation-venue">University Seminar Series</div>
+                        <div class="presentation-details">
+                            <span>Your University</span>
+                            <span class="meta-separator">•</span>
+                            <span>March 2024</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="paper-section">
+                <h2 class="section-title">Contact & Feedback</h2>
+                <div class="contact-box">
+                    <p>We welcome comments and suggestions. Please contact us at:</p>
+                    <p><strong>Email:</strong> <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in" class="link">aman.foujdar_ug2023@ashoka.edu.in</a>, <a href="mailto:sandeep.juneja@ashoka.edu.in" class="link">sandeep.juneja@ashoka.edu.in</a>, <a href="mailto:atishk@iiitd.ac.in" class="link">atishk@iiitd.ac.in</a>, <a href="mailto:prabhala@jhu.edu" class="link">prabhala@jhu.edu</a> & <a href="mailto:sidharth.wagle_ug25@ashoka.edu.in" class="link">sidharth.wagle_ug25@ashoka.edu.in</a></p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Safexpress Center for Data Learning and Decision Sciences | All rights reserved</p>
+        </div>
+    </footer>
+
+    <script src="paper-script.js"></script>
+</body>
+</html>
