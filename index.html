@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Factors | SCDLDS @ Ashoka</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">SCDLDS @ Ashoka</div>
+            <ul class="nav-menu">
+                <li><a href="#publications">Publications</a></li>
+                <li><a href="#projects">Projects</a></li>
+                <li><a href="#talks">Talks</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Data Library</h1>
+            <p class="subtitle">Financial Factor Data for Indian Market</p>
+            <p class="affiliation">Safexpress Center for Data Learning and Decision Sciences, Ashoka University</p>
+            <p>The explanatory power of Fama-French factors in capturing stock returns variation is well established in the literature. Furthermore, recent advances in deep learning techniques for time-series forecasting have outperformed regression-based models on a variety of datasets.</p>
+            <br>
+            <p>This library bridges the gap between traditional empirical asset pricing and modern deep learning within Indian equity markets. Spanning from April 2000, the dataset curates the factor based data for all liquid BSE listed firms, capturing country-specific nuances often overlooked in global studies. It provides monthly rebalanced Fama-French factors like Value, Size, Momentum, Investment, and Operating Profitability, etc. These factors are specifically engineered to train advanced architectures like the iTransformer for optimizing long-short trading strategies.</p>
+            <div class="hero-meta">
+                <span>Last updated: <span id="lastUpdated"></span></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="factors" class="section">
+            <h2 class="section-title">Research Factors & Portfolios</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="factors">Research Factors</button>
+                <button class="tab-btn" data-tab="bookmarket">Size & Book-to-Market</button>
+                <button class="tab-btn" data-tab="profitability">Size & Operational Profitability</button>
+            </div>
+
+            <!-- Research Factors Tab -->
+            <div class="tab-content active" data-content="factors">
+                <div class="factor-tables">
+                    <!-- Fama/French 3 Research Factors -->
+                    <div class="factor-group">
+                        <h3 class="factor-title">Fama/French 3 Research Factors</h3>
+                        <div class="table-container">
+                            <table class="data-table factor-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>November 2025</th>
+                                        <th>Last 3 Months</th>
+                                        <th>Last 12 Months</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="factor-name">Rm-Rf</td>
+                                        <td class="negative">-0.13</td>
+                                        <td class="positive">5.31</td>
+                                        <td class="positive">9.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="factor-name">SMB</td>
+                                        <td class="positive">0.38</td>
+                                        <td class="negative">-2.09</td>
+                                        <td class="negative">-11.75</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="factor-name">HML</td>
+                                        <td class="positive">3.76</td>
+                                        <td class="negative">-0.36</td>
+                                        <td class="positive">1.49</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <br>
+                    <!-- Fama/French 5 Research Factors -->
+                    <div class="factor-group">
+                        <h3 class="factor-title">Fama/French 5 Research Factors (2x3)</h3>
+                        <div class="table-container">
+                            <table class="data-table factor-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>November 2025</th>
+                                        <th>Last 3 Months</th>
+                                        <th>Last 12 Months</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="factor-name">Rm-Rf</td>
+                                        <td class="negative">-0.13</td>
+                                        <td class="positive">5.31</td>
+                                        <td class="positive">9.99</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="factor-name">SMB</td>
+                                        <td class="positive">1.47</td>
+                                        <td class="negative">-2.00</td>
+                                        <td class="negative">-12.71</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="factor-name">HML</td>
+                                        <td class="positive">3.76</td>
+                                        <td class="negative">-0.36</td>
+                                        <td class="positive">1.49</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="factor-name">RMW</td>
+                                        <td class="positive">1.43</td>
+                                        <td class="negative">-5.84</td>
+                                        <td class="negative">-7.92</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="factor-name">CMA</td>
+                                        <td class="positive">0.68</td>
+                                        <td class="negative">-5.74</td>
+                                        <td class="negative">-6.79</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Size and Book-to-Market Tab -->
+            <div class="tab-content" data-content="bookmarket">
+                <div class="factor-group">
+                    <h3 class="factor-title">Size and Book-to-Market Portfolios</h3>
+                    <div class="table-container">
+                        <table class="data-table factor-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>November 2025</th>
+                                    <th>Last 3 Months</th>
+                                    <th>Last 12 Months</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="factor-name">Small Value</td>
+                                    <td class="positive">3.45</td>
+                                    <td class="positive">2.66</td>
+                                    <td class="positive">3.35</td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Small Neutral</td>
+                                    <td class="positive">2.29</td>
+                                    <td class="positive">6.09</td>
+                                    <td class="positive">1.03</td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Small Growth</td>
+                                    <td class="negative">-0.04</td>
+                                    <td class="positive">3.96</td>
+                                    <td class="positive">1.16</td>
+                                </tr>
+                                <tr class="separator-row">
+                                    <td colspan="4"></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Value</td>
+                                    <td class="positive">3.29</td>
+                                    <td class="positive">8.07</td>
+                                    <td class="positive">18.47</td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Neutral</td>
+                                    <td class="positive">2.01</td>
+                                    <td class="positive">3.42</td>
+                                    <td class="positive">4.63</td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Growth</td>
+                                    <td class="negative">-0.73</td>
+                                    <td class="positive">7.49</td>
+                                    <td class="positive">17.68</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Size and Operating Profitability Tab -->
+            <div class="tab-content" data-content="profitability">
+                <div class="factor-group">
+                    <h3 class="factor-title">Size and Operating Profitability Portfolios</h3>
+                    <div class="table-container">
+                        <table class="data-table factor-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>November 2025</th>
+                                    <th>Last 3 Months</th>
+                                    <th>Last 12 Months</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="factor-name">Small Robust</td>
+                                    <td class="positive">0.16</td>
+                                    <td class="negative">-3.12</td>
+                                    <td class="negative">-9.67</td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Small Neutral</td>
+                                    <td class="positive">3.12</td>
+                                    <td class="negative">-1.20</td>
+                                    <td class="negative">-1.53</td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Small Weak</td>
+                                    <td class="positive">2.02</td>
+                                    <td class="positive">11.96</td>
+                                    <td class="positive">8.83</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="publications" class="section">
+            <h2 class="section-title">Publications</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="all">All</button>
+                <button class="tab-btn" data-tab="conferences">Conferences</button>
+                <button class="tab-btn" data-tab="journals">Journals</button>
+                <button class="tab-btn" data-tab="preprints">Preprints</button>
+            </div>
+
+            <div class="tab-content active" data-content="all">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Venue</th>
+                                <th>Year</th>
+                                <th>Citations</th>
+                                <th>Links</th>
+                            </tr>
+                        </thead>
+                        <tbody id="publicationsTable">
+                            <!-- Will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content" data-content="conferences">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Venue</th>
+                                <th>Year</th>
+                                <th>Citations</th>
+                                <th>Links</th>
+                            </tr>
+                        </thead>
+                        <tbody id="conferencesTable">
+                            <!-- Will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content" data-content="journals">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Venue</th>
+                                <th>Year</th>
+                                <th>Citations</th>
+                                <th>Links</th>
+                            </tr>
+                        </thead>
+                        <tbody id="journalsTable">
+                            <!-- Will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-content" data-content="preprints">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Venue</th>
+                                <th>Year</th>
+                                <th>Citations</th>
+                                <th>Links</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preprintsTable">
+                            <!-- Will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="section">
+            <h2 class="section-title">Research Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <h3>Project Title 1</h3>
+                    <p class="project-desc">Brief description of your research project and its key contributions to the field.</p>
+                    <div class="project-meta">
+                        <span class="badge">Active</span>
+                        <span class="year">2024 - Present</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3>Project Title 2</h3>
+                    <p class="project-desc">Brief description of your research project and its key contributions to the field.</p>
+                    <div class="project-meta">
+                        <span class="badge completed">Completed</span>
+                        <span class="year">2023</span>
+                    </div>
+                </div>
+                <div class="project-card">
+                    <h3>Project Title 3</h3>
+                    <p class="project-desc">Brief description of your research project and its key contributions to the field.</p>
+                    <div class="project-meta">
+                        <span class="badge">Active</span>
+                        <span class="year">2023 - Present</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="talks" class="section">
+            <h2 class="section-title">Talks & Presentations</h2>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Event</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Resources</th>
+                        </tr>
+                    </thead>
+                    <tbody id="talksTable">
+                        <tr>
+                            <td>Talk Title 1</td>
+                            <td>Conference Name</td>
+                            <td>City, Country</td>
+                            <td>Dec 2024</td>
+                            <td><a href="#" class="link">Slides</a></td>
+                        </tr>
+                        <tr>
+                            <td>Talk Title 2</td>
+                            <td>Workshop Name</td>
+                            <td>City, Country</td>
+                            <td>Nov 2024</td>
+                            <td><a href="#" class="link">Slides</a> • <a href="#" class="link">Video</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="about" class="section">
+            <h2 class="section-title">About</h2>
+            <div class="about-content">
+                <p>Rapid advancements in data, compute, and algorithms are profoundly transforming our world, and we’re still in the early stages of this data science, machine learning, and AI revolution.</p> 
+                <p>At SCDLDS, we conduct high-level applied and methodological research in data and learning sciences to aid in informed decision-making and address complex societal challenges. Initially, our work is focused on four key areas:</p>
+                <ul class="about-list">
+                    <li>⁠Data-driven financial research</li>
+                    <li>⁠Weather and climate modeling</li>
+                    <li>⁠Reinforcement learning</li>
+                    <li>⁠Epidemiological modeling</li>
+                </ul>
+                <br>
+                <p>In addition to our research, we are committed to teaching. We train young minds through engaging coursework and projects, exposing them to a deep and varied mathematical toolkit that helps them uncover hidden patterns in large and complex datasets.</p>
+                
+                <h3>Contact</h3>
+                <p>For any bugs, suggestions or feedback, please reach out to us:</p>
+                <ul class="contact-list">
+                    <li><b>Email:</b> <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in" class="link">aman.foujdar_ug2023@ashoka.edu.in</a></li>
+                    <li><a href="#" class="link">Google Scholar</a></li>
+                    <li><a href="#" class="link">GitHub</a></li>
+                    <li><a href="https://www.linkedin.com/company/scdlds-ashoka/posts/?feedView=all" class="link">Linkedin</a></li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Safexpress Center for Data Learning and Decision Sciences | All rights reserved</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
