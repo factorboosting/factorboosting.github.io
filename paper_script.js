@@ -4,15 +4,15 @@ function downloadPaper() {
     alert('Downloading paper...\n\nIn production, this would download your PDF file.');
 
     const link = document.createElement('a');
-    link.href = './papers/your-paper.pdf';
-    link.download = 'Your_Paper_Title.pdf';
+    link.href = 'Data/Papers/AMES_Portfolio_Optimization.pdf';
+    link.download = 'Factor_Boosting&Portfolio_Optimization.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
 
 function copyCitation() {
-    const citation = 'Your Name and Co-Author Name (2024). "Your Paper Title: A Comprehensive Analysis of Financial Markets." Working Paper.';
+    const citation = 'Foujdar, A., Juneja, S., Kumar, A., Prabhala, N., & Wagle, S. (2025). Portfolio optimization using anomalies: A deep learning approach. Working paper (Submitted).';
     
     navigator.clipboard.writeText(citation).then(() => {
         // Change button text temporarily
@@ -31,10 +31,10 @@ function copyCitation() {
 }
 
 function copyBibtex() {
-    const bibtex = `@article{yourname2024paper,
-  title={Your Paper Title: A Comprehensive Analysis of Financial Markets},
-  author={Your Name and Co-Author Name},
-  year={2024},
+    const bibtex = `@article{finfactor2025paper,
+  title={Portfolio optimization using anomalies: A deep learning approach},
+  author={Foujdar, A., Juneja, S., Kumar, A., Prabhala, N., & Wagle, S.},
+  year={2025},
   note={Working Paper}
 }`;
     
