@@ -10,7 +10,7 @@ const publicationsData = [
         type: "conference",
         links: {
             paper: "Data/Papers/AMES_Portfolio_Optimization.pdf",
-            code: "#"
+            code: "Data/Papers/SCDLDS__Code_Doc (1).pdf"
         }
     },
     {
