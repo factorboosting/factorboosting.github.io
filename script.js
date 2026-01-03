@@ -9,53 +9,53 @@ const publicationsData = [
         citations: 0,
         type: "conference",
         links: {
-            paper: "#",
-            code: "#"
+            paper: "Data/Papers/AMES_Portfolio_Optimization.pdf",
+            code: "Data/Papers/SCDLDS__Code_Doc (1).pdf"
         }
     },
     {
-        title: "Novel Methods in Neural Architecture Search",
-        venue: "NeurIPS 2023",
-        year: 2023,
-        citations: 42,
+        title: "Documentation for Portfolio Optimization",
+        venue: "(Working Documentation",
+        year: 2026,
+        citations: 0,
         type: "conference",
         links: {
-            paper: "#",
-            code: "#",
-            slides: "#"
+            paper: "Data/Papers/SCDLDS__Code_Doc (1).pdf",
+            // code: "#",
+            // slides: "#"
         }
-    },
-    {
-        title: "Attention Mechanisms in Transformers",
-        venue: "IEEE Trans. PAMI",
-        year: 2023,
-        citations: 78,
-        type: "journal",
-        links: {
-            paper: "#"
-        }
-    },
-    {
-        title: "Efficient Training of Large Scale Models",
-        venue: "ICML 2023",
-        year: 2023,
-        citations: 35,
-        type: "conference",
-        links: {
-            paper: "#",
-            code: "#"
-        }
-    },
-    {
-        title: "Advances in Few-Shot Learning",
-        venue: "arXiv",
-        year: 2024,
-        citations: 8,
-        type: "preprint",
-        links: {
-            paper: "#"
-        }
-    }
+    }//,
+    // {
+    //     title: "Attention Mechanisms in Transformers",
+    //     venue: "IEEE Trans. PAMI",
+    //     year: 2023,
+    //     citations: 78,
+    //     type: "journal",
+    //     links: {
+    //         paper: "#"
+    //     }
+    // },
+    // {
+    //     title: "Efficient Training of Large Scale Models",
+    //     venue: "ICML 2023",
+    //     year: 2023,
+    //     citations: 35,
+    //     type: "conference",
+    //     links: {
+    //         paper: "#",
+    //         code: "#"
+    //     }
+    // },
+    // {
+    //     title: "Advances in Few-Shot Learning",
+    //     venue: "arXiv",
+    //     year: 2024,
+    //     citations: 8,
+    //     type: "preprint",
+    //     links: {
+    //         paper: "#"
+    //     }
+    // }
 ];
 
 // Set last updated date
