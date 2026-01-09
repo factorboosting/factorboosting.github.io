@@ -1,9 +1,9 @@
 // paper-script.js
 
-function downloadPaper() {
+function downloadFile(filename) {
     const link = document.createElement('a');
-    link.href = 'Data/Papers/AMES_Portfolio_Optimization.pdf';
-    link.download = 'Factor_Boosting&Portfolio_Optimization.pdf';
+    link.href = filename;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
