@@ -186,6 +186,34 @@ function copyCitation() {
     });
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+    const triggers = document.querySelectorAll(".factor-tooltip-trigger");
+
+    triggers.forEach(trigger => {
+        trigger.addEventListener("click", function (e) {
+            const isOpen = this.classList.contains("tooltip-open");
+
+            triggers.forEach(item => item.classList.remove("tooltip-open"));
+
+            if (!isOpen) {
+                this.classList.add("tooltip-open");
+            }
+
+            e.stopPropagation();
+        });
+    });
+
+    document.addEventListener("click", function () {
+        triggers.forEach(item => item.classList.remove("tooltip-open"));
+    });
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            triggers.forEach(item => item.classList.remove("tooltip-open"));
+        }
+    });
+});
+
 function copyBibtex() {
     const bibtex = `@article{finfactor2025paper,
   title={Portfolio optimization using anomalies: A deep learning approach},
