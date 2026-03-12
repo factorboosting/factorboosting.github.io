@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factor Analysis | SCDLDS @ Ashoka</title>
+    <link rel="icon" href="Data/scdlds_ashoka_logo.jpeg">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="beta-banner">
+        This website is currently in <strong>beta</strong>. If you encounter any bugs or issues, please <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in">report them here</a>.
+    </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Safexpress Center for Data Learning and Decision Sciences</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#downloads">Data Download</a></li>
+                <li><a href="working_paper.html">Working Paper</a></li>
+                <li><a href="backtester.html" class="active">Analysis</a></li>
+                <li><a href="index.html#about">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero bt-hero">
+        <div class="hero-content">
+            <h1>Cross-Sectional Portfolio Analysis</h1>
+            <p class="subtitle">Fama-French factor portfolios on Indian equities &mdash; equal & value weighted returns</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="bt-data-notice" class="bt-data-notice loading">
+            Loading factor data&hellip; this may take a moment.
+        </div>
+
+        <div class="bt-layout" style="margin-top: 1rem;">
+            <!-- ── SIDEBAR ──────────────────────────────────────────────────── -->
+            <aside class="bt-sidebar">
+
+                <!-- Strategy -->
+                <div>
+                    <div class="bt-sec-label">Strategy</div>
+                    <div class="bt-toggle-group" id="bt-strategy-toggle">
+                        <button class="bt-toggle-btn active" data-val="long_only" onclick="BT.setStrategy(this)">Long Only</button>
+                        <button class="bt-toggle-btn" data-val="long_short" onclick="BT.setStrategy(this)">Long / Short</button>
+                    </div>
+                </div>
+
+                <!-- Long factors -->
+                <div>
+                    <div class="bt-sec-label">Factor Selection</div>
+                    <div class="bt-factor-panel">
+                        <div class="bt-factor-panel-title">
+                            <span class="bt-badge bt-badge-long">LONG</span> Portfolio
+                        </div>
+                        <div id="bt-long-factors"></div>
+                    </div>
+                </div>
+
+                <!-- Short factors (hidden by default) -->
+                <div id="bt-short-wrapper" style="display:none;">
+                    <div class="bt-factor-panel">
+                        <div class="bt-factor-panel-title">
+                            <span class="bt-badge bt-badge-short">SHORT</span> Portfolio
+                        </div>
+                        <div id="bt-short-factors"></div>
+                    </div>
+                </div>
+
+                <div class="bt-divider"></div>
+
+                <!-- Date range -->
+                <div>
+                    <div class="bt-sec-label">Date Range</div>
+                    <div class="bt-date-row">
+                        <div class="bt-date-field">
+                            <label class="bt-field-label" for="bt-start-month">From</label>
+                            <input class="bt-date-input" type="month" id="bt-start-month" />
+                        </div>
+                        <div class="bt-date-field">
+                            <label class="bt-field-label" for="bt-end-month">To</label>
+                            <input class="bt-date-input" type="month" id="bt-end-month" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Universe -->
+                <div>
+                    <div class="bt-sec-label">Stock Universe</div>
+                    <div class="bt-toggle-group" id="bt-universe-toggle">
+                        <button class="bt-toggle-btn active universe" data-val="all" onclick="BT.setToggle('bt-universe-toggle', this)">All Stocks</button>
+                        <button class="bt-toggle-btn universe" data-val="top300" onclick="BT.setToggle('bt-universe-toggle', this)">Top 300 (Mkt Cap)</button>
+                    </div>
+                </div>
+
+                <div id="bt-error-msg" class="bt-error-msg"></div>
+
+                <button class="bt-run-btn" id="bt-run-btn" onclick="BT.run()" disabled>Loading data&hellip;</button>
+            </aside>
+
+            <!-- ── RESULTS ──────────────────────────────────────────────────── -->
+            <div class="bt-results">
+
+                <!-- Metrics legend -->
+                <div class="bt-metrics-legend">
+                    <span class="bt-legend-dot" style="background:#3b82f6;"></span> Equal Weighted &nbsp;&nbsp;
+                    <span class="bt-legend-dot" style="background:#10b981;"></span> Value Weighted
+                    <span class="bt-legend-note">(large value = EW, small value below = VW)</span>
+                </div>
+
+                <!-- Metric cards -->
+                <div class="bt-metrics-row">
+                    <div class="bt-metric-card">
+                        <div class="bt-metric-label">Total Return</div>
+                        <div class="bt-metric-value" id="bt-m-total-ew">&mdash;</div>
+                        <div class="bt-metric-vw" id="bt-m-total-vw">&mdash;</div>
+                    </div>
+                    <div class="bt-metric-card">
+                        <div class="bt-metric-label">Ann. Return</div>
+                        <div class="bt-metric-value" id="bt-m-ann-ew">&mdash;</div>
+                        <div class="bt-metric-vw" id="bt-m-ann-vw">&mdash;</div>
+                    </div>
+                    <div class="bt-metric-card">
+                        <div class="bt-metric-label">Ann. Volatility</div>
+                        <div class="bt-metric-value" id="bt-m-vol-ew">&mdash;</div>
+                        <div class="bt-metric-vw" id="bt-m-vol-vw">&mdash;</div>
+                    </div>
+                    <div class="bt-metric-card">
+                        <div class="bt-metric-label">Sharpe Ratio</div>
+                        <div class="bt-metric-value" id="bt-m-sharpe-ew">&mdash;</div>
+                        <div class="bt-metric-vw" id="bt-m-sharpe-vw">&mdash;</div>
+                    </div>
+                    <div class="bt-metric-card">
+                        <div class="bt-metric-label">Max Drawdown</div>
+                        <div class="bt-metric-value" id="bt-m-dd-ew">&mdash;</div>
+                        <div class="bt-metric-vw" id="bt-m-dd-vw">&mdash;</div>
+                    </div>
+                    <div class="bt-metric-card">
+                        <div class="bt-metric-label">% Positive Months</div>
+                        <div class="bt-metric-value" id="bt-m-pos-ew">&mdash;</div>
+                        <div class="bt-metric-vw" id="bt-m-pos-vw">&mdash;</div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="bt-chart-card">
+                    <div class="bt-chart-header">
+                        <div>
+                            <div class="bt-chart-title" id="bt-chart-title">Portfolio Performance</div>
+                            <div class="bt-chart-sub" id="bt-chart-sub">Configure a strategy and press Run Analysis</div>
+                        </div>
+                        <label class="bt-log-toggle">
+                            <input type="checkbox" id="bt-log-scale" onchange="BT.toggleLog()" />
+                            Log scale
+                        </label>
+                    </div>
+                    <div class="bt-chart-wrap">
+                        <canvas id="bt-perf-chart"></canvas>
+                        <div class="bt-chart-loading" id="bt-chart-loading">
+                            <div class="bt-spinner"></div> Computing&hellip;
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All firms (scrollable) -->
+                <div class="bt-holdings-card" id="bt-holdings-card">
+                    <div class="bt-empty-state" id="bt-holdings-empty">
+                        Configure a strategy and press <strong>Run Analysis</strong> to see all portfolio firms
+                    </div>
+                    <div id="bt-holdings-content" style="display:none;"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Safexpress Center for Data Learning and Decision Sciences | All rights reserved</p>
+        </div>
+    </footer>
+
+    <script src="backtester.js"></script>
+</body>
+</html>
