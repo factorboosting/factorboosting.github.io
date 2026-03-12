@@ -459,6 +459,89 @@ body {
     }
 }
 
+.factor-name {
+    position: relative;
+}
+
+.factor-tooltip-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: help;
+    font-weight: 600;
+    color: inherit;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.25);
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+    outline: none;
+}
+
+.factor-tooltip-trigger::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 12px);
+    transform: translateX(-50%) translateY(6px);
+    width: 260px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(18, 18, 24, 0.92);
+    color: #ffffff;
+    font-size: 12px;
+    line-height: 1.45;
+    font-weight: 500;
+    text-align: left;
+    white-space: normal;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+    z-index: 50;
+}
+
+.factor-tooltip-trigger::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 4px);
+    transform: translateX(-50%) translateY(6px);
+    border-width: 8px 7px 0 7px;
+    border-style: solid;
+    border-color: rgba(18, 18, 24, 0.92) transparent transparent transparent;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+    z-index: 49;
+}
+
+.factor-tooltip-trigger:hover::after,
+.factor-tooltip-trigger:hover::before,
+.factor-tooltip-trigger:focus-visible::after,
+.factor-tooltip-trigger:focus-visible::before,
+.factor-tooltip-trigger.tooltip-open::after,
+.factor-tooltip-trigger.tooltip-open::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.factor-tooltip-trigger:hover,
+.factor-tooltip-trigger:focus-visible,
+.factor-tooltip-trigger.tooltip-open {
+    border-bottom-color: rgba(255, 255, 255, 0.55);
+}
+
+@media (max-width: 768px) {
+    .factor-tooltip-trigger::after {
+        width: 220px;
+        font-size: 11px;
+    }
+}
+
 /* Add these styles to your existing styles.css file */
 
 /* Working Paper Page Specific Styles */
