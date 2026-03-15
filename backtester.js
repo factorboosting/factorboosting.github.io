@@ -198,7 +198,7 @@ const BT = (() => {
         // For each stock, look up its size from prevMonth; fall back to current if unavailable
         const getWeight = r => {
             const hist = laggedSize[r.Co_Code];
-            return (hist && hist[prevMonth] != null) ? hist[prevMonth] : null;
+            return (hist && hist[prevMonth] != null) ? hist[prevMonth]: r._size;
         };
         const totalSize = rows.reduce((s, r) => s + getWeight(r), 0);
         if (totalSize <= 0) return calcEW(rows);   // fallback to EW
