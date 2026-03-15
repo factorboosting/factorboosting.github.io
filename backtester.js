@@ -490,7 +490,7 @@ const BT = (() => {
     // ── Metrics (dual EW / VW per card) ──────────────────────────────────────
     function updateMetrics(ewM, vwM) {
         const pairs = [
-            ['bt-m-total',  ewM.growth_multiple,       vwM.growth_multiple,       'x',  false],,
+            ['bt-m-total',  ewM.growth_multiple,       vwM.growth_multiple,       'x',  false],
             ['bt-m-ann',    ewM.annualized_return,      vwM.annualized_return,     '%',  true ],
             ['bt-m-vol',    ewM.annualized_volatility,  vwM.annualized_volatility, '%',  false],
             ['bt-m-sharpe', ewM.sharpe_ratio,           vwM.sharpe_ratio,          '',   true ],
@@ -505,18 +505,20 @@ const BT = (() => {
     function setMetricPair(baseId, ewVal, vwVal, suffix, useColor) {
         const ewEl = document.getElementById(`${baseId}-ew`);
         const vwEl = document.getElementById(`${baseId}-vw`);
-
+    
         if (ewEl) {
             const prefix = useColor && ewVal > 0 ? '+' : '';
             ewEl.textContent = `${prefix}${ewVal}${suffix}`;
             ewEl.classList.remove('pos', 'neg');
             if (useColor) ewEl.classList.add(ewVal > 0 ? 'pos' : ewVal < 0 ? 'neg' : '');
+            else ewEl.className = 'bt-metric-value';  // neutral blue
         }
         if (vwEl) {
             const prefix = useColor && vwVal > 0 ? '+' : '';
             vwEl.textContent = `${prefix}${vwVal}${suffix}`;
             vwEl.classList.remove('pos', 'neg');
             if (useColor) vwEl.classList.add(vwVal > 0 ? 'pos' : vwVal < 0 ? 'neg' : '');
+            else vwEl.className = 'bt-metric-vw';  // neutral green
         }
     }
 
