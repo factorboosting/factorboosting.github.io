@@ -17,9 +17,9 @@ const BT = (() => {
 
     const FACTORS = {
         'Size':     { col: 'Size_Label',     labels: { 'B': 'Big',          'S': 'Small' } },
-        'B/M':      { col: 'BM_Label',       labels: { 'G': 'Growth',       'N': 'Neutral', 'V': 'Value' } },
-        'OpProf':   { col: 'OpProf_Label',   labels: { 'R': 'Robust',       'N': 'Neutral', 'W': 'Weak' } },
-        'Inv':      { col: 'Inv_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
+        'Book-to-Market':      { col: 'BM_Label',       labels: { 'G': 'Growth',       'N': 'Neutral', 'V': 'Value' } },
+        'Operatioanl Profitability':   { col: 'OpProf_Label',   labels: { 'R': 'Robust',       'N': 'Neutral', 'W': 'Weak' } },
+        'Investment':      { col: 'Inv_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
         'Momentum': { col: 'Momentum_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
     };
 
@@ -232,6 +232,7 @@ const BT = (() => {
 
         return {
             total_return:         +(total   * 100).toFixed(2),
+            growth_multiple:      +(cumProd).toFixed(2),
             annualized_return:    +(annRet  * 100).toFixed(2),
             annualized_volatility:+(annVol  * 100).toFixed(2),
             sharpe_ratio:         +sharpe.toFixed(3),
@@ -489,7 +490,7 @@ const BT = (() => {
     // ── Metrics (dual EW / VW per card) ──────────────────────────────────────
     function updateMetrics(ewM, vwM) {
         const pairs = [
-            ['bt-m-total',  ewM.total_return,          vwM.total_return,          '%',  true ],
+            ['bt-m-total',  ewM.growth_multiple,       vwM.growth_multiple,       'x',  false],,
             ['bt-m-ann',    ewM.annualized_return,      vwM.annualized_return,     '%',  true ],
             ['bt-m-vol',    ewM.annualized_volatility,  vwM.annualized_volatility, '%',  false],
             ['bt-m-sharpe', ewM.sharpe_ratio,           vwM.sharpe_ratio,          '',   true ],
