@@ -179,7 +179,7 @@ body {
 
 /* Table */
 .table-container {
-    overflow-x: auto;
+    overflow-x: visible;
     border: 1px solid var(--border-color);
     border-radius: 6px;
 }
