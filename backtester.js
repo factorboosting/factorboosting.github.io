@@ -491,10 +491,10 @@ const BT = (() => {
     function updateMetrics(ewM, vwM) {
         const pairs = [
             ['bt-m-total',  ewM.growth_multiple,       vwM.growth_multiple,       'x',  false],
-            ['bt-m-ann',    ewM.annualized_return,      vwM.annualized_return,     '%',  true ],
+            ['bt-m-ann',    ewM.annualized_return,      vwM.annualized_return,     '%',  false ],
             ['bt-m-vol',    ewM.annualized_volatility,  vwM.annualized_volatility, '%',  false],
-            ['bt-m-sharpe', ewM.sharpe_ratio,           vwM.sharpe_ratio,          '',   true ],
-            ['bt-m-dd',     ewM.max_drawdown,           vwM.max_drawdown,          '%',  true ],
+            ['bt-m-sharpe', ewM.sharpe_ratio,           vwM.sharpe_ratio,          '',   false ],
+            ['bt-m-dd',     ewM.max_drawdown,           vwM.max_drawdown,          '%',  false ],
             ['bt-m-pos',    ewM.pct_positive_months,    vwM.pct_positive_months,   '%',  false],
         ];
         pairs.forEach(([id, ewVal, vwVal, suffix, useColor]) => {
