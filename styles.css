@@ -1159,25 +1159,25 @@ table {
     margin-bottom: 5px;
 }
 
+/* new — EW values use blue tones */
+.bt-metric-value.pos { color: #2563eb; }
+.bt-metric-value.neg { color: #ef4444; }
+
 /* EW value – primary (blue-tinted when colored) */
 .bt-metric-value {
     font-size: 18px;
     font-weight: 700;
     letter-spacing: -.5px;
-    color: var(--text-primary);
+    color: #3b82f6;
 }
-
-.bt-metric-value.pos { color: #10b981; }
-.bt-metric-value.neg { color: #ef4444; }
 
 /* VW value – secondary (smaller, green-tinted) */
 .bt-metric-vw {
     font-size: 11.5px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #10b981;
     margin-top: 3px;
 }
-
 .bt-metric-vw.pos { color: #059669; }
 .bt-metric-vw.neg { color: #dc2626; }
 
