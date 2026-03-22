@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team | SCDLDS @ Ashoka</title>
+    <link rel="icon" href="Data/scdlds_ashoka_logo.jpeg">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           TEAM PAGE STYLES (.team-*)
+           ═══════════════════════════════════════════════════════════════ */
+
+        .team-section-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .team-row {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .team-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 240px;
+            transition: transform 0.25s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .team-photo-wrap {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+            border: 3px solid var(--border-color);
+            background-color: var(--bg-light);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .team-card:hover .team-photo-wrap {
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
+        }
+
+        .team-photo-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Placeholder when no image is available */
+        .team-photo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            color: var(--primary-color);
+            font-size: 3rem;
+            font-weight: 700;
+        }
+
+        .team-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .team-role {
+            font-size: 0.875rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+        }
+
+        .team-affiliation {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .team-links {
+            margin-top: 0.6rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .team-links a {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .team-links a:hover {
+            color: var(--primary-color);
+        }
+
+        .team-divider {
+            width: 60px;
+            height: 2px;
+            background: var(--border-color);
+            margin: 0 auto 2.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .team-row {
+                gap: 2rem;
+            }
+            .team-photo-wrap {
+                width: 140px;
+                height: 140px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="beta-banner">
+        This website is currently in <strong>beta</strong>. If you encounter any bugs or issues, please <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in">report them here</a>.
+    </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Safexpress Center for Data Learning and Decision Sciences</div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#downloads">Data Download</a></li>
+                <li><a href="working_paper.html">Working Paper</a></li>
+                <li><a href="backtester.html">Analysis</a></li>
+                <li><a href="team.html" class="active">Team</a></li>
+                <li><a href="index.html#about">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Our Team</h1>
+            <p class="subtitle">The people behind the Financial Factor Data Library</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="section">
+            <!-- Faculty -->
+            <div class="team-section-label">Faculty</div>
+            <div class="team-row">
+                <div class="team-card">
+                    <div class="team-photo-wrap">
+                        <!-- Replace src with actual photo path, e.g. "Data/Team/sandeep_juneja.jpg" -->
+                        <div class="team-photo-placeholder">SJ</div>
+                    </div>
+                    <div class="team-name">Prof. Sandeep Juneja</div>
+                    <div class="team-role">Principal Investigator</div>
+                    <div class="team-affiliation">Safexpress Centre for Data Learning and Decision Sciences, Ashoka University</div>
+                    <div class="team-links">
+                        <a href="mailto:sandeep.juneja@ashoka.edu.in" class="link">Email</a>
+                        <a href="https://sites.google.com/view/sandeepjuneja" class="link" target="_blank">Website</a>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-photo-wrap">
+                        <!-- Replace src with actual photo path -->
+                        <div class="team-photo-placeholder">NP</div>
+                    </div>
+                    <div class="team-name">Prof. N. R. Prabhala</div>
+                    <div class="team-role">Co-Investigator</div>
+                    <div class="team-affiliation">Carey Business School, Johns Hopkins University</div>
+                    <div class="team-links">
+                        <a href="mailto:prabhala@jhu.edu" class="link">Email</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="team-divider"></div>
+
+            <!-- Researchers -->
+            <div class="team-section-label">Researchers</div>
+            <div class="team-row">
+                <div class="team-card">
+                    <div class="team-photo-wrap">
+                        <div class="team-photo-placeholder">AK</div>
+                    </div>
+                    <div class="team-name">Atish Kumar</div>
+                    <div class="team-role">PhD Scholar</div>
+                    <div class="team-affiliation">Indraprastha Institute of Information Technology (IIIT), Delhi</div>
+                    <div class="team-links">
+                        <a href="mailto:atishk@iiitd.ac.in" class="link">Email</a>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-photo-wrap">
+                        <div class="team-photo-placeholder">AF</div>
+                    </div>
+                    <div class="team-name">Aman K. Foujdar</div>
+                    <div class="team-role">Research Assistant</div>
+                    <div class="team-affiliation">Ashoka University</div>
+                    <div class="team-links">
+                        <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in" class="link">Email</a>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-photo-wrap">
+                        <div class="team-photo-placeholder">SW</div>
+                    </div>
+                    <div class="team-name">Sidharth Wagle</div>
+                    <div class="team-role">Research Assistant</div>
+                    <div class="team-affiliation">Ashoka University</div>
+                    <div class="team-links">
+                        <a href="mailto:sidharth.wagle_ug25@ashoka.edu.in" class="link">Email</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Safexpress Center for Data Learning and Decision Sciences | All rights reserved</p>
+        </div>
+    </footer>
+</body>
+</html>
