@@ -596,19 +596,4 @@ const BT = (() => {
 
 document.addEventListener('DOMContentLoaded', BT.init);
 
-document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.querySelector('.nav-toggle');
-    const menu = document.querySelector('.nav-menu');
-    if (toggle && menu) {
-        toggle.addEventListener('click', () => {
-            toggle.classList.toggle('open');
-            menu.classList.toggle('open');
-        });
-        menu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                toggle.classList.remove('open');
-                menu.classList.remove('open');
-            });
-        });
-    }
-});
+
