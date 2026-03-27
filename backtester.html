@@ -7,34 +7,222 @@
     <link rel="icon" href="Data/scdlds_ashoka_logo.jpeg">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+    /* ── Multi-portfolio additions ─────────────────────────────────────── */
+    .bt-portfolio-shelf {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .bt-portfolio-chip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+        cursor: default;
+        animation: bt-chip-in .2s ease;
+    }
+    @keyframes bt-chip-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .bt-portfolio-chip .bt-chip-label {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .bt-chip-close {
+        background: rgba(255,255,255,.2);
+        border: none;
+        color: #fff;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background .15s;
+    }
+    .bt-chip-close:hover { background: rgba(255,255,255,.35); }
+    .bt-add-btn {
+        width: 100%;
+        padding: 9px;
+        background: #1e293b;
+        border: 1px dashed #475569;
+        border-radius: 8px;
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+        font-family: inherit;
+    }
+    .bt-add-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+    .bt-add-btn:disabled { opacity: .4; cursor: not-allowed; border-color: #334155; color: #475569; }
+    .bt-shelf-limit {
+        font-size: 10px;
+        color: #fca5a5;
+        text-align: center;
+        display: none;
+    }
+    .bt-shelf-limit.visible { display: block; }
+
+    /* ── Comparison stats table ────────────────────────────────────────── */
+    .bt-compare-card {
+        background: var(--bg-white);
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+        padding: 18px 20px;
+        overflow-x: auto;
+    }
+    .bt-compare-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+    .bt-compare-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+    .bt-compare-table th {
+        text-align: left;
+        padding: 6px 10px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+    }
+    .bt-compare-table td {
+        padding: 6px 10px;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: nowrap;
+    }
+    .bt-compare-table tbody tr:last-child td { border-bottom: none; }
+    .bt-compare-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+    .bt-compare-name {
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .bt-stat-pos { color: #059669; }
+    .bt-stat-neg { color: #dc2626; }
+
+    /* ── Holdings month navigator ──────────────────────────────────────── */
+    .bt-month-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .bt-month-nav-btn {
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all .15s;
+        font-family: inherit;
+    }
+    .bt-month-nav-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+    .bt-month-nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .bt-month-display {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-primary);
+        min-width: 80px;
+        text-align: center;
+    }
+    .bt-month-slider {
+        flex: 1;
+        accent-color: #3b82f6;
+        cursor: pointer;
+    }
+
+    /* ── Weight toggle in legend ───────────────────────────────────────── */
+    .bt-weight-toggle {
+        display: inline-flex;
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 2px;
+        gap: 1px;
+        margin-left: 8px;
+    }
+    .bt-wt-btn {
+        padding: 3px 10px;
+        border: none;
+        border-radius: 4px;
+        font-size: 10.5px;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        color: var(--text-secondary);
+        transition: all .12s;
+        font-family: inherit;
+    }
+    .bt-wt-btn.active { background: #3b82f6; color: #fff; }
+
+    /* ── Active portfolio highlight ────────────────────────────────────── */
+    .bt-portfolio-chip.active-chip {
+        outline: 2px solid #fff;
+        outline-offset: 1px;
+    }
+
+    /* ── Responsive ────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+        .bt-compare-card { padding: 12px; }
+        .bt-compare-table { font-size: 11px; }
+        .bt-month-nav { flex-wrap: wrap; }
+    }
+    </style>
 </head>
 <body>
     <div class="beta-banner">
         This website is currently in <strong>beta</strong>. If you encounter any bugs or issues, please <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in">report them here</a>.
     </div>
     <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <img src="Data/Ashoka-opt-logo.webp" alt="Ashoka University" style="height: 36px; vertical-align: middle; margin-right: 10px;">
-                    Safexpress Center for Data Learning and Decision Sciences
-                </div>
-                <button class="nav-toggle" aria-label="Toggle menu">
-                    <span></span><span></span><span></span>
-                </button>
-                <ul class="nav-menu">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="backtester.html">Analysis</a></li>
-                    <li><a href="index.html#downloads">Downloads</a></li>
-                    <li><a href="working_paper.html">Manuscripts</a></li>
-                    <li><a href="team.html">Team</a></li>
-                </ul>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="Data/Ashoka-opt-logo.webp" alt="Ashoka University" style="height: 36px; vertical-align: middle; margin-right: 10px;">
+                Safexpress Center for Data Learning and Decision Sciences
             </div>
-        </nav>
+            <button class="nav-toggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="backtester.html" class="active">Analysis</a></li>
+                <li><a href="index.html#downloads">Downloads</a></li>
+                <li><a href="working_paper.html">Manuscripts</a></li>
+                <li><a href="team.html">Team</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <header class="hero bt-hero">
         <div class="hero-content">
             <h1>Cross-Sectional Portfolio Analysis</h1>
-            <p class="subtitle">Fama-French factor portfolios on Indian equities &mdash; equal & value weighted returns</p>
+            <p class="subtitle">Fama-French factor portfolios on Indian equities &mdash; compare up to 4 strategies</p>
         </div>
     </header>
 
@@ -44,8 +232,20 @@
         </div>
 
         <div class="bt-layout" style="margin-top: 1rem;">
-            <!-- ── SIDEBAR ──────────────────────────────────────────────────── -->
+            <!-- ── SIDEBAR ──────────────────────────────────────────────── -->
             <aside class="bt-sidebar">
+
+                <!-- Saved portfolios shelf -->
+                <div>
+                    <div class="bt-sec-label">Portfolios</div>
+                    <div class="bt-portfolio-shelf" id="bt-portfolio-shelf"></div>
+                    <div class="bt-shelf-limit" id="bt-shelf-limit">Maximum 4 portfolios reached. Remove one to add another.</div>
+                    <div style="display:flex; gap:6px; margin-top:8px;">
+                        <button class="bt-add-btn" id="bt-add-btn" onclick="BT.addPortfolio()">+ Add Portfolio</button>
+                    </div>
+                </div>
+
+                <div class="bt-divider"></div>
 
                 <!-- Strategy -->
                 <div>
@@ -105,53 +305,39 @@
 
                 <div id="bt-error-msg" class="bt-error-msg"></div>
 
-                <button class="bt-run-btn" id="bt-run-btn" onclick="BT.run()" disabled>Loading data&hellip;</button>
+                <button class="bt-run-btn" id="bt-run-btn" onclick="BT.runAll()" disabled>Loading data&hellip;</button>
             </aside>
 
-            <!-- ── RESULTS ──────────────────────────────────────────────────── -->
+            <!-- ── RESULTS ──────────────────────────────────────────────── -->
             <div class="bt-results">
 
-                <!-- Metrics legend -->
+                <!-- Weight toggle + legend -->
                 <div class="bt-metrics-legend">
-                    <span class="bt-legend-dot" style="background:#3b82f6;"></span>
-                    <span style="color:#3b82f6; font-weight:600;">Equal Weighted</span> &nbsp;&nbsp;
-                    <span class="bt-legend-dot" style="background:#10b981;"></span>
-                    <span style="color:#10b981; font-weight:600;">Value Weighted</span>
-                    <span class="bt-legend-note">(large value = EW, small value below = VW)</span>
+                    <span style="font-weight:600; color:var(--text-primary);">Weighting:</span>
+                    <div class="bt-weight-toggle" id="bt-weight-toggle">
+                        <button class="bt-wt-btn active" data-val="ew" onclick="BT.setWeight('ew')">Equal</button>
+                        <button class="bt-wt-btn" data-val="vw" onclick="BT.setWeight('vw')">Value</button>
+                    </div>
+                    <span class="bt-legend-note" style="margin-left:auto;">Colors match portfolio chips in sidebar</span>
                 </div>
 
-                <!-- Metric cards -->
-                <div class="bt-metrics-row">
-                    <div class="bt-metric-card">
-                        <div class="bt-metric-label">Growth Multiple</div>
-                        <div class="bt-metric-value" id="bt-m-total-ew">&mdash;</div>
-                        <div class="bt-metric-vw" id="bt-m-total-vw">&mdash;</div>
-                    </div>
-                    <div class="bt-metric-card">
-                        <div class="bt-metric-label">Ann. Return</div>
-                        <div class="bt-metric-value" id="bt-m-ann-ew">&mdash;</div>
-                        <div class="bt-metric-vw" id="bt-m-ann-vw">&mdash;</div>
-                    </div>
-                    <div class="bt-metric-card">
-                        <div class="bt-metric-label">Ann. Volatility</div>
-                        <div class="bt-metric-value" id="bt-m-vol-ew">&mdash;</div>
-                        <div class="bt-metric-vw" id="bt-m-vol-vw">&mdash;</div>
-                    </div>
-                    <div class="bt-metric-card">
-                        <div class="bt-metric-label">Sharpe Ratio</div>
-                        <div class="bt-metric-value" id="bt-m-sharpe-ew">&mdash;</div>
-                        <div class="bt-metric-vw" id="bt-m-sharpe-vw">&mdash;</div>
-                    </div>
-                    <div class="bt-metric-card">
-                        <div class="bt-metric-label">Max Drawdown</div>
-                        <div class="bt-metric-value" id="bt-m-dd-ew">&mdash;</div>
-                        <div class="bt-metric-vw" id="bt-m-dd-vw">&mdash;</div>
-                    </div>
-                    <div class="bt-metric-card">
-                        <div class="bt-metric-label">% Positive Months</div>
-                        <div class="bt-metric-value" id="bt-m-pos-ew">&mdash;</div>
-                        <div class="bt-metric-vw" id="bt-m-pos-vw">&mdash;</div>
-                    </div>
+                <!-- Comparison stats table -->
+                <div class="bt-compare-card" id="bt-compare-card" style="display:none;">
+                    <div class="bt-compare-title">Portfolio Comparison</div>
+                    <table class="bt-compare-table">
+                        <thead>
+                            <tr>
+                                <th>Portfolio</th>
+                                <th>Growth</th>
+                                <th>Ann. Ret.</th>
+                                <th>Ann. Vol.</th>
+                                <th>Sharpe</th>
+                                <th>Max DD</th>
+                                <th>% Pos.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bt-compare-body"></tbody>
+                    </table>
                 </div>
 
                 <!-- Chart -->
@@ -159,7 +345,7 @@
                     <div class="bt-chart-header">
                         <div>
                             <div class="bt-chart-title" id="bt-chart-title">Portfolio Performance</div>
-                            <div class="bt-chart-sub" id="bt-chart-sub">Configure a strategy and press Run Analysis</div>
+                            <div class="bt-chart-sub" id="bt-chart-sub">Add a portfolio and press Run Comparison</div>
                         </div>
                         <label class="bt-log-toggle">
                             <input type="checkbox" id="bt-log-scale" onchange="BT.toggleLog()" />
@@ -174,12 +360,23 @@
                     </div>
                 </div>
 
-                <!-- All firms (scrollable) -->
+                <!-- Holdings with month navigation -->
                 <div class="bt-holdings-card" id="bt-holdings-card">
                     <div class="bt-empty-state" id="bt-holdings-empty">
-                        Configure a strategy and press <strong>Run Analysis</strong> to see all portfolio firms
+                        Add portfolios and press <strong>Run Comparison</strong> to explore holdings
                     </div>
-                    <div id="bt-holdings-content" style="display:none;"></div>
+                    <div id="bt-holdings-content" style="display:none;">
+                        <div class="bt-month-nav" id="bt-month-nav">
+                            <button class="bt-month-nav-btn" id="bt-month-prev" onclick="BT.navMonth(-1)">◀</button>
+                            <div class="bt-month-display" id="bt-month-display">—</div>
+                            <input type="range" class="bt-month-slider" id="bt-month-slider" min="0" max="0" value="0"
+                                   oninput="BT.sliderMonth(this.value)" />
+                            <button class="bt-month-nav-btn" id="bt-month-next" onclick="BT.navMonth(1)">▶</button>
+                        </div>
+                        <!-- Portfolio selector for holdings -->
+                        <div id="bt-holdings-portfolio-tabs" style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;"></div>
+                        <div id="bt-holdings-inner"></div>
+                    </div>
                 </div>
 
             </div>
