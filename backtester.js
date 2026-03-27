@@ -184,10 +184,17 @@ const BT = (() => {
 
     // ── Portfolio management ──────────────────────────────────────────────────
     function addPortfolio() {
-        if (portfolios.length >= MAX_PORTFOLIOS) return;
+        console.log('addPortfolio called, current count:', portfolios.length);
+        if (portfolios.length >= MAX_PORTFOLIOS) {
+            console.log('Max portfolios reached');
+            return;
+        }
 
         const longFilters  = getFilters('long');
         const shortFilters = currentStrategy === 'long_short' ? getFilters('short') : {};
+
+        console.log('Long filters:', longFilters);
+        console.log('Short filters:', shortFilters);
 
         if (!Object.values(longFilters).some(v => v && v.length)) {
             showError('Select at least one factor label before adding.');
@@ -273,8 +280,13 @@ const BT = (() => {
         addBtn.disabled = portfolios.length >= MAX_PORTFOLIOS;
 
         const runBtn = document.getElementById('bt-run-btn');
-        runBtn.textContent = portfolios.length > 0 ? 'Run Comparison' : 'Add portfolios first';
-        runBtn.disabled = portfolios.length === 0 || rawData.length === 0;
+        if (rawData.length === 0) {
+            runBtn.textContent = 'Loading data…';
+            runBtn.disabled = true;
+        } else {
+            runBtn.textContent = portfolios.length > 0 ? 'Run Comparison' : 'Run Analysis';
+            runBtn.disabled = false;
+        }
     }
 
     // ── Portfolio computation ─────────────────────────────────────────────────
@@ -394,9 +406,19 @@ const BT = (() => {
 
     // ── Run all portfolios ────────────────────────────────────────────────────
     function runAll() {
+        console.log('runAll called, portfolios:', portfolios.length);
         hideError();
+
+        // If no portfolios saved yet, auto-add current selection first
         if (portfolios.length === 0) {
-            showError('Add at least one portfolio first.');
+            const longFilters = getFilters('long');
+            if (Object.values(longFilters).some(v => v && v.length)) {
+                addPortfolio();
+            }
+        }
+
+        if (portfolios.length === 0) {
+            showError('Select at least one factor label, then press Run or Add Portfolio.');
             return;
         }
 
