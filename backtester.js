@@ -283,7 +283,7 @@ const BT = (() => {
             runBtn.textContent = 'Loading data…';
             runBtn.disabled = true;
         } else {
-            runBtn.textContent = portfolios.length > 0 ? 'Run Comparison' : 'Run Analysis';
+            runBtn.textContent = portfolios.length > 1 ? 'Run Comparison' : 'Run Analysis';
             runBtn.disabled = false;
         }
     }
@@ -450,7 +450,7 @@ const BT = (() => {
                 showError('Computation error: ' + e.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Run Comparison';
+                btn.textContent = portfolios.length > 1 ? 'Run Comparison' : 'Run Analysis';
                 document.getElementById('bt-chart-loading').style.display = 'none';
             }
         }, 50);
