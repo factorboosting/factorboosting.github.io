@@ -104,7 +104,7 @@ const BT = (() => {
 
             const btn = document.getElementById('bt-run-btn');
             btn.disabled = false;
-            btn.textContent = 'Run Comparison';
+            btn.textContent = 'Run Analysis';
             setTimeout(() => { notice.style.display = 'none'; }, 4000);
         } catch (err) {
             notice.className = 'bt-data-notice error';
