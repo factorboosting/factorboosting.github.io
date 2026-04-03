@@ -68,8 +68,7 @@ const BT = (() => {
                 row._size  = parseFloat(row.Size) || 0;
                 const parsed = parseFloat(row.Monthly_Return);
                 row._ret = isNaN(parsed) ? 1 : parsed;
-                if (row._ret < 0) row._ret = 0;
-                if (row._ret > 3) row._ret = 1;
+                if (row._ret < 0 || row._ret > 3) row._ret = 1;
             });
 
             monthGroups = {};
