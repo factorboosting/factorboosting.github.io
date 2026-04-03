@@ -285,7 +285,7 @@ body {
 
 /* About Section */
 .about-content {
-    max-width: 800px;
+    max-width: 100%;
 }
 
 .about-content p {
