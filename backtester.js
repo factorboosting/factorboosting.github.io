@@ -58,7 +58,7 @@ const BT = (() => {
     async function loadData() {
         const notice = document.getElementById('bt-data-notice');
         try {
-            const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
+            const res = await fetch('https://xkoldzewlcpobtlbwujl.supabase.co/storage/v1/object/sign/factor_data/finalMonthlyLabels_aman.csv?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85MGZlNDQ5YS02ODIwLTQyMTAtYjRjNC1iN2FlMmIzNTgyZmIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmYWN0b3JfZGF0YS9maW5hbE1vbnRobHlMYWJlbHNfYW1hbi5jc3YiLCJpYXQiOjE3NzU0NDkyMDAsImV4cCI6MTgwNjk4NTIwMH0.7pwItJGxW_vNbpVKU0g_MqrOV2hWd3K-kDUPEp8zgOY');
             if (!res.ok) throw new Error('finalMonthlyLabels_aman.csv not found.');
             const text = await res.text();
             rawData = parseCSV(text);
