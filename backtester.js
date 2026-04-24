@@ -1,4 +1,4 @@
-// backtester.js – Multi-portfolio comparison
+// backtester.js – Multi-portfolio comparison file
 // Data source: finalMonthlyLabels_aman.csv
 
 const BT = (() => {
