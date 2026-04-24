@@ -53,7 +53,7 @@ const BT = (() => {
     async function loadData() {
         const notice = document.getElementById('bt-data-notice');
         try {
-            const res = await fetch('https://xkoldzewlcpobtlbwujl.supabase.co/storage/v1/object/sign/factor_data/finalMonthlyLabels_aman.csv?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85MGZlNDQ5YS02ODIwLTQyMTAtYjRjNC1iN2FlMmIzNTgyZmIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmYWN0b3JfZGF0YS9maW5hbE1vbnRobHlMYWJlbHNfYW1hbi5jc3YiLCJpYXQiOjE3NzcwMTgzNzksImV4cCI6MTgwODU1NDM3OX0.BTYytSYY9phDGfGjRrWqff1zKtWBL4UxGNGmO_IOPXY');
+            const res = await fetch('https://xkoldzewlcpobtlbwujl.supabase.co/storage/v1/object/factor_data/finalMonthlyLabels_aman.csv?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV85MGZlNDQ5YS02ODIwLTQyMTAtYjRjNC1iN2FlMmIzNTgyZmIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJmYWN0b3JfZGF0YS9maW5hbE1vbnRobHlMYWJlbHNfYW1hbi5jc3YiLCJpYXQiOjE3NzcwMTgzNzksImV4cCI6MTgwODU1NDM3OX0.BTYytSYY9phDGfGjRrWqff1zKtWBL4UxGNGmO_IOPXY');
             if (!res.ok) throw new Error('finalMonthlyLabels_aman.csv not found.');
             const text = await res.text();
             rawData = parseCSV(text);
