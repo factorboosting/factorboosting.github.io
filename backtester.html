@@ -280,7 +280,14 @@
             color: #94a3b8;
         }
 
-        /* ── Benchmark toggle ──────────────────────────────────────────────── */
+        /* ── Benchmark controls ────────────────────────────────────────────── */
+        .bt-bench-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
         .bt-bench-toggle {
             display: flex;
             align-items: center;
@@ -299,6 +306,58 @@
         .bt-bench-toggle input {
             accent-color: #ef4444;
             cursor: pointer;
+        }
+
+        /* Benchmark index selector (shown next to checkbox) */
+        .bt-bench-index-select {
+            display: inline-flex;
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2px;
+            gap: 1px;
+        }
+
+        .bt-bench-index-select .bt-toggle-btn {
+            padding: 3px 9px;
+            font-size: 10px;
+            font-weight: 600;
+            border: none;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            transition: all .12s;
+        }
+
+        .bt-bench-index-select .bt-toggle-btn.active {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* ── Benchmark selector in sidebar ────────────────────────────────── */
+        .bt-bench-sidebar-label {
+            font-size: 10px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            margin-top: 8px;
+        }
+
+        #bt-benchmark-selector {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        #bt-benchmark-selector .bt-toggle-btn {
+            flex: 1;
+            font-size: 10.5px;
+        }
+
+        /* ── IR column highlight ───────────────────────────────────────────── */
+        .bt-compare-table th.bt-ir-col {
+            color: #7c3aed;
         }
 
         /* ── Drawdown chart ────────────────────────────────────────────────── */
@@ -406,6 +465,10 @@
             .bt-dd-chart-wrap {
                 height: 120px;
             }
+
+            .bt-bench-row {
+                gap: 6px;
+            }
         }
     </style>
 </head>
@@ -473,7 +536,7 @@
             <br>
             <p style="color: var(--text-secondary); margin-bottom: 0.75rem;"><strong>Note:</strong> The Transaction cost
                 model is more accurate for Equal
-                Weighted (EW) portfolios as it only tracks the stocks changed, now how much weight shifted. We're
+                Weighted (EW) portfolios as it only tracks the stocks changed, not how much weight shifted. We're
                 working on implementing a more realistic model for Value Weighted (VW) portfolios as well.</p>
         </div>
     </div>
@@ -524,6 +587,19 @@
                         <div class="bt-factor-panel-title"><span class="bt-badge bt-badge-short">SHORT</span> Portfolio
                         </div>
                         <div id="bt-short-factors"></div>
+                    </div>
+                </div>
+
+                <div class="bt-divider"></div>
+
+                <!-- Benchmark selection (for IR + chart overlay) -->
+                <div>
+                    <div class="bt-sec-label">Benchmark Index</div>
+                    <p style="font-size:10px;color:#94a3b8;margin:0 0 6px;">
+                        Sets the benchmark for the Information Ratio statistic and the optional chart overlay.
+                    </p>
+                    <div class="bt-toggle-group" id="bt-benchmark-selector">
+                        <!-- Populated by buildBenchmarkSelector() in backtester.js -->
                     </div>
                 </div>
 
@@ -590,9 +666,14 @@
                             <button class="bt-wt-btn" data-val="vw" onclick="BT.setWeight('vw')">Value</button>
                         </div>
                     </div>
-                    <div class="bt-bench-toggle">
-                        <label><input type="checkbox" id="bt-bench-check" onchange="BT.toggleBenchmark()"> Show Nifty
-                            500 Benchmark</label>
+                    <!-- Benchmark overlay toggle -->
+                    <div class="bt-bench-row">
+                        <div class="bt-bench-toggle">
+                            <label>
+                                <input type="checkbox" id="bt-bench-check" onchange="BT.toggleBenchmark()">
+                                Show benchmark on chart
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -609,6 +690,8 @@
                                 <th>Sharpe</th>
                                 <th>Max DD</th>
                                 <th>% Pos.</th>
+                                <!-- IR header — label updated dynamically by JS to reflect active benchmark -->
+                                <th class="bt-ir-col" id="bt-ir-col-header">IR (vs Nifty 50)</th>
                                 <th>Turnover</th>
                             </tr>
                         </thead>
