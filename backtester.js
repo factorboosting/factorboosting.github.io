@@ -64,9 +64,10 @@ const BT = (() => {
     async function loadData() {
         const notice = document.getElementById('bt-data-notice');
         try {
-            const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
-            if (!res.ok) throw new Error('CSV not found.');
-            rawData = parseCSV(await res.text());
+            const res = await fetch('https://xkoldzewlcpobtlbwujl.supabase.co/storage/v1/object/public/factor_data/finalMonthlyLabels_aman.csv');
+            if (!res.ok) throw new Error('finalMonthlyLabels_aman.csv not found.');
+            const text = await res.text();
+            rawData = parseCSV(text);
 
             rawData.forEach(row => {
                 row._month = row.Month ? row.Month.substring(0, 7) : '';
