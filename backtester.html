@@ -571,12 +571,19 @@
                     </div>
                 </div>
 
-                <!-- Long factors -->
+                <!-- Factor picker: choose which factors to use -->
                 <div>
-                    <div class="bt-sec-label">Factor Selection</div>
+                    <div class="bt-sec-label">Active Factors <span style="font-weight:400;text-transform:none;letter-spacing:0;">(click to toggle)</span></div>
+                    <div id="bt-factor-picker"></div>
+                </div>
+                
+                <div class="bt-divider"></div>
+                
+                <!-- Long factors (pills for active factors only) -->
+                <div>
+                    <div class="bt-sec-label">Portfolio Selection</div>
                     <div class="bt-factor-panel">
-                        <div class="bt-factor-panel-title"><span class="bt-badge bt-badge-long">LONG</span> Portfolio
-                        </div>
+                        <div class="bt-factor-panel-title"><span class="bt-badge bt-badge-long">LONG</span> Portfolio</div>
                         <div id="bt-long-factors"></div>
                     </div>
                 </div>
@@ -593,6 +600,8 @@
                 <div class="bt-divider"></div>
 
                 <!-- Benchmark selection (for IR + chart overlay) -->
+                <div class="bt-divider"></div>
+                
                 <div>
                     <div class="bt-sec-label">Benchmark Index</div>
                     <p style="font-size:10px;color:#94a3b8;margin:0 0 6px;">
@@ -690,8 +699,7 @@
                                 <th>Sharpe</th>
                                 <th>Max DD</th>
                                 <th>% Pos.</th>
-                                <!-- IR header — label updated dynamically by JS to reflect active benchmark -->
-                                <th class="bt-ir-col" id="bt-ir-col-header">IR (vs Nifty 50)</th>
+                                <th id="bt-ir-col-header">IR (vs Nifty 50)</th>
                                 <th>Turnover</th>
                             </tr>
                         </thead>
