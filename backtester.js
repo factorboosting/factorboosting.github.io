@@ -77,7 +77,7 @@ const BT = (() => {
     async function loadData() {
         const notice = document.getElementById('bt-data-notice');
         try {
-            const res = await fetch('https://xkoldzewlcpobtlbwujl.supabase.co/storage/v1/object/public/factor_data/finalMonthlyLabels_aman.csv');
+            const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
             if (!res.ok) throw new Error(`CSV fetch failed (HTTP ${res.status}).`);
             rawData = parseCSV(await res.text());
 
