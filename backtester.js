@@ -84,7 +84,7 @@ const BT = (() => {
             rawData.forEach(row => {
                 row._month = row.Month ? row.Month.substring(0, 7) : '';
                 row._size  = parseFloat(row.Size) || 0;
-                const p = parseFloat(row.Monthly_Return);
+                const p = parseFloat(row.monthly_ret);
                 row._ret = isNaN(p) ? 0 : p;
                 if (row._ret < -0.99) row._ret = 0;
                 if (row._ret > 4) row._ret = 0;
