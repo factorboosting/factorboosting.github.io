@@ -1,5 +1,6 @@
 // backtester.js – Multi-portfolio comparison
-// 10 factors with collapsible picker, TC, benchmark (Nifty50/500), drawdown, heatmap, IR
+// 10 factors, collapsible picker, TC, benchmark (Nifty50/500), drawdown, heatmap, IR
+// All bugs fixed: BOM, return capping, benchmark 0%, dedup, turnover
 
 const BT = (() => {
     'use strict';
@@ -14,15 +15,13 @@ const BT = (() => {
     const BENCH_COLOR = { line: '#ef4444', bg: 'rgba(239,68,68,0.06)' };
     const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    // ── All 10 factors ────────────────────────────────────────────────────────
-    // Grouped into categories for the collapsible picker
     const FACTOR_GROUPS = {
         'Classic (FF5 + Momentum)': {
-            'Size':           { col: 'Size_Label',     labels: { 'B': 'Big',          'S': 'Small' } },
-            'Book-to-Market': { col: 'BM_Label',       labels: { 'G': 'Growth',       'N': 'Neutral', 'V': 'Value' } },
-            'Op. Profitability': { col: 'OpProf_Label', labels: { 'R': 'Robust',       'N': 'Neutral', 'W': 'Weak' } },
-            'Investment':     { col: 'Inv_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
-            'Momentum':       { col: 'Momentum_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
+            'Size':              { col: 'Size_Label',     labels: { 'B': 'Big',          'S': 'Small' } },
+            'Book-to-Market':    { col: 'BM_Label',       labels: { 'G': 'Growth',       'N': 'Neutral', 'V': 'Value' } },
+            'Op. Profitability': { col: 'OpProf_Label',   labels: { 'R': 'Robust',       'N': 'Neutral', 'W': 'Weak' } },
+            'Investment':        { col: 'Inv_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
+            'Momentum':          { col: 'Momentum_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
         },
         'Extended Factors': {
             'Asset Turnover':      { col: 'AT_Label',  labels: { 'H': 'High',  'N': 'Neutral', 'L': 'Low' } },
@@ -33,7 +32,6 @@ const BT = (() => {
         },
     };
 
-    // Flat lookup for computation
     const FACTORS = {};
     for (const group of Object.values(FACTOR_GROUPS)) {
         for (const [name, info] of Object.entries(group)) FACTORS[name] = info;
@@ -54,13 +52,15 @@ const BT = (() => {
     let activeBenchmarkId = 'nifty50';
     let showBenchmark = false;
     let heatmapOpen = false, heatmapPortfolioId = null;
-    let activeFactors = new Set(['Size', 'Book-to-Market', 'Momentum']); // default visible
+    let activeFactors = new Set(['Size', 'Book-to-Market', 'Momentum']);
 
-    // ── CSV parser ────────────────────────────────────────────────────────────
+    // ── CSV parser (with BOM fix) ─────────────────────────────────────────────
     function parseCSV(text) {
         const lines = text.split('\n');
         if (lines.length < 2) return [];
         const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+        // Fix BOM character that Excel/Google Sheets adds
+        headers[0] = headers[0].replace(/^\uFEFF/, '');
         const rows = [];
         for (let i = 1; i < lines.length; i++) {
             const line = lines[i].trim();
@@ -81,15 +81,27 @@ const BT = (() => {
             if (!res.ok) throw new Error(`CSV fetch failed (HTTP ${res.status}).`);
             rawData = parseCSV(await res.text());
 
+            // Debug: log first row to verify column names
+            if (rawData.length > 0) {
+                console.log('CSV columns:', Object.keys(rawData[0]));
+                console.log('Sample row:', rawData[0]);
+            }
+
             rawData.forEach(row => {
                 row._month = row.Month ? row.Month.substring(0, 7) : '';
                 row._size  = parseFloat(row.Size) || 0;
+
+                // Net return: cap at -90% to +100% (literature standard for monthly)
                 const p = parseFloat(row.Monthly_Return);
                 row._ret = isNaN(p) ? 0 : p;
-                if (row._ret < -0.99) row._ret = 0;
-                if (row._ret > 4) row._ret = 0;
-                row._nifty50  = parseFloat(row.nifty50)  || null;
-                row._nifty500 = parseFloat(row.nifty500) || null;
+                if (row._ret < -0.90) row._ret = -0.90;
+                if (row._ret > 1.00) row._ret = 1.00;
+
+                // Benchmark parsing: don't lose 0% months (0 || null = null is a bug)
+                const n50 = row.nifty50 !== '' ? parseFloat(row.nifty50) : null;
+                const n500 = row.nifty500 !== '' ? parseFloat(row.nifty500) : null;
+                row._nifty50  = (n50 !== null && !isNaN(n50)) ? n50 : null;
+                row._nifty500 = (n500 !== null && !isNaN(n500)) ? n500 : null;
             });
 
             monthGroups = {};
@@ -127,15 +139,15 @@ const BT = (() => {
         } catch (err) {
             notice.className = 'bt-data-notice error';
             notice.innerHTML = `Failed to load: ${err.message}`;
+            console.error(err);
         }
     }
 
-    // ── Factor picker (checkboxes to select which factors are visible) ─────────
+    // ── Factor picker ─────────────────────────────────────────────────────────
     function buildFactorPicker() {
         const container = document.getElementById('bt-factor-picker');
         if (!container) return;
         container.innerHTML = '';
-
         for (const [groupName, factors] of Object.entries(FACTOR_GROUPS)) {
             const groupDiv = document.createElement('div');
             groupDiv.style.marginBottom = '8px';
@@ -143,23 +155,16 @@ const BT = (() => {
             groupLabel.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:#64748b;margin-bottom:4px;';
             groupLabel.textContent = groupName;
             groupDiv.appendChild(groupLabel);
-
             const pillsDiv = document.createElement('div');
             pillsDiv.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;';
-
             for (const factorName of Object.keys(factors)) {
                 const btn = document.createElement('button');
                 btn.className = 'bt-pill' + (activeFactors.has(factorName) ? ' sel-long' : '');
                 btn.textContent = factorName;
                 btn.style.fontSize = '10px';
                 btn.onclick = () => {
-                    if (activeFactors.has(factorName)) {
-                        activeFactors.delete(factorName);
-                        btn.classList.remove('sel-long');
-                    } else {
-                        activeFactors.add(factorName);
-                        btn.classList.add('sel-long');
-                    }
+                    if (activeFactors.has(factorName)) { activeFactors.delete(factorName); btn.classList.remove('sel-long'); }
+                    else { activeFactors.add(factorName); btn.classList.add('sel-long'); }
                     buildFactorPills('bt-long-factors', 'long');
                     buildFactorPills('bt-short-factors', 'short');
                 };
@@ -170,12 +175,11 @@ const BT = (() => {
         }
     }
 
-    // ── Factor pills (only show active factors) ───────────────────────────────
+    // ── Factor pills ──────────────────────────────────────────────────────────
     function buildFactorPills(containerId, side) {
         const container = document.getElementById(containerId);
         if (!container) return;
         container.innerHTML = '';
-
         for (const [name, info] of Object.entries(FACTORS)) {
             if (!activeFactors.has(name)) continue;
             const row = document.createElement('div');
@@ -191,7 +195,6 @@ const BT = (() => {
                 pillsEl.appendChild(btn);
             }
         }
-
         if (activeFactors.size === 0) {
             container.innerHTML = '<div style="font-size:10.5px;color:#64748b;padding:8px 0;">Select factors above to see portfolio options</div>';
         }
@@ -270,6 +273,7 @@ const BT = (() => {
         return { mode: 'bps', cost: val / 10000 };
     }
 
+    // Robust turnover: counts specific stocks entering and exiting
     function calcTurnover(prevStocks, currStocks) {
         if (!prevStocks || prevStocks.size === 0) return { entered: 0, exited: 0, ratio: 0 };
         let entered = 0, exited = 0;
@@ -297,9 +301,14 @@ const BT = (() => {
         }
 
         portfolios.push({
-            id: nextId++, name: name.length > 50 ? name.substring(0, 47) + '…' : name,
+            id: nextId++,
+            name: name.length > 50 ? name.substring(0, 47) + '…' : name,
             colorIdx: portfolios.length,
-            config: { longFilters: JSON.parse(JSON.stringify(longFilters)), shortFilters: JSON.parse(JSON.stringify(shortFilters)), strategy: currentStrategy },
+            config: {
+                longFilters: JSON.parse(JSON.stringify(longFilters)),
+                shortFilters: JSON.parse(JSON.stringify(shortFilters)),
+                strategy: currentStrategy,
+            },
             results: null,
         });
         clearPills(); renderShelf(); hideError();
@@ -311,7 +320,10 @@ const BT = (() => {
         renderShelf();
         if (portfolios.some(p => p.results)) {
             refreshAll();
-            if (activeHoldingsId === id) { activeHoldingsId = portfolios.length > 0 ? portfolios[0].id : null; showHoldingsForCurrentMonth(); }
+            if (activeHoldingsId === id) {
+                activeHoldingsId = portfolios.length > 0 ? portfolios[0].id : null;
+                showHoldingsForCurrentMonth();
+            }
         } else resetResults();
     }
 
@@ -338,18 +350,34 @@ const BT = (() => {
         let result = rows;
         for (const [factor, labels] of Object.entries(filters)) {
             if (labels && labels.length && FACTORS[factor]) {
-                const col = FACTORS[factor].col, set = new Set(labels);
+                const col = FACTORS[factor].col;
+                const set = new Set(labels);
                 result = result.filter(r => set.has(r[col]));
             }
         }
         return result;
     }
-    function topNBySize(rows, n) {
-        return (!n || rows.length <= n) ? rows : rows.slice().sort((a,b) => b._size - a._size).slice(0, n);
+
+    // Deduplicate: keep only first row per Co_Code in a month
+    function dedup(rows) {
+        const seen = new Set();
+        return rows.filter(r => {
+            if (seen.has(r.Co_Code)) return false;
+            seen.add(r.Co_Code);
+            return true;
+        });
     }
+
+    function topNBySize(rows, n) {
+        return (!n || rows.length <= n) ? rows : rows.slice().sort((a, b) => b._size - a._size).slice(0, n);
+    }
+
+    // EW: simple average of net returns
     function calcEW(rows) {
         return rows.length === 0 ? 0 : rows.reduce((s, r) => s + r._ret, 0) / rows.length;
     }
+
+    // VW: market-cap weighted average (current month size)
     function calcVW(rows) {
         if (rows.length === 0) return 0;
         const total = rows.reduce((s, r) => s + r._size, 0);
@@ -360,6 +388,7 @@ const BT = (() => {
     function computeIR(portRets, benchRets) {
         if (!portRets || !benchRets || portRets.length === 0) return null;
         const n = Math.min(portRets.length, benchRets.length);
+        if (n === 0) return null;
         const active = [];
         for (let i = 0; i < n; i++) active.push(portRets[i] - benchRets[i]);
         const mean = active.reduce((s, v) => s + v, 0) / n;
@@ -370,8 +399,10 @@ const BT = (() => {
 
     function computeMetrics(rets) {
         const n = rets.length;
-        if (n === 0) return { growth_multiple:1, annualized_return:0, annualized_volatility:0,
-            sharpe_ratio:0, max_drawdown:0, pct_positive_months:0, n_months:0 };
+        if (n === 0) return {
+            growth_multiple: 1, annualized_return: 0, annualized_volatility: 0,
+            sharpe_ratio: 0, max_drawdown: 0, pct_positive_months: 0, n_months: 0,
+        };
         let cumProd = 1;
         rets.forEach(r => { cumProd *= (1 + r); });
         const nYears = n / 12;
@@ -381,17 +412,31 @@ const BT = (() => {
         const annVol = Math.sqrt(variance * 12);
         const sharpe = annVol > 0 ? annRet / annVol : 0;
         let cum = 1, peak = 1, maxDD = 0;
-        rets.forEach(r => { cum *= (1+r); if (cum > peak) peak = cum; const dd = (cum-peak)/peak; if (dd < maxDD) maxDD = dd; });
+        rets.forEach(r => {
+            cum *= (1 + r);
+            if (cum > peak) peak = cum;
+            const dd = (cum - peak) / peak;
+            if (dd < maxDD) maxDD = dd;
+        });
         return {
-            growth_multiple: +(cumProd).toFixed(2), annualized_return: +(annRet*100).toFixed(2),
-            annualized_volatility: +(annVol*100).toFixed(2), sharpe_ratio: +sharpe.toFixed(3),
-            max_drawdown: +(maxDD*100).toFixed(2), pct_positive_months: +((rets.filter(r=>r>0).length/n)*100).toFixed(1), n_months: n,
+            growth_multiple: +(cumProd).toFixed(2),
+            annualized_return: +(annRet * 100).toFixed(2),
+            annualized_volatility: +(annVol * 100).toFixed(2),
+            sharpe_ratio: +sharpe.toFixed(3),
+            max_drawdown: +(maxDD * 100).toFixed(2),
+            pct_positive_months: +((rets.filter(r => r > 0).length / n) * 100).toFixed(1),
+            n_months: n,
         };
     }
 
     function computeDrawdown(rets) {
-        const dd = []; let cum = 1, peak = 1;
-        rets.forEach(r => { cum *= (1+r); if (cum > peak) peak = cum; dd.push(+((cum-peak)/peak*100).toFixed(2)); });
+        const dd = [];
+        let cum = 1, peak = 1;
+        rets.forEach(r => {
+            cum *= (1 + r);
+            if (cum > peak) peak = cum;
+            dd.push(+((cum - peak) / peak * 100).toFixed(2));
+        });
         return dd;
     }
 
@@ -409,9 +454,12 @@ const BT = (() => {
             const month = months[mi];
             let mdf = monthGroups[month] || [];
             if (topN) mdf = topNBySize(mdf, topN);
-            const longDF = applyFilters(mdf, longFilters);
-            const shortDF = strategy === 'long_short' ? applyFilters(mdf, shortFilters) : [];
 
+            // Apply filters and deduplicate
+            const longDF = dedup(applyFilters(mdf, longFilters));
+            const shortDF = strategy === 'long_short' ? dedup(applyFilters(mdf, shortFilters)) : [];
+
+            // Turnover: track specific stocks entering/exiting
             const currLongCodes = new Set(longDF.map(r => r.Co_Code));
             const currShortCodes = new Set(shortDF.map(r => r.Co_Code));
             let monthTurnover = { ratio: 0 };
@@ -430,53 +478,87 @@ const BT = (() => {
             prevLongCodes = currLongCodes;
             prevShortCodes = currShortCodes;
 
+            // Returns
             const ewL = calcEW(longDF), vwL = calcVW(longDF);
             const ewS = shortDF.length > 0 ? calcEW(shortDF) : 0;
             const vwS = shortDF.length > 0 ? calcVW(shortDF) : 0;
 
             let ewNet, vwNet;
-            if (strategy === 'long_short') { ewNet = (ewL - ewS) / 2; vwNet = (vwL - vwS) / 2; }
-            else { ewNet = ewL; vwNet = vwL; }
-
-            if (tc.mode !== 'none' && mi > 0) {
-                const drag = monthTurnover.ratio * tc.cost;
-                ewNet -= drag; vwNet -= drag;
+            if (strategy === 'long_short') {
+                ewNet = (ewL - ewS) / 2;
+                vwNet = (vwL - vwS) / 2;
+            } else {
+                ewNet = ewL;
+                vwNet = vwL;
             }
 
-            ewRets.push(ewNet); vwRets.push(vwNet);
-            ewPort.push(ewPort[ewPort.length-1] * (1+ewNet));
-            vwPort.push(vwPort[vwPort.length-1] * (1+vwNet));
+            // Transaction cost: drag = turnover ratio × cost per trade
+            if (tc.mode !== 'none' && mi > 0) {
+                const drag = monthTurnover.ratio * tc.cost;
+                ewNet -= drag;
+                vwNet -= drag;
+            }
 
-            const toFirms = rows => rows.map(r => ({ name: r.Co_Name || r.co_name || '—', ret: +(r._ret*100).toFixed(2), size: r._size })).sort((a,b) => b.ret - a.ret);
+            ewRets.push(ewNet);
+            vwRets.push(vwNet);
+            ewPort.push(ewPort[ewPort.length - 1] * (1 + ewNet));
+            vwPort.push(vwPort[vwPort.length - 1] * (1 + vwNet));
+
+            // Holdings for firms panel
+            const toFirms = rows => rows
+                .map(r => ({
+                    name: r.Co_Name || r.co_name || r.Co_Code || '—',
+                    ret: +(r._ret * 100).toFixed(2),
+                    size: r._size,
+                }))
+                .sort((a, b) => b.ret - a.ret);
+
             holdings[month] = {
-                long_firms: toFirms(longDF), short_firms: toFirms(shortDF),
-                long_total: longDF.length, short_total: shortDF.length,
-                ew_ret: +(ewNet*100).toFixed(3), vw_ret: +(vwNet*100).toFixed(3),
+                long_firms: toFirms(longDF),
+                short_firms: toFirms(shortDF),
+                long_total: longDF.length,
+                short_total: shortDF.length,
+                ew_ret: +(ewNet * 100).toFixed(3),
+                vw_ret: +(vwNet * 100).toFixed(3),
             };
         }
 
         return {
-            months, ew_portfolio: ewPort.slice(1).map(v => +v.toFixed(4)),
+            months,
+            ew_portfolio: ewPort.slice(1).map(v => +v.toFixed(4)),
             vw_portfolio: vwPort.slice(1).map(v => +v.toFixed(4)),
-            ew_rets: ewRets, vw_rets: vwRets,
-            ew_metrics: computeMetrics(ewRets), vw_metrics: computeMetrics(vwRets),
-            ew_drawdown: computeDrawdown(ewRets), vw_drawdown: computeDrawdown(vwRets),
-            holdings, isLongShort: strategy === 'long_short',
+            ew_rets: ewRets,
+            vw_rets: vwRets,
+            ew_metrics: computeMetrics(ewRets),
+            vw_metrics: computeMetrics(vwRets),
+            ew_drawdown: computeDrawdown(ewRets),
+            vw_drawdown: computeDrawdown(vwRets),
+            holdings,
+            isLongShort: strategy === 'long_short',
             avgTurnover: toCount > 0 ? +(totalTO / toCount * 100).toFixed(1) : 0,
         };
     }
 
-    // ── Benchmarks from CSV ───────────────────────────────────────────────────
+    // ── Benchmarks from CSV columns ───────────────────────────────────────────
     function computeIndexBenchmark(months, col) {
         const rets = [], port = [100];
         for (const month of months) {
             const rows = monthGroups[month] || [];
-            let r = 0;
-            for (const row of rows) { const v = row[`_${col}`]; if (v !== null && !isNaN(v)) { r = v; break; } }
+            let r = null;
+            for (const row of rows) {
+                const v = row[`_${col}`];
+                if (v !== null && v !== undefined && !isNaN(v)) { r = v; break; }
+            }
+            if (r === null) r = 0;
             rets.push(r);
-            port.push(port[port.length-1] * (1+r));
+            port.push(port[port.length - 1] * (1 + r));
         }
-        return { rets, portfolio: port.slice(1).map(v => +v.toFixed(4)), metrics: computeMetrics(rets), drawdown: computeDrawdown(rets) };
+        return {
+            rets,
+            portfolio: port.slice(1).map(v => +v.toFixed(4)),
+            metrics: computeMetrics(rets),
+            drawdown: computeDrawdown(rets),
+        };
     }
 
     function computeAllBenchmarks(months) {
@@ -498,11 +580,15 @@ const BT = (() => {
     // ── Run ───────────────────────────────────────────────────────────────────
     function runAll() {
         hideError();
+        // Auto-add current selection if no portfolios saved
         if (portfolios.length === 0) {
             const lf = getFilters('long');
             if (Object.values(lf).some(v => v && v.length)) addPortfolio();
         }
-        if (portfolios.length === 0) { showError('Select at least one factor label, then press Run.'); return; }
+        if (portfolios.length === 0) {
+            showError('Select at least one factor label, then press Run.');
+            return;
+        }
 
         const start = document.getElementById('bt-start-month').value;
         const end = document.getElementById('bt-end-month').value;
@@ -510,7 +596,8 @@ const BT = (() => {
         if (months.length === 0) { showError('No data in selected range.'); return; }
 
         const btn = document.getElementById('bt-run-btn');
-        btn.disabled = true; btn.textContent = 'Running…';
+        btn.disabled = true;
+        btn.textContent = 'Running…';
         document.getElementById('bt-chart-loading').style.display = 'flex';
 
         setTimeout(() => {
@@ -518,14 +605,28 @@ const BT = (() => {
                 runMonths = months;
                 portfolios.forEach(p => { p.results = computePortfolio(p.config, months); });
                 computeAllBenchmarks(months);
+
                 activeHoldingsId = portfolios[0].id;
                 heatmapPortfolioId = portfolios[0].id;
                 currentMonthIdx = months.length - 1;
-                refreshAll(); setupMonthSlider(); showHoldingsForCurrentMonth();
+
+                refreshAll();
+                setupMonthSlider();
+                showHoldingsForCurrentMonth();
+
                 document.getElementById('bt-dd-card').style.display = 'block';
                 document.getElementById('bt-heatmap-card').style.display = 'block';
-            } catch (e) { showError('Error: ' + e.message); console.error(e); }
-            finally {
+
+                // Debug: log first portfolio results
+                const p0 = portfolios[0].results;
+                console.log('Portfolio 0:', portfolios[0].name);
+                console.log('  First month stocks:', p0.holdings[months[0]]?.long_total);
+                console.log('  First month EW ret:', p0.holdings[months[0]]?.ew_ret);
+                console.log('  EW metrics:', p0.ew_metrics);
+            } catch (e) {
+                showError('Error: ' + e.message);
+                console.error(e);
+            } finally {
                 btn.disabled = false;
                 btn.textContent = portfolios.length > 1 ? 'Run Comparison' : 'Run Analysis';
                 document.getElementById('bt-chart-loading').style.display = 'none';
@@ -536,91 +637,138 @@ const BT = (() => {
     // ── Charts ────────────────────────────────────────────────────────────────
     function initChart() {
         chartInst = new Chart(document.getElementById('bt-perf-chart').getContext('2d'), {
-            type: 'line', data: { labels: [], datasets: [] },
+            type: 'line',
+            data: { labels: [], datasets: [] },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                animation: { duration: 400 }, interaction: { mode: 'index', intersect: false },
+                animation: { duration: 400 },
+                interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: { display: true, position: 'top', align: 'end', labels: { color: '#6b7280', font: { size: 11 }, boxWidth: 14, padding: 10 } },
-                    tooltip: { backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f8fafc', padding: 12, borderColor: '#334155', borderWidth: 1,
-                        callbacks: { label: item => `${item.dataset.label}: ₹${item.parsed.y.toFixed(2)}` } },
+                    legend: { display: true, position: 'top', align: 'end',
+                        labels: { color: '#6b7280', font: { size: 11 }, boxWidth: 14, padding: 10 } },
+                    tooltip: {
+                        backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f8fafc',
+                        padding: 12, borderColor: '#334155', borderWidth: 1,
+                        callbacks: { label: item => `${item.dataset.label}: ₹${item.parsed.y.toFixed(2)}` },
+                    },
                 },
                 scales: {
-                    x: { grid: { display: false }, border: { display: false }, ticks: { maxTicksLimit: 12, color: '#94a3b8', font: { size: 11 }, maxRotation: 0 } },
+                    x: { grid: { display: false }, border: { display: false },
+                        ticks: { maxTicksLimit: 12, color: '#94a3b8', font: { size: 11 }, maxRotation: 0 } },
                     y: { type: 'linear', grid: { color: '#f1f5f9' }, border: { display: false },
-                        ticks: { color: '#94a3b8', font: { size: 11 }, callback: v => `₹${v.toLocaleString('en-IN',{maximumFractionDigits:0})}` } },
+                        ticks: { color: '#94a3b8', font: { size: 11 },
+                            callback: v => `₹${v.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` } },
                 },
             },
         });
+
+        // Hover syncs month slider
         document.getElementById('bt-perf-chart').addEventListener('mousemove', evt => {
             if (!chartInst || runMonths.length === 0) return;
             const pts = chartInst.getElementsAtEventForMode(evt, 'index', { intersect: false }, true);
             if (pts.length > 0) {
                 const mIdx = pts[0].index - 1;
                 if (mIdx >= 0 && mIdx < runMonths.length) {
-                    currentMonthIdx = mIdx; updateMonthDisplay(); showHoldingsForCurrentMonth();
+                    currentMonthIdx = mIdx;
+                    updateMonthDisplay();
+                    showHoldingsForCurrentMonth();
                     document.getElementById('bt-month-slider').value = mIdx;
                 }
             }
         });
 
+        // Drawdown chart
         ddChartInst = new Chart(document.getElementById('bt-dd-chart').getContext('2d'), {
-            type: 'line', data: { labels: [], datasets: [] },
+            type: 'line',
+            data: { labels: [], datasets: [] },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                animation: { duration: 300 }, interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { display: false },
-                    tooltip: { backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f8fafc', padding: 10, borderColor: '#334155', borderWidth: 1,
-                        callbacks: { label: item => `${item.dataset.label}: ${item.parsed.y.toFixed(2)}%` } } },
+                animation: { duration: 300 },
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b', titleColor: '#94a3b8', bodyColor: '#f8fafc',
+                        padding: 10, borderColor: '#334155', borderWidth: 1,
+                        callbacks: { label: item => `${item.dataset.label}: ${item.parsed.y.toFixed(2)}%` },
+                    },
+                },
                 scales: {
-                    x: { grid: { display: false }, border: { display: false }, ticks: { maxTicksLimit: 10, color: '#94a3b8', font: { size: 10 }, maxRotation: 0 } },
-                    y: { grid: { color: '#f1f5f9' }, border: { display: false }, ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => `${v}%` } },
+                    x: { grid: { display: false }, border: { display: false },
+                        ticks: { maxTicksLimit: 10, color: '#94a3b8', font: { size: 10 }, maxRotation: 0 } },
+                    y: { grid: { color: '#f1f5f9' }, border: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 10 }, callback: v => `${v}%` } },
                 },
             },
         });
     }
 
     function makeDataset(label, data, color, dashed) {
-        return { label, data, borderColor: color.line, backgroundColor: color.bg, borderWidth: 2,
-            borderDash: dashed ? [6,3] : [], pointRadius: 0, pointHoverRadius: 0, fill: false, tension: 0.2 };
+        return {
+            label, data, borderColor: color.line, backgroundColor: color.bg, borderWidth: 2,
+            borderDash: dashed ? [6, 3] : [], pointRadius: 0, pointHoverRadius: 0,
+            fill: false, tension: 0.2,
+        };
     }
 
     function updateChart() {
-        const wt = currentWeight, datasets = [];
+        const wt = currentWeight;
+        const datasets = [];
         portfolios.forEach(p => {
             if (!p.results) return;
             const c = COLORS[p.colorIdx] || COLORS[0];
-            datasets.push(makeDataset(p.name, [100, ...(wt === 'ew' ? p.results.ew_portfolio : p.results.vw_portfolio)], c, false));
+            const data = wt === 'ew' ? p.results.ew_portfolio : p.results.vw_portfolio;
+            datasets.push(makeDataset(p.name, [100, ...data], c, false));
         });
         if (showBenchmark) {
             const bench = benchmarkSeries[activeBenchmarkId];
-            if (bench) datasets.push(makeDataset(BENCHMARK_OPTIONS[activeBenchmarkId]?.label || activeBenchmarkId, [100, ...bench.portfolio], BENCH_COLOR, true));
+            if (bench) {
+                const label = BENCHMARK_OPTIONS[activeBenchmarkId]?.label || activeBenchmarkId;
+                datasets.push(makeDataset(label, [100, ...bench.portfolio], BENCH_COLOR, true));
+            }
         }
         chartInst.data.labels = ['Initial', ...runMonths];
         chartInst.data.datasets = datasets;
         chartInst.options.scales.y.type = document.getElementById('bt-log-scale').checked ? 'logarithmic' : 'linear';
         chartInst.update('active');
+
         document.getElementById('bt-chart-title').textContent = 'Portfolio Performance';
         document.getElementById('bt-chart-sub').textContent = runMonths.length > 0
-            ? `${runMonths[0]} → ${runMonths[runMonths.length-1]}  ·  ${runMonths.length} months  ·  ${wt.toUpperCase()}` : 'Select factors and press Run';
+            ? `${runMonths[0]} → ${runMonths[runMonths.length - 1]}  ·  ${runMonths.length} months  ·  ${wt.toUpperCase()}`
+            : 'Select factors and press Run';
     }
 
-    function toggleLog() { if (!chartInst) return; chartInst.options.scales.y.type = document.getElementById('bt-log-scale').checked ? 'logarithmic' : 'linear'; chartInst.update(); }
+    function toggleLog() {
+        if (!chartInst) return;
+        chartInst.options.scales.y.type = document.getElementById('bt-log-scale').checked ? 'logarithmic' : 'linear';
+        chartInst.update();
+    }
 
     function updateDrawdown() {
-        const wt = currentWeight, datasets = [];
+        const wt = currentWeight;
+        const datasets = [];
         portfolios.forEach(p => {
             if (!p.results) return;
             const c = COLORS[p.colorIdx] || COLORS[0];
-            datasets.push({ label: p.name, data: wt === 'ew' ? p.results.ew_drawdown : p.results.vw_drawdown,
-                borderColor: c.line, backgroundColor: c.bg, borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 0, fill: true, tension: 0.2 });
+            const dd = wt === 'ew' ? p.results.ew_drawdown : p.results.vw_drawdown;
+            datasets.push({
+                label: p.name, data: dd, borderColor: c.line, backgroundColor: c.bg,
+                borderWidth: 1.5, pointRadius: 0, pointHoverRadius: 0, fill: true, tension: 0.2,
+            });
         });
         if (showBenchmark) {
             const bench = benchmarkSeries[activeBenchmarkId];
-            if (bench) datasets.push({ label: BENCHMARK_OPTIONS[activeBenchmarkId]?.label || '', data: bench.drawdown,
-                borderColor: BENCH_COLOR.line, backgroundColor: BENCH_COLOR.bg, borderWidth: 1.5, borderDash: [6,3], pointRadius: 0, pointHoverRadius: 0, fill: true, tension: 0.2 });
+            if (bench) {
+                const label = BENCHMARK_OPTIONS[activeBenchmarkId]?.label || '';
+                datasets.push({
+                    label, data: bench.drawdown, borderColor: BENCH_COLOR.line, backgroundColor: BENCH_COLOR.bg,
+                    borderWidth: 1.5, borderDash: [6, 3], pointRadius: 0, pointHoverRadius: 0, fill: true, tension: 0.2,
+                });
+            }
         }
-        ddChartInst.data.labels = runMonths; ddChartInst.data.datasets = datasets; ddChartInst.update('active');
+        ddChartInst.data.labels = runMonths;
+        ddChartInst.data.datasets = datasets;
+        ddChartInst.update('active');
     }
 
     // ── Comparison table ──────────────────────────────────────────────────────
@@ -629,7 +777,8 @@ const BT = (() => {
         const body = document.getElementById('bt-compare-body');
         const wt = currentWeight;
         if (!portfolios.some(p => p.results)) { card.style.display = 'none'; return; }
-        card.style.display = 'block'; body.innerHTML = '';
+        card.style.display = 'block';
+        body.innerHTML = '';
 
         const irHeader = document.getElementById('bt-ir-col-header');
         if (irHeader) irHeader.textContent = `IR (vs ${BENCHMARK_OPTIONS[activeBenchmarkId]?.label || ''})`;
@@ -655,11 +804,14 @@ const BT = (() => {
         portfolios.forEach(p => {
             if (!p.results) return;
             const m = wt === 'ew' ? p.results.ew_metrics : p.results.vw_metrics;
-            addRow(p.name, (COLORS[p.colorIdx]||COLORS[0]).line, m, p.results.avgTurnover + '%', m.ir);
+            addRow(p.name, (COLORS[p.colorIdx] || COLORS[0]).line, m, p.results.avgTurnover + '%', m.ir);
         });
         if (showBenchmark) {
             const bench = benchmarkSeries[activeBenchmarkId];
-            if (bench) addRow(BENCHMARK_OPTIONS[activeBenchmarkId]?.label || '', BENCH_COLOR.line, bench.metrics, '—', null);
+            if (bench) {
+                const label = BENCHMARK_OPTIONS[activeBenchmarkId]?.label || '';
+                addRow(label, BENCH_COLOR.line, bench.metrics, '—', null);
+            }
         }
     }
 
@@ -671,105 +823,187 @@ const BT = (() => {
         selectEl.innerHTML = '';
         if (portfolios.length > 1) {
             const sel = document.createElement('select');
-            portfolios.forEach(p => { const opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.name; if (p.id === heatmapPortfolioId) opt.selected = true; sel.appendChild(opt); });
+            portfolios.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = p.name;
+                if (p.id === heatmapPortfolioId) opt.selected = true;
+                sel.appendChild(opt);
+            });
             sel.onchange = () => { heatmapPortfolioId = parseInt(sel.value); updateHeatmapGrid(); };
             selectEl.appendChild(sel);
         }
         const p = portfolios.find(x => x.id === heatmapPortfolioId);
         if (!p || !p.results) { gridEl.innerHTML = ''; return; }
+
         const rets = currentWeight === 'ew' ? p.results.ew_rets : p.results.vw_rets;
         const months = p.results.months;
         const yearMap = {};
-        months.forEach((m, i) => { const [y, mo] = m.split('-'); if (!yearMap[y]) yearMap[y] = {}; yearMap[y][parseInt(mo)] = rets[i]; });
+        months.forEach((m, i) => {
+            const [y, mo] = m.split('-');
+            if (!yearMap[y]) yearMap[y] = {};
+            yearMap[y][parseInt(mo)] = rets[i];
+        });
 
         let html = '<table class="bt-heatmap-table"><thead><tr><th></th>';
         MONTH_NAMES.forEach(m => { html += `<th>${m}</th>`; });
         html += '<th>Year</th></tr></thead><tbody>';
+
         Object.keys(yearMap).sort().forEach(y => {
             html += `<tr><td class="bt-hm-year">${y}</td>`;
             for (let mo = 1; mo <= 12; mo++) {
                 const r = yearMap[y][mo];
-                if (r !== undefined) { const pct = +(r*100).toFixed(1); html += `<td style="background:${heatColor(pct)};color:${Math.abs(pct)>5?'#fff':'#1f2937'}">${pct>0?'+':''}${pct}</td>`; }
-                else html += '<td style="background:#f9fafb;color:#d1d5db;">—</td>';
+                if (r !== undefined) {
+                    const pct = +(r * 100).toFixed(1);
+                    html += `<td style="background:${heatColor(pct)};color:${Math.abs(pct) > 5 ? '#fff' : '#1f2937'}">${pct > 0 ? '+' : ''}${pct}</td>`;
+                } else {
+                    html += '<td style="background:#f9fafb;color:#d1d5db;">—</td>';
+                }
             }
-            let yCum = 1; for (let mo = 1; mo <= 12; mo++) { if (yearMap[y][mo] !== undefined) yCum *= (1+yearMap[y][mo]); }
-            const yRet = +((yCum-1)*100).toFixed(1);
-            html += `<td style="background:${heatColor(yRet)};color:${Math.abs(yRet)>5?'#fff':'#1f2937'};font-weight:700;">${yRet>0?'+':''}${yRet}</td></tr>`;
+            let yCum = 1;
+            for (let mo = 1; mo <= 12; mo++) {
+                if (yearMap[y][mo] !== undefined) yCum *= (1 + yearMap[y][mo]);
+            }
+            const yRet = +((yCum - 1) * 100).toFixed(1);
+            html += `<td style="background:${heatColor(yRet)};color:${Math.abs(yRet) > 5 ? '#fff' : '#1f2937'};font-weight:700;">${yRet > 0 ? '+' : ''}${yRet}</td></tr>`;
         });
-        html += '</tbody></table>'; gridEl.innerHTML = html;
+        html += '</tbody></table>';
+        gridEl.innerHTML = html;
     }
 
     function heatColor(pct) {
-        if (pct >= 10) return '#047857'; if (pct >= 5) return '#059669'; if (pct >= 2) return '#34d399';
-        if (pct >= 0) return '#a7f3d0'; if (pct >= -2) return '#fecaca'; if (pct >= -5) return '#f87171';
-        if (pct >= -10) return '#dc2626'; return '#991b1b';
+        if (pct >= 10) return '#047857';
+        if (pct >= 5) return '#059669';
+        if (pct >= 2) return '#34d399';
+        if (pct >= 0) return '#a7f3d0';
+        if (pct >= -2) return '#fecaca';
+        if (pct >= -5) return '#f87171';
+        if (pct >= -10) return '#dc2626';
+        return '#991b1b';
     }
 
-    // ── Month nav & holdings ──────────────────────────────────────────────────
+    // ── Month navigation & holdings ───────────────────────────────────────────
     function setupMonthSlider() {
         const slider = document.getElementById('bt-month-slider');
-        slider.min = 0; slider.max = runMonths.length-1; slider.value = currentMonthIdx;
+        slider.min = 0;
+        slider.max = runMonths.length - 1;
+        slider.value = currentMonthIdx;
         updateMonthDisplay();
         document.getElementById('bt-holdings-empty').style.display = 'none';
         document.getElementById('bt-holdings-content').style.display = 'block';
         renderHoldingsPortfolioTabs();
     }
+
     function updateMonthDisplay() {
         document.getElementById('bt-month-display').textContent = runMonths[currentMonthIdx] || '—';
         document.getElementById('bt-month-prev').disabled = currentMonthIdx <= 0;
         document.getElementById('bt-month-next').disabled = currentMonthIdx >= runMonths.length - 1;
     }
-    function navMonth(d) { const n = currentMonthIdx+d; if (n<0||n>=runMonths.length) return; currentMonthIdx = n; document.getElementById('bt-month-slider').value = n; updateMonthDisplay(); showHoldingsForCurrentMonth(); }
-    function sliderMonth(v) { currentMonthIdx = parseInt(v); updateMonthDisplay(); showHoldingsForCurrentMonth(); }
+
+    function navMonth(d) {
+        const n = currentMonthIdx + d;
+        if (n < 0 || n >= runMonths.length) return;
+        currentMonthIdx = n;
+        document.getElementById('bt-month-slider').value = n;
+        updateMonthDisplay();
+        showHoldingsForCurrentMonth();
+    }
+
+    function sliderMonth(v) {
+        currentMonthIdx = parseInt(v);
+        updateMonthDisplay();
+        showHoldingsForCurrentMonth();
+    }
 
     function renderHoldingsPortfolioTabs() {
-        const c = document.getElementById('bt-holdings-portfolio-tabs'); c.innerHTML = '';
+        const c = document.getElementById('bt-holdings-portfolio-tabs');
+        c.innerHTML = '';
         portfolios.forEach(p => {
             const col = COLORS[p.colorIdx] || COLORS[0];
-            const btn = document.createElement('button'); btn.className = 'bt-month-nav-btn';
+            const btn = document.createElement('button');
+            btn.className = 'bt-month-nav-btn';
             btn.style.borderColor = activeHoldingsId === p.id ? col.line : '';
             btn.style.color = activeHoldingsId === p.id ? col.line : '';
             btn.style.fontWeight = activeHoldingsId === p.id ? '700' : '500';
-            btn.textContent = p.name.length > 25 ? p.name.substring(0,22)+'…' : p.name;
-            btn.onclick = () => { activeHoldingsId = p.id; renderHoldingsPortfolioTabs(); showHoldingsForCurrentMonth(); };
+            btn.textContent = p.name.length > 25 ? p.name.substring(0, 22) + '…' : p.name;
+            btn.onclick = () => {
+                activeHoldingsId = p.id;
+                renderHoldingsPortfolioTabs();
+                showHoldingsForCurrentMonth();
+            };
             c.appendChild(btn);
         });
     }
 
     function showHoldingsForCurrentMonth() {
-        const month = runMonths[currentMonthIdx]; if (!month) return;
-        const p = portfolios.find(x => x.id === activeHoldingsId); if (!p || !p.results) return;
-        const h = p.results.holdings[month]; if (!h) return;
-        const wt = currentWeight, ret = wt === 'ew' ? h.ew_ret : h.vw_ret;
-        const retSign = ret >= 0 ? '+' : '', retCls = ret >= 0 ? 'bt-ret-pos' : 'bt-ret-neg';
-        let html = `<div class="bt-holdings-header"><div class="bt-holdings-rets">
-            <span class="bt-ret-tag" style="background:${COLORS[p.colorIdx].line}22;color:${COLORS[p.colorIdx].line};">${wt.toUpperCase()}</span>
-            <span class="bt-ret-badge ${retCls}">${retSign}${ret.toFixed(2)}%</span>
-            <span style="font-size:11px;color:var(--text-secondary);">· ${h.long_total} stocks</span></div></div><div class="bt-holdings-cols">`;
+        const month = runMonths[currentMonthIdx];
+        if (!month) return;
+        const p = portfolios.find(x => x.id === activeHoldingsId);
+        if (!p || !p.results) return;
+        const h = p.results.holdings[month];
+        if (!h) return;
+
+        const wt = currentWeight;
+        const ret = wt === 'ew' ? h.ew_ret : h.vw_ret;
+        const retSign = ret >= 0 ? '+' : '';
+        const retCls = ret >= 0 ? 'bt-ret-pos' : 'bt-ret-neg';
+
+        let html = `
+            <div class="bt-holdings-header">
+                <div class="bt-holdings-rets">
+                    <span class="bt-ret-tag" style="background:${COLORS[p.colorIdx].line}22;color:${COLORS[p.colorIdx].line};">${wt.toUpperCase()}</span>
+                    <span class="bt-ret-badge ${retCls}">${retSign}${ret.toFixed(2)}%</span>
+                    <span style="font-size:11px;color:var(--text-secondary);">· ${h.long_total} stocks</span>
+                </div>
+            </div>
+            <div class="bt-holdings-cols">`;
+
         html += buildFirmsCol('LONG', h.long_total, h.long_firms, 'hl', 'l');
-        if (p.results.isLongShort) html += buildFirmsCol('SHORT', h.short_total, h.short_firms, 'hs', 's');
-        html += '</div>'; document.getElementById('bt-holdings-inner').innerHTML = html;
+        if (p.results.isLongShort) {
+            html += buildFirmsCol('SHORT', h.short_total, h.short_firms, 'hs', 's');
+        }
+        html += '</div>';
+        document.getElementById('bt-holdings-inner').innerHTML = html;
     }
 
     function buildFirmsCol(side, total, firms, headCls, tagCls) {
         let html = `<div class="bt-hcol"><h4 class="${headCls}">${side} · ${total} stocks</h4><div class="bt-firm-scroll">`;
-        if (firms.length > 0) { firms.forEach(f => { const s = f.ret>=0?'+':'', c = f.ret>=0?'bt-firm-ret-pos':'bt-firm-ret-neg';
-            html += `<div class="bt-firm-row"><span class="bt-stag ${tagCls}">${f.name}</span><span class="bt-firm-ret ${c}">${s}${f.ret.toFixed(1)}%</span></div>`; });
-        } else html += '<span class="bt-none-nifty">No stocks match.</span>';
-        html += '</div></div>'; return html;
+        if (firms.length > 0) {
+            firms.forEach(f => {
+                const s = f.ret >= 0 ? '+' : '';
+                const c = f.ret >= 0 ? 'bt-firm-ret-pos' : 'bt-firm-ret-neg';
+                html += `<div class="bt-firm-row"><span class="bt-stag ${tagCls}">${f.name}</span><span class="bt-firm-ret ${c}">${s}${f.ret.toFixed(1)}%</span></div>`;
+            });
+        } else {
+            html += '<span class="bt-none-nifty">No stocks match.</span>';
+        }
+        html += '</div></div>';
+        return html;
     }
 
-    function showError(msg) { document.getElementById('bt-error-msg').textContent = msg; document.getElementById('bt-error-msg').style.display = 'block'; }
-    function hideError() { document.getElementById('bt-error-msg').style.display = 'none'; }
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function showError(msg) {
+        document.getElementById('bt-error-msg').textContent = msg;
+        document.getElementById('bt-error-msg').style.display = 'block';
+    }
+    function hideError() {
+        document.getElementById('bt-error-msg').style.display = 'none';
+    }
     function resetResults() {
         if (chartInst) { chartInst.data.labels = []; chartInst.data.datasets = []; chartInst.update(); }
         if (ddChartInst) { ddChartInst.data.labels = []; ddChartInst.data.datasets = []; ddChartInst.update(); }
-        ['bt-compare-card','bt-dd-card','bt-heatmap-card'].forEach(id => document.getElementById(id).style.display = 'none');
+        ['bt-compare-card', 'bt-dd-card', 'bt-heatmap-card'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
         document.getElementById('bt-holdings-empty').style.display = 'block';
         document.getElementById('bt-holdings-content').style.display = 'none';
     }
 
-    function init() { initChart(); loadData(); renderShelf(); }
+    function init() {
+        initChart();
+        loadData();
+        renderShelf();
+    }
 
     return {
         init, runAll, setStrategy, setToggle, toggleLog, setWeight,
