@@ -62,12 +62,16 @@ const publicationsData = [
 function setLastUpdated() {
     const date = new Date();
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    document.getElementById('lastUpdated').textContent = date.toLocaleDateString('en-US', options);
+    const target = document.getElementById('lastUpdated');
+    if (target) {
+        target.textContent = date.toLocaleDateString('en-US', options);
+    }
 }
 
 // Populate publications table
 function populateTable(tableId, data) {
     const tbody = document.getElementById(tableId);
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     data.forEach(pub => {
@@ -94,7 +98,12 @@ function filterPublications(type) {
     if (type === 'all') {
         return publicationsData;
     }
-    return publicationsData.filter(pub => pub.type === type);
+    const normalizedType = {
+        conferences: 'conference',
+        journals: 'journal',
+        preprints: 'preprint'
+    }[type] || type;
+    return publicationsData.filter(pub => pub.type === normalizedType);
 }
 
 // Universal tab functionality for all sections
@@ -156,7 +165,30 @@ document.addEventListener('DOMContentLoaded', () => {
     populateTable('publicationsTable', publicationsData);
     initTabs();
     initSmoothScroll();
+    initScrollReveal();
 });
+
+function initScrollReveal() {
+    const revealItems = document.querySelectorAll('.section, .visual-shell');
+    if (!('IntersectionObserver' in window)) {
+        revealItems.forEach(item => item.classList.add('is-visible'));
+        return;
+    }
+
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    revealItems.forEach(item => {
+        item.classList.add('reveal-item');
+        observer.observe(item);
+    });
+}
 
 function downloadFile(filename) {
     const link = document.createElement('a');
@@ -234,4 +266,3 @@ function copyBibtex() {
         alert('Failed to copy BibTeX. Please copy manually.');
     });
 }
-

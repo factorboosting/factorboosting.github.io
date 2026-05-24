@@ -15,7 +15,7 @@
         <div class="nav-container">
             <div class="logo">
                 <img src="Data/Ashoka-opt-logo.webp" alt="Ashoka University" style="height: 36px; vertical-align: middle; margin-right: 10px;">
-                Safexpress Center for Data Learning and Decision Sciences
+                <span>SCDLDS Factor Library</span>
             </div>
             <button class="nav-toggle" aria-label="Toggle menu">
                     <span></span><span></span><span></span>
@@ -26,34 +26,105 @@
                 <li><a href="#downloads">Downloads</a></li>
                 <li><a href="working_paper.html">Manuscripts</a></li>
                 <li><a href="team.html">Team</a></li>
+                <li><a href="backtester.html" class="nav-cta">Launch Studio</a></li>
             </ul>
         </div>
     </nav>
 
     <header class="hero">
         <div class="hero-content">
-            <h1>Financial Factor Data Library</h1>
-            <br>
-            <p>This website is dedicated to the <strong>Fama-French Factors for the Indian equity markets</strong>. The explanatory power of Fama-French factors in capturing stock returns variation is well established in the literature. Several data repositories exist globally, and a handful cover Indian markets. We drew inspiration from these existing resources. What we set out to do differently is to build a resource that is clean, investible, reproducible, and India-aware. We have documented our construction process with full transparency. This will allow practitioners/researchers to replicate, interrogate, and build on our work with confidence. Our coverage includes the Fama-French factors: <strong>Value, Size, Investment, and Operating Profitability along with Momentum</strong>, for firms listed on both the NSE and BSE, starting April 2002 and updated monthly. Our data source is the CMIE Prowess. </p>
-            <br>
-            <p><strong>Key contributions of our work:</strong></p>
-            <ul style="margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 1rem;">
-                <li style="margin-bottom: 0.5rem;">Beyond aggregate factor returns, we also provide monthly stock-level factor labels. This allows users to construct their own portfolios from the ground up, audit factor exposures in existing holdings, and study cross-sectional variation across the market.</li>
-                <li style="margin-bottom: 0.5rem;">The library includes an <a href="backtester.html" class="link">interactive analysis tool</a> that lets users visualise factor and portfolio returns, backtest custom strategies across different factor combinations, and compare multiple portfolios side by side with detailed performance metrics and stock level holdings.</li>
-                <li style="margin-bottom: 0.5rem;">We have applied rigorously defined filters and market-structure adjustments throughout. This makes sure that only tradable stocks are included and the time series is not distorted by outliers. Refer to our <a href="Data/Papers/SCDLDS__Code_Doc (1).pdf" class="link">methodology</a> for details.</li>
-                <li style="margin-bottom: 0.5rem;">Factors will be available across three universes: top 300, top 500 (coming soon), and the full tradeable universe — giving users the flexibility to calibrate exposure to their own liquidity and risk preferences. All datasets are available in the <a href="#downloads" class="link">Downloads</a> section.</li>
-                <li style="margin-bottom: 0.5rem;">Unlike the existing resources, every breakpoint used in portfolio construction is empirically grounded in the structure of the Indian market. Full documentation is available <a href="Data/Papers/SCDLDS__Code_Doc (1).pdf" class="link">here</a>.</li>
-            </ul>
-            <br>
-            <p>The Centre is actively exploring what comes next. We are working towards bringing together <strong> factor frameworks with the frontier of machine learning</strong>. Our current work involves integrating Fama-French factors with modern deep learning architectures for <strong> mutual fund holdings analysis and portfolio optimization</strong>. We are also investigating <strong>Transaction Cost</strong> modelling under real-world constraints. We will update the website with additional features in the near future.</p>
-            <br>
-            <span>Last updated: <span id="lastUpdated"></span></span>
+            <div class="hero-copy">
+                <span class="eyebrow">India-aware factor analytics</span>
+                <h1>Build, test, and audit portfolios with transparent Indian equity factors.</h1>
+                <p class="hero-lede">A cleaner way to explore Fama-French style factors for NSE and BSE firms: monthly factor returns, stock-level labels, investible universe filters, and an interactive portfolio analysis studio.</p>
+                <div class="hero-actions">
+                    <a class="primary-btn" href="backtester.html">Open Analysis Studio</a>
+                    <a class="secondary-btn" href="#documentation">Read Methodology</a>
+                </div>
+                <div class="hero-meta-grid" aria-label="Dataset highlights">
+                    <div><strong>Apr 2002+</strong><span>monthly coverage</span></div>
+                    <div><strong>5+MOM</strong><span>core factors</span></div>
+                    <div><strong>NSE + BSE</strong><span>Indian equities</span></div>
+                </div>
+                <span class="hero-updated">Last updated: <span id="lastUpdated"></span></span>
+            </div>
+            <div class="hero-visual" aria-label="Portfolio analytics dashboard preview">
+                <div class="visual-shell">
+                    <div class="visual-toolbar">
+                        <span></span><span></span><span></span>
+                        <strong>Portfolio Lens</strong>
+                    </div>
+                    <div class="visual-kpis">
+                        <div><span>Alpha</span><strong>+7.4%</strong></div>
+                        <div><span>Sharpe</span><strong>1.28</strong></div>
+                        <div><span>Drawdown</span><strong>-9.6%</strong></div>
+                    </div>
+                    <div class="visual-chart">
+                        <i style="height:42%"></i><i style="height:58%"></i><i style="height:35%"></i><i style="height:76%"></i><i style="height:64%"></i><i style="height:88%"></i><i style="height:72%"></i><i style="height:92%"></i>
+                    </div>
+                    <div class="visual-table">
+                        <div><span>SMB exposure</span><b>Small Neutral</b><em>Synced</em></div>
+                        <div><span>HML exposure</span><b>Big Value</b><em>Valid</em></div>
+                        <div><span>Momentum</span><b>Winners</b><em>Tracked</em></div>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
 
     <main class="container">
+        <section class="section intro-section">
+            <div class="section-kicker">What this site gives you</div>
+            <h2 class="section-title">From raw factor data to portfolio decisions</h2>
+            <div class="feature-grid">
+                <article class="feature-card">
+                    <span class="feature-icon">01</span>
+                    <h3>Factor Returns</h3>
+                    <p>Download monthly market, size, value, profitability, investment, and momentum factor returns built for Indian equities.</p>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-icon">02</span>
+                    <h3>Stock-Level Labels</h3>
+                    <p>Use monthly assignments to audit factor exposure, rebuild portfolios, and study cross-sectional behavior from the ground up.</p>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-icon">03</span>
+                    <h3>Interactive Analysis</h3>
+                    <p>Visualise factor combinations, compare multiple custom portfolios, and review performance metrics without leaving the browser.</p>
+                </article>
+            </div>
+        </section>
+
+        <section id="documentation" class="section documentation-section">
+            <div class="section-kicker">Documentation</div>
+            <h2 class="section-title">Methodology without the wall of text</h2>
+            <p class="section-lede">The full documentation remains available as a PDF, but the essentials are now grouped into expandable notes for faster reading.</p>
+            <div class="doc-grid">
+                <details class="doc-card" open>
+                    <summary>Dataset scope</summary>
+                    <p>The library covers firms listed on NSE and BSE, uses CMIE Prowess as the source, and starts from April 2002 with monthly updates.</p>
+                </details>
+                <details class="doc-card">
+                    <summary>Portfolio construction</summary>
+                    <p>Factors are formed from India-specific breakpoints and sorted portfolios across size, book-to-market, profitability, investment, and momentum dimensions.</p>
+                </details>
+                <details class="doc-card">
+                    <summary>Investible filters</summary>
+                    <p>The construction process applies filters and market-structure adjustments so the reported series better reflect tradable stocks and reduce outlier distortion.</p>
+                </details>
+                <details class="doc-card">
+                    <summary>Research use</summary>
+                    <p>Researchers and practitioners can download returns, inspect stock labels, cite the working paper, and reproduce or extend the factor construction.</p>
+                </details>
+            </div>
+            <div class="doc-actions">
+                <a class="secondary-btn" href="Data/Papers/SCDLDS__Code_Doc (1).pdf">Open Full Documentation</a>
+                <a class="secondary-btn" href="working_paper.html">View Manuscripts</a>
+            </div>
+        </section>
+
         <section id="factors" class="section">
+            <div class="section-kicker">Latest factor snapshot</div>
             <h2 class="section-title">Research Factors & Portfolios</h2>
             
             <div class="tabs">
@@ -671,6 +742,12 @@
                     toggle.classList.remove('open');
                     menu.classList.remove('open');
                 });
+            });
+            document.addEventListener('click', function(event) {
+                if (!toggle.contains(event.target) && !menu.contains(event.target)) {
+                    toggle.classList.remove('open');
+                    menu.classList.remove('open');
+                }
             });
         }
     })();
