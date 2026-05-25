@@ -31,7 +31,7 @@ const BT = (() => {
             'Investment':     { col: 'Inv_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
             'Momentum':       { col: 'Momentum_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
         },
-        'Extended Factors': {
+        'Other Factors': {
             'Asset Turnover':      { col: 'AT_Label',  labels: { 'H': 'High',  'N': 'Neutral', 'L': 'Low' } },
             'Sales Growth':        { col: 'SG_Label',  labels: { 'H': 'High',  'N': 'Neutral', 'L': 'Low' } },
             'Accruals':            { col: 'ACC_Label', labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
@@ -58,9 +58,9 @@ const BT = (() => {
     let activeHoldingsId = null, currentMonthIdx = 0, runMonths = [];
     let benchmarkSeries = {};
     let activeBenchmarkId = 'nifty50';
-    let showBenchmark = false;
+    let showBenchmark = true;
     let heatmapOpen = false, heatmapPortfolioId = null;
-    let activeFactors = new Set(['Size', 'Book-to-Market', 'Momentum']);
+    let activeFactors = new Set(['Momentum']);
     let dataQualityStats = { dropped: 0, capped: 0, total: 0 };
 
     // ── CSV parser ────────────────────────────────────────────────────────────
@@ -328,12 +328,27 @@ const BT = (() => {
         if (!Object.values(longFilters).some(v => v && v.length)) { showError('Select at least one factor label.'); return; }
         if (currentStrategy === 'long_short' && !Object.values(shortFilters).some(v => v && v.length)) { showError('Select at least one short-side label.'); return; }
 
+        const SHORT_NAMES = {
+            'Size': 'Sz', 'Book-to-Market': 'BM', 'Op. Profitability': 'OP',
+            'Investment': 'Inv', 'Momentum': 'Mom', 'Asset Turnover': 'AT',
+            'Sales Growth': 'SG', 'Accruals': 'Acc', 'Volatility': 'Vol',
+            'Short-Term Reversal': 'STR',
+        };
         const nameParts = [];
-        for (const [f, codes] of Object.entries(longFilters)) nameParts.push(codes.map(c => FACTORS[f]?.labels[c] || c).join('/'));
+        for (const [f, codes] of Object.entries(longFilters)) {
+            const prefix = SHORT_NAMES[f] || f;
+            const vals = codes.map(c => FACTORS[f]?.labels[c] || c).join('/');
+            nameParts.push(`${prefix}:${vals}`);
+        }
+        
         let name = nameParts.join(' · ');
         if (currentStrategy === 'long_short') {
             const sp = [];
-            for (const [f, codes] of Object.entries(shortFilters)) sp.push(codes.map(c => FACTORS[f]?.labels[c] || c).join('/'));
+            for (const [f, codes] of Object.entries(shortFilters)) {
+                const prefix = SHORT_NAMES[f] || f;
+                const vals = codes.map(c => FACTORS[f]?.labels[c] || c).join('/');
+                sp.push(`${prefix}:${vals}`);
+            }
             name += ' − ' + sp.join(' · ');
         }
 
