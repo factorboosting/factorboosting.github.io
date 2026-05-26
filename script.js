@@ -166,6 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initSmoothScroll();
     initScrollReveal();
+    initHeroPreview();
+    initPointerTilt();
 });
 
 function initScrollReveal() {
@@ -187,6 +189,51 @@ function initScrollReveal() {
     revealItems.forEach(item => {
         item.classList.add('reveal-item');
         observer.observe(item);
+    });
+}
+
+function initHeroPreview() {
+    const shell = document.querySelector('.visual-shell');
+    const controls = document.querySelectorAll('.visual-mode');
+    if (!shell || controls.length === 0) return;
+
+    controls.forEach(control => {
+        control.addEventListener('click', () => {
+            window.setVisualPreview(control.dataset.preview || 'all');
+        });
+    });
+}
+
+window.setVisualPreview = function setVisualPreview(mode) {
+    const shell = document.querySelector('.visual-shell');
+    const controls = document.querySelectorAll('.visual-mode');
+    if (!shell || controls.length === 0) return;
+
+    const nextMode = mode || 'all';
+    shell.dataset.focus = nextMode;
+    controls.forEach(control => {
+        control.classList.toggle('active', control.dataset.preview === nextMode);
+    });
+};
+
+function initPointerTilt() {
+    const shell = document.querySelector('.visual-shell');
+    if (!shell || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    shell.addEventListener('pointermove', event => {
+        if (window.innerWidth < 980) return;
+
+        const rect = shell.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+        shell.style.setProperty('--tilt-x', `${4 - y * 5}deg`);
+        shell.style.setProperty('--tilt-y', `${-6 + x * 7}deg`);
+    });
+
+    shell.addEventListener('pointerleave', () => {
+        shell.style.removeProperty('--tilt-x');
+        shell.style.removeProperty('--tilt-y');
     });
 }
 
