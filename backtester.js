@@ -96,7 +96,7 @@ const BT = (() => {
     async function loadData() {
         const notice = document.getElementById('bt-data-notice');
         try {
-            const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
+            const res = await fetch('Data/Factor_Data/final.csv');
             if (!res.ok) throw new Error(`CSV fetch failed (HTTP ${res.status}).`);
             const parsed = parseCSV(await res.text());
 
@@ -105,7 +105,8 @@ const BT = (() => {
             const retCol = 'monthly_ret' in sample ? 'monthly_ret'
                          : 'Monthly_Return' in sample ? 'Monthly_Return'
                          : null;
-            if (!retCol) throw new Error('Return column not found. Expected "monthly_ret" or "Monthly_Return".');
+            if (!retCol) throw new Error('The website is under maintainance. We will get back soon.');
+            // if (!retCol) throw new Error('Return column not found. Expected "monthly_ret" or "Monthly_Return".');
 
             dataQualityStats = { dropped: 0, capped: 0, total: parsed.length };
             rawData = [];
