@@ -10,17 +10,17 @@ const publicationsData = [
         type: "conference",
         links: {
             paper: "Data/Papers/AMES_Portfolio_Optimization.pdf",
-            code: "Data/Papers/SCDLDS__Code_Doc (1).pdf"
+            code: "Data/Papers/SCDLDS_Documentation.pdf"
         }
     },
     {
         title: "Documentation for Portfolio Optimization",
-        venue: "(Working Documentation",
+        venue: "(Working Documentation)",
         year: 2026,
         citations: 0,
         type: "conference",
         links: {
-            paper: "Data/Papers/SCDLDS__Code_Doc (1).pdf",
+            paper: "Data/Papers/SCDLDS_Documentation.pdf",
             // code: "#",
             // slides: "#"
         }
@@ -83,9 +83,7 @@ function populateTable(tableId, data) {
 
         row.innerHTML = `
             <td><strong>${pub.title}</strong></td>
-            <td>${pub.venue}</td>
             <td>${pub.year}</td>
-            <td>${pub.citations}</td>
             <td>${linksHtml}</td>
         `;
 
@@ -168,6 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initScrollReveal();
     initHeroPreview();
     initPointerTilt();
+    loadDynamicFactorTable();
 });
 
 function initScrollReveal() {
@@ -312,4 +311,84 @@ function copyBibtex() {
     }).catch(err => {
         alert('Failed to copy BibTeX. Please copy manually.');
     });
+}
+
+async function loadDynamicFactorTable() {
+    try {
+        const response = await fetch('factor_table.csv');
+        if (!response.ok) return;
+        const csvText = await response.text();
+        
+        const lines = csvText.trim().split(/\r?\n/);
+        if (lines.length < 2) return;
+        
+        const headers = lines[0].split(',');
+        const latestMonth = headers[1];
+        
+        const thead = document.getElementById('dynamic-factor-thead');
+        if (thead) {
+            thead.innerHTML = `
+                <tr>
+                    <th></th>
+                    <th>${latestMonth}<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                    <th>Last 3 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                    <th>Last 12 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                    <th></th>
+                </tr>
+            `;
+        }
+        
+        const tooltips = {
+            'Rm-Rf (Using Nifty 500)': 'Rm-Rf = Market Risk Premium. Measures the excess return of the market portfolio over the risk-free rate.',
+            'SMB': 'SMB = Small Minus Big. Measures the size factor: small-cap stocks minus large-cap stocks.',
+            'HML': 'HML = High Minus Low. Measures the value factor: high book-to-market stocks minus low book-to-market stocks.',
+            'WML': 'WML = Winners Minus Losers. Measures the momentum factor: past winners minus past losers.',
+            'RMW': 'RMW = Robust Minus Weak. Measures the operating profitability factor: robust vs weak operating profitability.',
+            'CMA': 'CMA = Conservative Minus Aggressive. Measures the investment factor: conservative vs aggressive investment.'
+        };
+
+        const factorCodeMap = {
+            'Rm-Rf (Using Nifty 500)': 'MKT',
+            'SMB': 'SMB',
+            'HML': 'HML',
+            'WML': 'WML',
+            'RMW': 'RMW',
+            'CMA': 'CMA'
+        };
+        
+        const tbody = document.getElementById('dynamic-factor-tbody');
+        if (tbody) {
+            let html = '';
+            for (let i = 1; i < lines.length; i++) {
+                const cols = lines[i].split(',');
+                if (cols.length < 4) continue;
+                
+                const factor = cols[0];
+                const val1m = parseFloat(cols[1]);
+                const val3m = parseFloat(cols[2]);
+                const val12m = parseFloat(cols[3]);
+                
+                const getCls = (v) => isNaN(v) ? '' : (v >= 0 ? 'positive' : 'negative');
+                const formatVal = (v, str) => isNaN(v) ? str : (v > 0 ? '+' + str + '%' : str + '%');
+                const fcode = factorCodeMap[factor] || factor;
+                
+                html += `
+                    <tr>
+                        <td class="factor-name">
+                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="${tooltips[factor] || factor}">
+                                ${factor}
+                            </span>
+                        </td>
+                        <td class="${getCls(val1m)}">${formatVal(val1m, cols[1])}</td>
+                        <td class="${getCls(val3m)}">${formatVal(val3m, cols[2])}</td>
+                        <td class="${getCls(val12m)}">${formatVal(val12m, cols[3])}</td>
+                        <td><a href="backtester.html?factor=${fcode}" class="analyze-link">Analyze &rarr;</a></td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+        }
+    } catch (error) {
+        console.error("Error loading dynamic factor table:", error);
+    }
 }

@@ -167,6 +167,85 @@ const BT = (() => {
             document.getElementById('bt-run-btn').disabled = false;
             document.getElementById('bt-run-btn').textContent = 'Run Analysis';
             setTimeout(() => { notice.style.display = 'none'; }, 5000);
+
+            // Handle URL Parameters for deep linking
+            const urlParams = new URLSearchParams(window.location.search);
+            const factorParam = urlParams.get('factor');
+            if (factorParam) {
+                // Clear default selections
+                activeFactors.clear();
+                
+                // Map the parameter to the appropriate factor and strategy
+                let targetFactorName = null;
+                let longCode = null;
+                let shortCode = null;
+                let isLongShort = true;
+                
+                switch(factorParam) {
+                    case 'MKT':
+                        targetFactorName = 'Size'; // arbitrary, just need all stocks for MKT proxy, wait, actually MKT should just run without filters, but the code requires at least one label. Let's select Size Big & Small.
+                        longCode = ['B', 'S'];
+                        isLongShort = false;
+                        break;
+                    case 'SMB':
+                        targetFactorName = 'Size';
+                        longCode = ['S'];
+                        shortCode = ['B'];
+                        break;
+                    case 'HML':
+                        targetFactorName = 'Book-to-Market';
+                        longCode = ['V']; // Value
+                        shortCode = ['G']; // Growth
+                        break;
+                    case 'WML':
+                        targetFactorName = 'Momentum';
+                        longCode = ['W']; // Winner
+                        shortCode = ['L']; // Loser
+                        break;
+                    case 'RMW':
+                        targetFactorName = 'Op. Profitability';
+                        longCode = ['R']; // Robust
+                        shortCode = ['W']; // Weak
+                        break;
+                    case 'CMA':
+                        targetFactorName = 'Investment';
+                        longCode = ['C']; // Conservative
+                        shortCode = ['A']; // Aggressive
+                        break;
+                }
+
+                if (targetFactorName) {
+                    activeFactors.add(targetFactorName);
+                    buildFactorPicker();
+                    buildFactorPills('bt-long-factors', 'long');
+                    buildFactorPills('bt-short-factors', 'short');
+                    
+                    // Set strategy
+                    const strategyBtn = document.querySelector(`#bt-strategy-toggle .bt-toggle-btn[data-val="${isLongShort ? 'long_short' : 'long_only'}"]`);
+                    if (strategyBtn) setStrategy(strategyBtn);
+                    
+                    // Click the long pills
+                    const lCodes = Array.isArray(longCode) ? longCode : [longCode];
+                    lCodes.forEach(code => {
+                        const btn = document.querySelector(`.bt-pill[data-factor="${targetFactorName}"][data-code="${code}"][data-side="long"]`);
+                        if (btn) btn.classList.add('sel-long');
+                    });
+                    
+                    // Click the short pills
+                    if (isLongShort && shortCode) {
+                        const sCodes = Array.isArray(shortCode) ? shortCode : [shortCode];
+                        sCodes.forEach(code => {
+                            const btn = document.querySelector(`.bt-pill[data-factor="${targetFactorName}"][data-code="${code}"][data-side="short"]`);
+                            if (btn) btn.classList.add('sel-short');
+                        });
+                    }
+                    
+                    // Auto-run
+                    addPortfolio();
+                    setTimeout(() => { runAll(); }, 100);
+                }
+            }
+
         } catch (err) {
             notice.className = 'bt-data-notice error';
             notice.innerHTML = `Failed to load: ${err.message}`;
