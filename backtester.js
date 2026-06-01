@@ -203,6 +203,18 @@ const BT = (() => {
                         targetFactors = [{ name: 'Investment', long: ['C'], short: ['A'] }];
                         isLongShort = true;
                         break;
+                    case 'AT':
+                        targetFactors = [{ name: 'Asset Turnover', long: ['H'], short: ['L'] }];
+                        isLongShort = true;
+                        break;
+                    case 'SG':
+                        targetFactors = [{ name: 'Sales Growth', long: ['H'], short: ['L'] }];
+                        isLongShort = true;
+                        break;
+                    case 'ACC':
+                        targetFactors = [{ name: 'Accruals', long: ['C'], short: ['A'] }];
+                        isLongShort = true;
+                        break;
                         
                     // Size & Book-to-Market
                     case 'SV': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Book-to-Market', long: ['V'] }]; break;
@@ -235,6 +247,46 @@ const BT = (() => {
                     case 'BM_L': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Momentum', long: ['L'] }]; break;
                     case 'BM_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Momentum', long: ['N'] }]; break;
                     case 'BM_W': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Momentum', long: ['W'] }]; break;
+                    
+                    // Asset Turnover
+                    case 'SAT_H': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Asset Turnover', long: ['H'] }]; break;
+                    case 'SAT_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Asset Turnover', long: ['N'] }]; break;
+                    case 'SAT_L': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Asset Turnover', long: ['L'] }]; break;
+                    case 'BAT_H': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Asset Turnover', long: ['H'] }]; break;
+                    case 'BAT_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Asset Turnover', long: ['N'] }]; break;
+                    case 'BAT_L': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Asset Turnover', long: ['L'] }]; break;
+                    
+                    // Sales Growth
+                    case 'SSG_H': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Sales Growth', long: ['H'] }]; break;
+                    case 'SSG_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Sales Growth', long: ['N'] }]; break;
+                    case 'SSG_L': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Sales Growth', long: ['L'] }]; break;
+                    case 'BSG_H': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Sales Growth', long: ['H'] }]; break;
+                    case 'BSG_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Sales Growth', long: ['N'] }]; break;
+                    case 'BSG_L': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Sales Growth', long: ['L'] }]; break;
+                    
+                    // Accruals
+                    case 'SACC_C': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Accruals', long: ['C'] }]; break;
+                    case 'SACC_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Accruals', long: ['N'] }]; break;
+                    case 'SACC_A': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Accruals', long: ['A'] }]; break;
+                    case 'BACC_C': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Accruals', long: ['C'] }]; break;
+                    case 'BACC_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Accruals', long: ['N'] }]; break;
+                    case 'BACC_A': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Accruals', long: ['A'] }]; break;
+                    
+                    // Volatility
+                    case 'SVOL_L': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Volatility', long: ['L'] }]; break;
+                    case 'SVOL_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Volatility', long: ['N'] }]; break;
+                    case 'SVOL_H': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Volatility', long: ['H'] }]; break;
+                    case 'BVOL_L': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Volatility', long: ['L'] }]; break;
+                    case 'BVOL_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Volatility', long: ['N'] }]; break;
+                    case 'BVOL_H': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Volatility', long: ['H'] }]; break;
+                    
+                    // Short-Term Reversal
+                    case 'SSTR_L': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Short-Term Reversal', long: ['L'] }]; break;
+                    case 'SSTR_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Short-Term Reversal', long: ['N'] }]; break;
+                    case 'SSTR_H': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Short-Term Reversal', long: ['H'] }]; break;
+                    case 'BSTR_L': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Short-Term Reversal', long: ['L'] }]; break;
+                    case 'BSTR_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Short-Term Reversal', long: ['N'] }]; break;
+                    case 'BSTR_H': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Short-Term Reversal', long: ['H'] }]; break;
                 }
 
                 if (targetFactors.length > 0) {
@@ -579,7 +631,7 @@ const BT = (() => {
     function computePortfolio(config, months) {
         const { longFilters, shortFilters, strategy } = config;
         const universe = getToggleVal('bt-universe-toggle');
-        const topN = universe === 'top300' ? 300 : null;
+        const topN = universe === 'top300' ? 300 : (universe === 'top500' ? 500 : null);
         const tc = getTCConfig();
         const ewPort = [100], vwPort = [100], ewRets = [], vwRets = [];
         const holdings = {};

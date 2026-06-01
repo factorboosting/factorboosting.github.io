@@ -344,7 +344,10 @@ async function loadDynamicFactorTable() {
             'HML': 'HML = High Minus Low. Measures the value factor: high book-to-market stocks minus low book-to-market stocks.',
             'WML': 'WML = Winners Minus Losers. Measures the momentum factor: past winners minus past losers.',
             'RMW': 'RMW = Robust Minus Weak. Measures the operating profitability factor: robust vs weak operating profitability.',
-            'CMA': 'CMA = Conservative Minus Aggressive. Measures the investment factor: conservative vs aggressive investment.'
+            'CMA': 'CMA = Conservative Minus Aggressive. Measures the investment factor: conservative vs aggressive investment.',
+            'AT (Asset Turnover)': 'AT = Asset Turnover. Measures the asset turnover factor: high vs low asset turnover.',
+            'SG (Sales Growth)': 'SG = Sales Growth. Measures the sales growth factor: high vs low sales growth.',
+            'ACC (Accruals)': 'ACC = Accruals. Measures the accruals factor: conservative vs aggressive accruals.'
         };
 
         const factorCodeMap = {
@@ -353,7 +356,10 @@ async function loadDynamicFactorTable() {
             'HML': 'HML',
             'WML': 'WML',
             'RMW': 'RMW',
-            'CMA': 'CMA'
+            'CMA': 'CMA',
+            'AT (Asset Turnover)': 'AT',
+            'SG (Sales Growth)': 'SG',
+            'ACC (Accruals)': 'ACC'
         };
         
         const tbody = document.getElementById('dynamic-factor-tbody');
