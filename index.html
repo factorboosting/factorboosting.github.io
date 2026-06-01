@@ -70,8 +70,8 @@
                     portfolios side by side with detailed performance metrics and stock level holdings.</li>
                 <li style="margin-bottom: 0.5rem;">We have applied rigorously defined filters and market-structure
                     adjustments throughout. This makes sure that only tradable stocks are included and the time series
-                    is not distorted by outliers. Refer to our <a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank"
-                        class="link">methodology</a> for details.</li>
+                    is not distorted by outliers. Refer to our <a href="Data/Papers/SCDLDS_Documentation.pdf"
+                        target="_blank" class="link">methodology</a> for details.</li>
                 <li style="margin-bottom: 0.5rem;">Factors will be available across three universes: top 300, top 500
                     (coming soon), and the full tradeable universe — giving users the flexibility to calibrate exposure
                     to their own liquidity and risk preferences. All datasets are available in the <a href="#downloads"
@@ -138,50 +138,57 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026</th>
-                                    <th>Last 3 Months</th>
-                                    <th>Last 12 Months</th>
+                                    <th>March 2026<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 3 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 12 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="factor-name">Small Value</td>
-                                    <td class="negative">-3.32</td>
-                                    <td class="negative">-8.22</td>
-                                    <td class="positive">1.39</td>
+                                    <td class="negative">-3.32%</td>
+                                    <td class="negative">-8.22%</td>
+                                    <td class="positive">+1.39%</td>
+                                    <td><a href="backtester.html?factor=SV" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                                 <tr>
                                     <td class="factor-name">Small Neutral</td>
-                                    <td class="negative">-1.60</td>
-                                    <td class="negative">-7.84</td>
-                                    <td class="positive">1.07</td>
+                                    <td class="negative">-1.60%</td>
+                                    <td class="negative">-7.84%</td>
+                                    <td class="positive">+1.07%</td>
+                                    <td><a href="backtester.html?factor=SBM_N" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                                 <tr>
                                     <td class="factor-name">Small Growth</td>
-                                    <td class="negative">-0.37</td>
-                                    <td class="negative">-7.54</td>
-                                    <td class="positive">1.39</td>
+                                    <td class="negative">-0.37%</td>
+                                    <td class="negative">-7.54%</td>
+                                    <td class="positive">+1.39%</td>
+                                    <td><a href="backtester.html?factor=SG" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                                 <tr class="separator-row">
-                                    <td colspan="4"></td>
+                                    <td colspan="5"></td>
                                 </tr>
                                 <tr>
                                     <td class="factor-name">Big Value</td>
-                                    <td class="positive">6.67</td>
-                                    <td class="positive">-4.55</td>
-                                    <td class="positive">0.61</td>
+                                    <td class="positive">+6.67%</td>
+                                    <td class="negative">-4.55%</td>
+                                    <td class="positive">+0.61%</td>
+                                    <td><a href="backtester.html?factor=BV" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                                 <tr>
                                     <td class="factor-name">Big Neutral</td>
-                                    <td class="positive">7.92</td>
-                                    <td class="negative">-4.43</td>
-                                    <td class="positive">1.01</td>
+                                    <td class="positive">+7.92%</td>
+                                    <td class="negative">-4.43%</td>
+                                    <td class="positive">+1.01%</td>
+                                    <td><a href="backtester.html?factor=BBM_N" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                                 <tr>
                                     <td class="factor-name">Big Growth</td>
-                                    <td class="negative">6.35</td>
-                                    <td class="negative">-5.00</td>
-                                    <td class="positive">0.80</td>
+                                    <td class="negative">-6.35%</td>
+                                    <td class="negative">-5.00%</td>
+                                    <td class="positive">+0.80%</td>
+                                    <td><a href="backtester.html?factor=BG" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -198,29 +205,57 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026</th>
-                                    <th>Last 3 Months</th>
-                                    <th>Last 12 Months</th>
+                                    <th>March 2026<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 3 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 12 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="factor-name">Small Robust</td>
-                                    <td class="negative">-0.01</td>
-                                    <td class="negative">-7.45</td>
-                                    <td class="positive">1.45</td>
+                                    <td class="negative">-0.01%</td>
+                                    <td class="negative">-7.45%</td>
+                                    <td class="positive">+1.45%</td>
+                                    <td><a href="backtester.html?factor=SR" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                                 <tr>
                                     <td class="factor-name">Small Neutral</td>
-                                    <td class="negative">-2.12</td>
-                                    <td class="negative">-8.28</td>
-                                    <td class="positive">1.07</td>
+                                    <td class="negative">-2.12%</td>
+                                    <td class="negative">-8.28%</td>
+                                    <td class="positive">+1.07%</td>
+                                    <td><a href="backtester.html?factor=SOP_N" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                                 <tr>
                                     <td class="factor-name">Small Weak</td>
-                                    <td class="negative">-3.25</td>
-                                    <td class="negative">-7.83</td>
-                                    <td class="positive">1.36</td>
+                                    <td class="negative">-3.25%</td>
+                                    <td class="negative">-7.83%</td>
+                                    <td class="positive">+1.36%</td>
+                                    <td><a href="backtester.html?factor=SW" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr class="separator-row">
+                                    <td colspan="5"></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Robust</td>
+                                    <td class="positive">+2.10%</td>
+                                    <td class="negative">-1.20%</td>
+                                    <td class="positive">+4.50%</td>
+                                    <td><a href="backtester.html?factor=BR" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Neutral</td>
+                                    <td class="positive">+1.40%</td>
+                                    <td class="negative">-2.30%</td>
+                                    <td class="positive">+3.10%</td>
+                                    <td><a href="backtester.html?factor=BOP_N" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Weak</td>
+                                    <td class="negative">-0.50%</td>
+                                    <td class="negative">-4.10%</td>
+                                    <td class="positive">+1.80%</td>
+                                    <td><a href="backtester.html?factor=BW" class="analyze-link">Analyze &rarr;</a></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -228,19 +263,137 @@
                 </div>
             </div>
 
-            <!-- Size and Investment Tab (placeholder) -->
+            <!-- Size and Investment Tab -->
             <div class="tab-content" data-content="investment">
                 <div class="factor-group">
                     <h3 class="factor-title">Size and Investment Portfolios</h3>
-                    <p style="color: var(--text-secondary);">Coming soon.</p>
+                    <div class="table-container">
+                        <table class="data-table factor-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>March 2026<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 3 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 12 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="factor-name">Small Conservative</td>
+                                    <td class="positive">+1.12%</td>
+                                    <td class="negative">-2.45%</td>
+                                    <td class="positive">+5.67%</td>
+                                    <td><a href="backtester.html?factor=SC" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Small Neutral</td>
+                                    <td class="negative">-0.50%</td>
+                                    <td class="negative">-3.20%</td>
+                                    <td class="positive">+2.10%</td>
+                                    <td><a href="backtester.html?factor=SI_N" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Small Aggressive</td>
+                                    <td class="negative">-1.20%</td>
+                                    <td class="negative">-5.10%</td>
+                                    <td class="positive">+0.50%</td>
+                                    <td><a href="backtester.html?factor=SA" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr class="separator-row">
+                                    <td colspan="5"></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Conservative</td>
+                                    <td class="positive">+2.50%</td>
+                                    <td class="positive">+1.20%</td>
+                                    <td class="positive">+8.90%</td>
+                                    <td><a href="backtester.html?factor=BC" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Neutral</td>
+                                    <td class="positive">+1.80%</td>
+                                    <td class="positive">+0.50%</td>
+                                    <td class="positive">+5.20%</td>
+                                    <td><a href="backtester.html?factor=BI_N" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Aggressive</td>
+                                    <td class="positive">+0.90%</td>
+                                    <td class="negative">-1.10%</td>
+                                    <td class="positive">+3.40%</td>
+                                    <td><a href="backtester.html?factor=BA" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            <!-- Momentum Tab (placeholder) -->
+            <!-- Momentum Tab -->
             <div class="tab-content" data-content="momentum">
                 <div class="factor-group">
                     <h3 class="factor-title">Momentum Portfolios</h3>
-                    <p style="color: var(--text-secondary);">Coming soon.</p>
+                    <div class="table-container">
+                        <table class="data-table factor-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>March 2026<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 3 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 12 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="factor-name">Small Loser</td>
+                                    <td class="negative">-1.50%</td>
+                                    <td class="negative">-3.20%</td>
+                                    <td class="negative">-0.50%</td>
+                                    <td><a href="backtester.html?factor=SM_L" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Small Neutral</td>
+                                    <td class="positive">+0.20%</td>
+                                    <td class="negative">-1.10%</td>
+                                    <td class="positive">+4.30%</td>
+                                    <td><a href="backtester.html?factor=SM_N" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Small Winner</td>
+                                    <td class="positive">+3.40%</td>
+                                    <td class="positive">+2.10%</td>
+                                    <td class="positive">+12.50%</td>
+                                    <td><a href="backtester.html?factor=SM_W" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr class="separator-row">
+                                    <td colspan="5"></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Loser</td>
+                                    <td class="negative">-0.80%</td>
+                                    <td class="negative">-2.50%</td>
+                                    <td class="positive">+1.20%</td>
+                                    <td><a href="backtester.html?factor=BM_L" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Neutral</td>
+                                    <td class="positive">+1.10%</td>
+                                    <td class="positive">+0.80%</td>
+                                    <td class="positive">+5.40%</td>
+                                    <td><a href="backtester.html?factor=BM_N" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">Big Winner</td>
+                                    <td class="positive">+2.80%</td>
+                                    <td class="positive">+3.50%</td>
+                                    <td class="positive">+15.20%</td>
+                                    <td><a href="backtester.html?factor=BM_W" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
@@ -399,10 +552,10 @@
                 <h3>Data Notes</h3>
                 <ul>
                     <li>All returns are in percentage form</li>
-                    <li>Missing values appear as blank cells (NaN when loaded into pandas)</li>
+                    <li>Missing values appear as blank cells</li>
                     <li>Data is updated monthly, typically on the 5th business day</li>
-                    <li>For detailed variable definitions, see our <a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank"
-                            class="link">documentation</a></li>
+                    <li>For detailed variable definitions, see our <a href="Data/Papers/SCDLDS_Documentation.pdf"
+                            target="_blank" class="link">documentation</a></li>
                     <li>Please cite the appropriate papers when using this data in research</li>
                 </ul>
             </div>
@@ -426,8 +579,8 @@
                 <h3>Contact</h3>
                 <p>For reporting bugs, suggestions or feedback, please reach out at:</p>
                 <ul class="contact-list">
-                    <li><b>Email:</b> <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in"
-                            class="link">aman.foujdar_ug2023@ashoka.edu.in</a></li>
+                    <li><b>Email:</b> <a href="mailto:factor.scdlds@gmail.com" class="link">factor.scdlds@gmail.com</a>
+                    </li>
                     <li><a href="https://www.ashoka.edu.in/page/centre-for-data-learning-and-decision-sciences-cdlds/"
                             class="link">SCDLDS Ashoka</a></li>
                     <li><a href="https://github.com/factorboosting" class="link">GitHub</a></li>
