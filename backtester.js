@@ -96,7 +96,7 @@ const BT = (() => {
     async function loadData() {
         const notice = document.getElementById('bt-data-notice');
         try {
-            const res = await fetch('Data/Factor_Data/final.csv');
+            const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
             if (!res.ok) throw new Error(`CSV fetch failed (HTTP ${res.status}).`);
             const parsed = parseCSV(await res.text());
 
