@@ -1,32 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Factors | SCDLDS @ Ashoka</title>
+    <title>Financial Factor Data Library| SCDLDS</title>
     <link rel="icon" href="Data/scdlds_ashoka_logo.jpeg">
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-<div class="beta-banner">
-    This website is currently in <strong>beta</strong>. If you encounter any bugs or issues, please <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in">report them here</a>.
-</div>
-<nav class="navbar">
+    <div class="beta-banner">
+        This website is currently in <strong>beta</strong>. If you encounter any bugs or issues, please <a
+            href="mailto:aman.foujdar_ug2023@ashoka.edu.in">report them here</a>.
+    </div>
+    <nav class="navbar">
         <div class="nav-container">
             <div class="logo">
-                <img src="Data/Ashoka-opt-logo.webp" alt="Ashoka University" style="height: 36px; vertical-align: middle; margin-right: 10px;">
-                Safexpress Center for Data Learning and Decision Sciences
+                <img src="Data/Ashoka-opt-logo.webp" alt="Ashoka University"
+                    style="height: 36px; vertical-align: middle; margin-right: 10px;">
+                SCDLDS Factor Library
             </div>
             <button class="nav-toggle" aria-label="Toggle menu">
-                    <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
             </button>
             <ul class="nav-menu">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="backtester.html">Analysis</a></li>
                 <li><a href="#downloads">Downloads</a></li>
-                <li><a href="working_paper.html">Manuscripts</a></li>
+                <li><a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank">Documentation</a></li>
                 <li><a href="team.html">Team</a></li>
             </ul>
+            <div id="user-profile" style="display: flex; align-items: center; gap: 12px; margin-left: 20px;">
+                <button id="nav-login-btn"
+                    style="background-color: #2563eb; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Login
+                    / Sign Up</button>
+                <span id="user-email"
+                    style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;"></span>
+                <button id="logout-btn"
+                    style="display: none; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">Sign
+                    Out</button>
+            </div>
         </div>
     </nav>
 
@@ -34,161 +48,80 @@
         <div class="hero-content">
             <h1>Financial Factor Data Library</h1>
             <br>
-            <p>This website is dedicated to the <strong>Fama-French Factors for the Indian equity markets</strong>. The explanatory power of Fama-French factors in capturing stock returns variation is well established in the literature. Several data repositories exist globally, and a handful cover Indian markets. We drew inspiration from these existing resources. What we set out to do differently is to build a resource that is clean, investible, reproducible, and India-aware. We have documented our construction process with full transparency. This will allow practitioners/researchers to replicate, interrogate, and build on our work with confidence. Our coverage includes the Fama-French factors: <strong>Value, Size, Investment, and Operating Profitability along with Momentum</strong>, for firms listed on both the NSE and BSE, starting April 2002 and updated monthly. Our data source is the CMIE Prowess. </p>
+            <p>This website is dedicated to the <strong>Fama-French Factors for the Indian equity markets</strong>. The
+                explanatory power of Fama-French factors in capturing stock returns variation is well established in the
+                literature. Several data repositories exist globally, and a handful cover Indian markets. We drew
+                inspiration from these existing resources. What we set out to do differently is to build a resource that
+                is clean, investible, reproducible, and India-aware. We have documented our construction process with
+                full transparency. This will allow practitioners/researchers to replicate, interrogate, and build on our
+                work with confidence. Our coverage includes the Fama-French factors: <strong>Value, Size, Investment,
+                    and Operating Profitability along with Momentum</strong>, for firms listed on both the NSE and BSE,
+                starting April 2002 and updated monthly. Our data source is the CMIE Prowess.</p>
             <br>
+
             <p><strong>Key contributions of our work:</strong></p>
             <ul style="margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 1rem;">
-                <li style="margin-bottom: 0.5rem;">Beyond aggregate factor returns, we also provide monthly stock-level factor labels. This allows users to construct their own portfolios from the ground up, audit factor exposures in existing holdings, and study cross-sectional variation across the market.</li>
-                <li style="margin-bottom: 0.5rem;">The library includes an <a href="backtester.html" class="link">interactive analysis tool</a> that lets users visualise factor and portfolio returns, backtest custom strategies across different factor combinations, and compare multiple portfolios side by side with detailed performance metrics and stock level holdings.</li>
-                <li style="margin-bottom: 0.5rem;">We have applied rigorously defined filters and market-structure adjustments throughout. This makes sure that only tradable stocks are included and the time series is not distorted by outliers. Refer to our <a href="Data/Papers/SCDLDS__Code_Doc (1).pdf" class="link">methodology</a> for details.</li>
-                <li style="margin-bottom: 0.5rem;">Factors will be available across three universes: top 300, top 500 (coming soon), and the full tradeable universe — giving users the flexibility to calibrate exposure to their own liquidity and risk preferences. All datasets are available in the <a href="#downloads" class="link">Downloads</a> section.</li>
-                <li style="margin-bottom: 0.5rem;">Unlike the existing resources, every breakpoint used in portfolio construction is empirically grounded in the structure of the Indian market. Full documentation is available <a href="Data/Papers/SCDLDS__Code_Doc (1).pdf" class="link">here</a>.</li>
+                <li style="margin-bottom: 0.5rem;">Beyond aggregate factor returns, we also provide monthly stock-level
+                    factor labels. This allows users to construct their own portfolios from the ground up, audit factor
+                    exposures in existing holdings, and study cross-sectional variation across the market.</li>
+                <li style="margin-bottom: 0.5rem;">The library includes an <a href="backtester.html"
+                        class="link">interactive analysis tool</a> that lets users visualise factor and portfolio
+                    returns, backtest custom strategies across different factor combinations, and compare multiple
+                    portfolios side by side with detailed performance metrics and stock level holdings.</li>
+                <li style="margin-bottom: 0.5rem;">We have applied rigorously defined filters and market-structure
+                    adjustments throughout. This makes sure that only tradable stocks are included and the time series
+                    is not distorted by outliers. Refer to our <a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank"
+                        class="link">methodology</a> for details.</li>
+                <li style="margin-bottom: 0.5rem;">Factors will be available across three universes: top 300, top 500
+                    (coming soon), and the full tradeable universe — giving users the flexibility to calibrate exposure
+                    to their own liquidity and risk preferences. All datasets are available in the <a href="#downloads"
+                        class="link">Downloads</a> section.</li>
+                <li style="margin-bottom: 0.5rem;">Unlike the existing resources, every breakpoint used in portfolio
+                    construction is empirically grounded in the structure of the Indian market. Full documentation is
+                    available <a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank" class="link">here</a>.</li>
             </ul>
             <br>
-            <p>The Centre is actively exploring what comes next. We are working towards bringing together <strong> factor frameworks with the frontier of machine learning</strong>. Our current work involves integrating Fama-French factors with modern deep learning architectures for <strong> mutual fund holdings analysis and portfolio optimization</strong>. We are also investigating <strong>Transaction Cost</strong> modelling under real-world constraints. We will update the website with additional features in the near future.</p>
-            <br>
-            <span>Last updated: <span id="lastUpdated"></span></span>
-            </div>
+            <p>The Centre is actively exploring what comes next. We are working towards bringing together <strong>factor
+                    frameworks with the frontier of machine learning</strong>. Our current work involves integrating
+                Fama-French factors with modern deep learning architectures for <strong>mutual fund holdings analysis
+                    and portfolio optimization</strong>. We are also investigating <strong>Transaction Cost</strong>
+                modelling under real-world constraints. We will update the website with additional features in the near
+                future.</p>
+        </div>
         </div>
     </header>
 
     <main class="container">
         <section id="factors" class="section">
-            <h2 class="section-title">Research Factors & Portfolios</h2>
-            
+            <h2 class="section-title">Research Factors &amp; Portfolios</h2>
+
             <div class="tabs">
                 <button class="tab-btn active" data-tab="factors">Research Factors</button>
-                <button class="tab-btn" data-tab="bookmarket">Size & Book-to-Market</button>
-                <button class="tab-btn" data-tab="profitability">Size & Operational Profitability</button>
+                <button class="tab-btn" data-tab="bookmarket">Size &amp; Book-to-Market</button>
+                <button class="tab-btn" data-tab="profitability">Size &amp; Operating Profitability</button>
+                <button class="tab-btn" data-tab="investment">Size &amp; Investment</button>
+                <button class="tab-btn" data-tab="momentum">Momentum</button>
             </div>
 
             <!-- Research Factors Tab -->
             <div class="tab-content active" data-content="factors">
                 <div class="factor-tables">
-                    <!-- Fama/French 3 Research Factors -->
+                    <!-- 5 Research Factors + Momentum -->
                     <div class="factor-group">
-                        <h3 class="factor-title">Fama/French 3 Research Factors</h3>
+                        <h3 class="factor-title">5 Research Factors + Momentum</h3>
                         <div class="table-container">
-                            <table class="data-table factor-table">
-                                <thead>
+                            <table class="data-table factor-table" id="dynamic-factor-table">
+                                <thead id="dynamic-factor-thead">
                                     <tr>
                                         <th></th>
-                                        <th>March 2026</th>
+                                        <th>Latest Month</th>
                                         <th>Last 3 Months</th>
                                         <th>Last 12 Months</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="Rm-Rf = Market Risk Premium. Measures the excess return of the market portfolio over the risk-free rate.">
-                                                Rm-Rf (Using Nifty 500)
-                                            </span>
-                                        </td>
-                                        <td class="positive">-8.17</td>
-                                        <td class="negative">4.53</td>
-                                        <td class="positive">-4.89</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="SMB = Small Minus Big. Measures the size factor: small-cap stocks minus large-cap stocks.">
-                                                SMB
-                                            </span>
-                                        </td>
-                                        <td class="negative">-35.25</td>
-                                        <td class="negative">-31.70</td>
-                                        <td class="positive">-19.59</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="HML = High Minus Low. Measures the value factor: high book-to-market stocks minus low book-to-market stocks.">
-                                                HML
-                                            </span>
-                                        </td>
-                                        <td class="negative">24.15</td>
-                                        <td class="negative">6.49</td>
-                                        <td class="negative">11.38</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <br>
-                    <!-- Fama/French 5 Research Factors -->
-                    <div class="factor-group">
-                        <h3 class="factor-title">Fama/French 5 Research Factors & Momentum</h3>
-                        <div class="table-container">
-                            <table class="data-table factor-table">
-                                <thead>
-                                    <tr>
                                         <th></th>
-                                        <th>March 2026</th>
-                                        <th>Last 3 Months</th>
-                                        <th>Last 12 Months</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="Rm-Rf = Market Risk Premium. Measures the excess return of the market portfolio over the risk-free rate.">
-                                                Rm-Rf (Using Nifty 500)
-                                            </span>
-                                        </td>
-                                        <td class="positive">-8.17</td>
-                                        <td class="negative">4.53</td>
-                                        <td class="positive">-4.89</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="SMB = Small Minus Big. Measures the size factor: small-cap stocks minus large-cap stocks.">
-                                                SMB
-                                            </span>
-                                        </td>
-                                        <td class="negative">-35.25</td>
-                                        <td class="negative">-31.70</td>
-                                        <td class="positive">-19.59</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="HML = High Minus Low. Measures the value factor: high book-to-market stocks minus low book-to-market stocks.">
-                                                HML
-                                            </span>
-                                        </td>
-                                        <td class="negative">24.15</td>
-                                        <td class="negative">6.49</td>
-                                        <td class="negative">11.38</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="WML = Winners Minus Losers. Measures the momentum factor: past winners minus past losers.">
-                                                WML
-                                            </span>
-                                        </td>
-                                        <td class="positive">16.46</td>
-                                        <td class="positive">37.09</td>
-                                        <td class="positive">-5.53</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="RMW = Robust Minus Weak. Measures the profitability factor: firms with robust profitability minus weak profitability firms.">
-                                                RMW
-                                            </span>
-                                        </td>
-                                        <td class="positive">1.80</td>
-                                        <td class="positive">6.22</td>
-                                        <td class="positive">3.17</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="factor-name">
-                                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="CMA = Conservative Minus Aggressive. Measures the investment factor: firms with conservative investment minus aggressive investment.">
-                                                CMA
-                                            </span>
-                                        </td>
-                                        <td class="positive">0.34</td>
-                                        <td class="negative">-2.09</td>
-                                        <td class="positive">1.29</td>
-                                    </tr>
+                                <tbody id="dynamic-factor-tbody">
+                                    <!-- Populated dynamically by script.js -->
                                 </tbody>
                             </table>
                         </div>
@@ -203,12 +136,12 @@
                     <div class="table-container">
                         <table class="data-table factor-table">
                             <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>March 2026</th>
-                                        <th>Last 3 Months</th>
-                                        <th>Last 12 Months</th>
-                                    </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>March 2026</th>
+                                    <th>Last 3 Months</th>
+                                    <th>Last 12 Months</th>
+                                </tr>
                             </thead>
                             <tbody>
                                 <tr>
@@ -263,12 +196,12 @@
                     <div class="table-container">
                         <table class="data-table factor-table">
                             <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th>March 2026</th>
-                                        <th>Last 3 Months</th>
-                                        <th>Last 12 Months</th>
-                                    </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>March 2026</th>
+                                    <th>Last 3 Months</th>
+                                    <th>Last 12 Months</th>
+                                </tr>
                             </thead>
                             <tbody>
                                 <tr>
@@ -294,11 +227,27 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Size and Investment Tab (placeholder) -->
+            <div class="tab-content" data-content="investment">
+                <div class="factor-group">
+                    <h3 class="factor-title">Size and Investment Portfolios</h3>
+                    <p style="color: var(--text-secondary);">Coming soon.</p>
+                </div>
+            </div>
+
+            <!-- Momentum Tab (placeholder) -->
+            <div class="tab-content" data-content="momentum">
+                <div class="factor-group">
+                    <h3 class="factor-title">Momentum Portfolios</h3>
+                    <p style="color: var(--text-secondary);">Coming soon.</p>
+                </div>
+            </div>
         </section>
 
         <section id="downloads" class="section">
             <h2 class="section-title">Downloadable Data Files</h2>
-            
+
             <div class="tabs">
                 <button class="tab-btn active" data-tab="returns">Returns Data</button>
                 <button class="tab-btn" data-tab="portfolios">Individual Portfolios</button>
@@ -308,7 +257,8 @@
             <!-- Returns Data Tab -->
             <div class="tab-content active" data-content="returns">
                 <div class="downloads-intro">
-                    <p>Download time-series returns data for research factors and portfolios. All files are in CSV format with monthly frequency.</p>
+                    <p>Download time-series returns data for research factors and portfolios. All files are in CSV
+                        format with monthly frequency.</p>
                 </div>
                 <div class="table-container">
                     <table class="data-table download-table">
@@ -325,11 +275,12 @@
                         <tbody>
                             <tr>
                                 <td class="dataset-name">FF5_Factors_Monthly.csv</td>
-                                <td>Fama-French 5 Factor returns (Rm-Rf, SMB, HML, RMW, CMA)</td>
+                                <td>Research factor returns (MKT, SMB, HML, WML, RMW, CMA)</td>
                                 <td>2001-2025</td>
                                 <td>Monthly</td>
                                 <td>312 KB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Data/Factor_Data/ff5.csv')">Download CSV</button></td>
+                                <td><button class="download-btn"
+                                        onclick="downloadFile('Data/Factor_Data/ff5.csv')">Download CSV</button></td>
                             </tr>
                             <tr>
                                 <td class="dataset-name">Industry_Returns.csv</td>
@@ -337,7 +288,9 @@
                                 <td>2001-2025</td>
                                 <td>Monthly</td>
                                 <td>890 KB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Data/Factor_Data/finalMonthlyLabels_aman.csv')">Download CSV</button></td>
+                                <td><button class="download-btn"
+                                        onclick="downloadFile('Data/Factor_Data/finalMonthlyLabels_aman.csv')">Download
+                                        CSV</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -347,7 +300,8 @@
             <!-- Individual Portfolios Tab -->
             <div class="tab-content" data-content="portfolios">
                 <div class="downloads-intro">
-                    <p>Download returns data for individual portfolios sorted by various characteristics. Files contain detailed portfolio-level data.</p>
+                    <p>Download returns data for individual portfolios sorted by various characteristics. Files contain
+                        detailed portfolio-level data.</p>
                 </div>
                 <div class="table-container">
                     <table class="data-table download-table">
@@ -368,7 +322,9 @@
                                 <td>2001-2025</td>
                                 <td>Monthly</td>
                                 <td>156 KB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Data/Factor_Data/BM_Size.csv')">Download CSV</button></td>
+                                <td><button class="download-btn"
+                                        onclick="downloadFile('Data/Factor_Data/BM_Size.csv')">Download CSV</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td class="dataset-name">Size_OP_Portfolios.csv</td>
@@ -376,7 +332,9 @@
                                 <td>2001-2025</td>
                                 <td>Monthly</td>
                                 <td>178 KB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Data/Factor_Data/OP_Size.csv')">Download CSV</button></td>
+                                <td><button class="download-btn"
+                                        onclick="downloadFile('Data/Factor_Data/OP_Size.csv')">Download CSV</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td class="dataset-name">Size_INV_Portfolios.csv</td>
@@ -384,24 +342,20 @@
                                 <td>2001-2025</td>
                                 <td>Monthly</td>
                                 <td>165 KB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Data/Factor_Data/INV_Size.csv')">Download CSV</button></td>
+                                <td><button class="download-btn"
+                                        onclick="downloadFile('Data/Factor_Data/INV_Size.csv')">Download CSV</button>
+                                </td>
                             </tr>
                             <tr>
                                 <td class="dataset-name">Momentum_Portfolios.csv</td>
-                                <td>6 Size x Momentum (2-12 months) portfolios (2x3) </td>
+                                <td>6 Size x Momentum (2-12 months) portfolios (2x3)</td>
                                 <td>2001-2025</td>
                                 <td>Monthly</td>
                                 <td>234 KB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Data/Factor_Data/MOM_Size.csv')">Download CSV</button></td>
+                                <td><button class="download-btn"
+                                        onclick="downloadFile('Data/Factor_Data/MOM_Size.csv')">Download CSV</button>
+                                </td>
                             </tr>
-                            <!-- <tr>
-                                <td class="dataset-name">25_Size_BM_Portfolios.csv</td>
-                                <td>25 Size x Book-to-Market portfolios (5x5)</td>
-                                <td>2001-2025</td>
-                                <td>Monthly</td>
-                                <td>567 KB</td>
-                                <td><button class="download-btn" onclick="downloadFile('25_Size_BM_Portfolios.csv')">Download CSV</button></td>
-                            </tr> -->
                         </tbody>
                     </table>
                 </div>
@@ -410,7 +364,8 @@
             <!-- Stock Labelling Tab -->
             <div class="tab-content" data-content="labelling">
                 <div class="downloads-intro">
-                    <p>Download stock assignment data showing which stocks belong to which portfolios. Useful for replicating portfolio construction.</p>
+                    <p>Download stock assignment data showing which stocks belong to which portfolios. Useful for
+                        replicating portfolio construction.</p>
                 </div>
                 <div class="table-container">
                     <table class="data-table download-table">
@@ -431,40 +386,10 @@
                                 <td>2001-2025</td>
                                 <td>Annual</td>
                                 <td>3.4 MB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Data/Factor_Data/finalMonthlyLabels_aman.csv')">Download CSV</button></td>
+                                <td><button class="download-btn"
+                                        onclick="downloadFile('Data/Factor_Data/finalMonthlyLabels_aman.csv')">Download
+                                        CSV</button></td>
                             </tr>
-                            <!-- <tr>
-                                <td class="dataset-name">Stock_Assignments_Industry.csv</td>
-                                <td>Stock to industry classification mapping (49 industries)</td>
-                                <td>2001-2025</td>
-                                <td>Monthly</td>
-                                <td>8.7 MB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Stock_Assignments_Industry.csv')">Download CSV</button></td>
-                            </tr>
-                            <tr>
-                                <td class="dataset-name">Breakpoints_Size_BM.csv</td>
-                                <td>Historical breakpoints for Size and Book-to-Market</td>
-                                <td>2001-2025</td>
-                                <td>Annual</td>
-                                <td>89 KB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Breakpoints_Size_BM.csv')">Download CSV</button></td>
-                            </tr>
-                            <tr>
-                                <td class="dataset-name">Stock_Characteristics.csv</td>
-                                <td>Comprehensive stock-level characteristics data</td>
-                                <td>2001-2025</td>
-                                <td>Monthly</td>
-                                <td>15.2 MB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Stock_Characteristics.csv')">Download CSV</button></td>
-                            </tr>
-                            <tr>
-                                <td class="dataset-name">Portfolio_Weights.csv</td>
-                                <td>Value-weighted portfolio weights for all stocks</td>
-                                <td>2001-2025</td>
-                                <td>Monthly</td>
-                                <td>12.8 MB</td>
-                                <td><button class="download-btn" onclick="downloadFile('Portfolio_Weights.csv')">Download CSV</button></td>
-                            </tr> -->
                         </tbody>
                     </table>
                 </div>
@@ -476,176 +401,38 @@
                     <li>All returns are in percentage form</li>
                     <li>Missing values appear as blank cells (NaN when loaded into pandas)</li>
                     <li>Data is updated monthly, typically on the 5th business day</li>
-                    <li>For detailed variable definitions, see our <a href="Data/Papers/SCDLDS__Code_Doc (1).pdf" class="link">documentation</a></li>
+                    <li>For detailed variable definitions, see our <a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank"
+                            class="link">documentation</a></li>
                     <li>Please cite the appropriate papers when using this data in research</li>
                 </ul>
             </div>
         </section>
 
-        <section id="publications" class="section">
-            <h2 class="section-title">Publications</h2>
-            
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="all">All</button>
-                <button class="tab-btn" data-tab="conferences">Conferences</button>
-                <button class="tab-btn" data-tab="journals">Journals</button>
-                <button class="tab-btn" data-tab="preprints">Preprints</button>
-            </div>
 
-            <div class="tab-content active" data-content="all">
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Venue</th>
-                                <th>Year</th>
-                                <th>Citations</th>
-                                <th>Links</th>
-                            </tr>
-                        </thead>
-                        <tbody id="publicationsTable">
-                            <!-- Will be populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab-content" data-content="conferences">
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Venue</th>
-                                <th>Year</th>
-                                <th>Citations</th>
-                                <th>Links</th>
-                            </tr>
-                        </thead>
-                        <tbody id="conferencesTable">
-                            <!-- Will be populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab-content" data-content="journals">
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Venue</th>
-                                <th>Year</th>
-                                <th>Citations</th>
-                                <th>Links</th>
-                            </tr>
-                        </thead>
-                        <tbody id="journalsTable">
-                            <!-- Will be populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab-content" data-content="preprints">
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Venue</th>
-                                <th>Year</th>
-                                <th>Citations</th>
-                                <th>Links</th>
-                            </tr>
-                        </thead>
-                        <tbody id="preprintsTable">
-                            <!-- Will be populated by JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- <section id="projects" class="section">
-            <h2 class="section-title">Research Projects</h2>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <h3>Project Title 1</h3>
-                    <p class="project-desc">Brief description of your research project and its key contributions to the field.</p>
-                    <div class="project-meta">
-                        <span class="badge">Active</span>
-                        <span class="year">2024 - Present</span>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <h3>Project Title 2</h3>
-                    <p class="project-desc">Brief description of your research project and its key contributions to the field.</p>
-                    <div class="project-meta">
-                        <span class="badge completed">Completed</span>
-                        <span class="year">2023</span>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <h3>Project Title 3</h3>
-                    <p class="project-desc">Brief description of your research project and its key contributions to the field.</p>
-                    <div class="project-meta">
-                        <span class="badge">Active</span>
-                        <span class="year">2023 - Present</span>
-                    </div>
-                </div>
-            </div>
-        </section> -->
-
-        <!-- <section id="talks" class="section">
-            <h2 class="section-title">Talks & Presentations</h2>
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Event</th>
-                            <th>Location</th>
-                            <th>Date</th>
-                            <th>Resources</th>
-                        </tr>
-                    </thead>
-                    <tbody id="talksTable">
-                        <tr>
-                            <td>Talk Title 1</td>
-                            <td>Conference Name</td>
-                            <td>City, Country</td>
-                            <td>Dec 2024</td>
-                            <td><a href="#" class="link">Slides</a></td>
-                        </tr>
-                        <tr>
-                            <td>Talk Title 2</td>
-                            <td>Workshop Name</td>
-                            <td>City, Country</td>
-                            <td>Nov 2024</td>
-                            <td><a href="#" class="link">Slides</a> • <a href="#" class="link">Video</a></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section> -->
 
         <section id="about" class="section">
             <h2 class="section-title">About</h2>
             <div class="about-content">
-                <p>Rapid advancements in data, compute, and algorithms are profoundly transforming our world, and we’re still in the early stages of this data science, machine learning, and AI revolution.</p> 
-                <p>At SCDLDS, we conduct high-level applied and methodological research in data and learning sciences to aid in informed decision-making and address complex societal challenges. Initially, our work is focused on four key areas: ⁠Data-driven financial research, ⁠Weather and climate modeling, Reinforcement learning, and Epidemiological modeling.</p>
-                <p>In addition to our research, we are committed to teaching. We train young minds through engaging coursework and projects, exposing them to a deep and varied mathematical toolkit that helps them uncover hidden patterns in large and complex datasets.</p>
-                
+                <p>Rapid advancements in data, compute, and algorithms are profoundly transforming our world, and we're
+                    still in the early stages of this data science, machine learning, and AI revolution.</p>
+                <p>At SCDLDS, we conduct high-level applied and methodological research in data and learning sciences to
+                    aid in informed decision-making and address complex societal challenges. Initially, our work is
+                    focused on four key areas: ⁠Data-driven financial research, ⁠Weather and climate modeling,
+                    Reinforcement learning, and Epidemiological modeling.</p>
+                <p>In addition to our research, we are committed to teaching. We train young minds through engaging
+                    coursework and projects, exposing them to a deep and varied mathematical toolkit that helps them
+                    uncover hidden patterns in large and complex datasets.</p>
+
                 <h3>Contact</h3>
                 <p>For reporting bugs, suggestions or feedback, please reach out at:</p>
                 <ul class="contact-list">
-                    <li><b>Email:</b> <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in" class="link">aman.foujdar_ug2023@ashoka.edu.in</a></li>
-                    <li><a href="https://www.ashoka.edu.in/page/centre-for-data-learning-and-decision-sciences-cdlds/" class="link">SCDLDS Ashoka</a></li>
+                    <li><b>Email:</b> <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in"
+                            class="link">aman.foujdar_ug2023@ashoka.edu.in</a></li>
+                    <li><a href="https://www.ashoka.edu.in/page/centre-for-data-learning-and-decision-sciences-cdlds/"
+                            class="link">SCDLDS Ashoka</a></li>
                     <li><a href="https://github.com/factorboosting" class="link">GitHub</a></li>
-                    <li><a href="https://www.linkedin.com/company/scdlds-ashoka/posts/?feedView=all" class="link">Linkedin</a></li>
+                    <li><a href="https://www.linkedin.com/company/scdlds-ashoka/posts/?feedView=all"
+                            class="link">Linkedin</a></li>
                 </ul>
             </div>
         </section>
@@ -654,28 +441,38 @@
     <footer class="footer">
         <div class="footer-content">
             <p>&copy; 2025 Safexpress Center for Data Learning and Decision Sciences | All rights reserved</p>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: #a1a1aa;">Last updated: <span id="lastUpdated"></span>
+            </p>
         </div>
     </footer>
 
     <script>
-    (function() {
-        var toggle = document.querySelector('.nav-toggle');
-        var menu = document.querySelector('.nav-menu');
-        if (toggle && menu) {
-            toggle.addEventListener('click', function() {
-                toggle.classList.toggle('open');
-                menu.classList.toggle('open');
-            });
-            menu.querySelectorAll('a').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    toggle.classList.remove('open');
-                    menu.classList.remove('open');
+        (function () {
+            var toggle = document.querySelector('.nav-toggle');
+            var menu = document.querySelector('.nav-menu');
+            if (toggle && menu) {
+                toggle.addEventListener('click', function () {
+                    toggle.classList.toggle('open');
+                    menu.classList.toggle('open');
                 });
-            });
-        }
-    })();
+                menu.querySelectorAll('a').forEach(function (link) {
+                    link.addEventListener('click', function () {
+                        toggle.classList.remove('open');
+                        menu.classList.remove('open');
+                    });
+                });
+                document.addEventListener('click', function (event) {
+                    if (!toggle.contains(event.target) && !menu.contains(event.target)) {
+                        toggle.classList.remove('open');
+                        menu.classList.remove('open');
+                    }
+                });
+            }
+        })();
     </script>
 
     <script src="script.js"></script>
+    <script type="module" src="auth.js"></script>
 </body>
+
 </html>

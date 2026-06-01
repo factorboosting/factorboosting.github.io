@@ -483,9 +483,9 @@ body {
 .factor-tooltip-trigger::after {
     content: attr(data-tooltip);
     position: absolute;
-    left: 50%;
+    left: 0;
     bottom: calc(100% + 12px);
-    transform: translateX(-50%) translateY(6px);
+    transform: translateY(6px);
     width: 260px;
     padding: 10px 12px;
     border-radius: 12px;
@@ -509,9 +509,9 @@ body {
 .factor-tooltip-trigger::before {
     content: "";
     position: absolute;
-    left: 50%;
+    left: 20px;
     bottom: calc(100% + 4px);
-    transform: translateX(-50%) translateY(6px);
+    transform: translateY(6px);
     border-width: 8px 7px 0 7px;
     border-style: solid;
     border-color: rgba(18, 18, 24, 0.92) transparent transparent transparent;
@@ -530,7 +530,7 @@ body {
 .factor-tooltip-trigger.tooltip-open::before {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
 }
 
 .factor-tooltip-trigger:hover,
@@ -1893,3 +1893,78 @@ table {
         padding: 0.5rem 0.7rem;
     }
 }
+
+/* Quick Start CTA Buttons */
+.hero-cta-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.quickstart-btn {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.quickstart-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); }
+    50% { box-shadow: 0 4px 24px rgba(37, 99, 235, 0.55); }
+}
+
+.quickstart-secondary {
+    display: inline-block;
+    color: var(--primary-color);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 2px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.quickstart-secondary:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Analyze link in factor table */
+.analyze-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--primary-color);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.analyze-link:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
