@@ -176,47 +176,69 @@ const BT = (() => {
                 // Clear default selections
                 activeFactors.clear();
                 
-                // Map the parameter to the appropriate factor and strategy
-                let targetFactorName = null;
-                let longCode = null;
-                let shortCode = null;
-                let isLongShort = true;
+                let targetFactors = [];
+                let isLongShort = false;
                 
                 switch(factorParam) {
                     case 'MKT':
-                        targetFactorName = 'Size'; // arbitrary, just need all stocks for MKT proxy, wait, actually MKT should just run without filters, but the code requires at least one label. Let's select Size Big & Small.
-                        longCode = ['B', 'S'];
-                        isLongShort = false;
+                        targetFactors = [{ name: 'Size', long: ['B', 'S'] }];
                         break;
                     case 'SMB':
-                        targetFactorName = 'Size';
-                        longCode = ['S'];
-                        shortCode = ['B'];
+                        targetFactors = [{ name: 'Size', long: ['S'], short: ['B'] }];
+                        isLongShort = true;
                         break;
                     case 'HML':
-                        targetFactorName = 'Book-to-Market';
-                        longCode = ['V']; // Value
-                        shortCode = ['G']; // Growth
+                        targetFactors = [{ name: 'Book-to-Market', long: ['V'], short: ['G'] }];
+                        isLongShort = true;
                         break;
                     case 'WML':
-                        targetFactorName = 'Momentum';
-                        longCode = ['W']; // Winner
-                        shortCode = ['L']; // Loser
+                        targetFactors = [{ name: 'Momentum', long: ['W'], short: ['L'] }];
+                        isLongShort = true;
                         break;
                     case 'RMW':
-                        targetFactorName = 'Op. Profitability';
-                        longCode = ['R']; // Robust
-                        shortCode = ['W']; // Weak
+                        targetFactors = [{ name: 'Op. Profitability', long: ['R'], short: ['W'] }];
+                        isLongShort = true;
                         break;
                     case 'CMA':
-                        targetFactorName = 'Investment';
-                        longCode = ['C']; // Conservative
-                        shortCode = ['A']; // Aggressive
+                        targetFactors = [{ name: 'Investment', long: ['C'], short: ['A'] }];
+                        isLongShort = true;
                         break;
+                        
+                    // Size & Book-to-Market
+                    case 'SV': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Book-to-Market', long: ['V'] }]; break;
+                    case 'SBM_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Book-to-Market', long: ['N'] }]; break;
+                    case 'SG': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Book-to-Market', long: ['G'] }]; break;
+                    case 'BV': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Book-to-Market', long: ['V'] }]; break;
+                    case 'BBM_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Book-to-Market', long: ['N'] }]; break;
+                    case 'BG': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Book-to-Market', long: ['G'] }]; break;
+                    
+                    // Size & Operating Profitability
+                    case 'SR': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Op. Profitability', long: ['R'] }]; break;
+                    case 'SOP_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Op. Profitability', long: ['N'] }]; break;
+                    case 'SW': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Op. Profitability', long: ['W'] }]; break;
+                    case 'BR': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Op. Profitability', long: ['R'] }]; break;
+                    case 'BOP_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Op. Profitability', long: ['N'] }]; break;
+                    case 'BW': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Op. Profitability', long: ['W'] }]; break;
+                    
+                    // Size & Investment
+                    case 'SC': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Investment', long: ['C'] }]; break;
+                    case 'SI_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Investment', long: ['N'] }]; break;
+                    case 'SA': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Investment', long: ['A'] }]; break;
+                    case 'BC': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Investment', long: ['C'] }]; break;
+                    case 'BI_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Investment', long: ['N'] }]; break;
+                    case 'BA': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Investment', long: ['A'] }]; break;
+                    
+                    // Momentum
+                    case 'SM_L': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Momentum', long: ['L'] }]; break;
+                    case 'SM_N': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Momentum', long: ['N'] }]; break;
+                    case 'SM_W': targetFactors = [{ name: 'Size', long: ['S'] }, { name: 'Momentum', long: ['W'] }]; break;
+                    case 'BM_L': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Momentum', long: ['L'] }]; break;
+                    case 'BM_N': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Momentum', long: ['N'] }]; break;
+                    case 'BM_W': targetFactors = [{ name: 'Size', long: ['B'] }, { name: 'Momentum', long: ['W'] }]; break;
                 }
 
-                if (targetFactorName) {
-                    activeFactors.add(targetFactorName);
+                if (targetFactors.length > 0) {
+                    targetFactors.forEach(f => activeFactors.add(f.name));
                     buildFactorPicker();
                     buildFactorPills('bt-long-factors', 'long');
                     buildFactorPills('bt-short-factors', 'short');
@@ -225,21 +247,23 @@ const BT = (() => {
                     const strategyBtn = document.querySelector(`#bt-strategy-toggle .bt-toggle-btn[data-val="${isLongShort ? 'long_short' : 'long_only'}"]`);
                     if (strategyBtn) setStrategy(strategyBtn);
                     
-                    // Click the long pills
-                    const lCodes = Array.isArray(longCode) ? longCode : [longCode];
-                    lCodes.forEach(code => {
-                        const btn = document.querySelector(`.bt-pill[data-factor="${targetFactorName}"][data-code="${code}"][data-side="long"]`);
-                        if (btn) btn.classList.add('sel-long');
+                    targetFactors.forEach(f => {
+                        // Click the long pills
+                        if (f.long) {
+                            f.long.forEach(code => {
+                                const btn = document.querySelector(`.bt-pill[data-factor="${f.name}"][data-code="${code}"][data-side="long"]`);
+                                if (btn) btn.classList.add('sel-long');
+                            });
+                        }
+                        
+                        // Click the short pills
+                        if (isLongShort && f.short) {
+                            f.short.forEach(code => {
+                                const btn = document.querySelector(`.bt-pill[data-factor="${f.name}"][data-code="${code}"][data-side="short"]`);
+                                if (btn) btn.classList.add('sel-short');
+                            });
+                        }
                     });
-                    
-                    // Click the short pills
-                    if (isLongShort && shortCode) {
-                        const sCodes = Array.isArray(shortCode) ? shortCode : [shortCode];
-                        sCodes.forEach(code => {
-                            const btn = document.querySelector(`.bt-pill[data-factor="${targetFactorName}"][data-code="${code}"][data-side="short"]`);
-                            if (btn) btn.classList.add('sel-short');
-                        });
-                    }
                     
                     // Auto-run
                     addPortfolio();

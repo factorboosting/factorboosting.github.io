@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -124,6 +125,7 @@
             .team-row {
                 gap: 2rem;
             }
+
             .team-photo-wrap {
                 width: 140px;
                 height: 140px;
@@ -131,28 +133,41 @@
         }
     </style>
 </head>
+
 <body>
     <div class="beta-banner">
-        This website is currently in <strong>beta</strong>. If you encounter any bugs or issues, please <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in">report them here</a>.
+        This website is currently in <strong>beta</strong>. If you encounter any bugs or issues, please <a
+            href="mailto:aman.foujdar_ug2023@ashoka.edu.in">report them here</a>.
     </div>
     <nav class="navbar">
-            <div class="nav-container">
-                <div class="logo">
-                    <img src="Data/Ashoka-opt-logo.webp" alt="Ashoka University" style="height: 36px; vertical-align: middle; margin-right: 10px;">
-                    Safexpress Center for Data Learning and Decision Sciences
-                </div>
-                <button class="nav-toggle" aria-label="Toggle menu">
-                    <span></span><span></span><span></span>
-                </button>
-                <ul class="nav-menu">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="backtester.html">Analysis</a></li>
-                    <li><a href="index.html#downloads">Downloads</a></li>
-                    <li><a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank">Documentation</a></li>
-                    <li><a href="team.html" class="active">Team</a></li>
-                </ul>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="Data/Ashoka-opt-logo.webp" alt="Ashoka University"
+                    style="height: 36px; vertical-align: middle; margin-right: 10px;">
+                SCDLDS Factor Library
             </div>
-        </nav>
+            <button class="nav-toggle" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="backtester.html">Analysis</a></li>
+                <li><a href="#downloads">Downloads</a></li>
+                <li><a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank">Documentation</a></li>
+                <li><a href="team.html">Team</a></li>
+            </ul>
+            <div id="user-profile" style="display: flex; align-items: center; gap: 12px; margin-left: 20px;">
+                <button id="nav-login-btn"
+                    style="background-color: #2563eb; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">Login
+                    / Sign Up</button>
+                <span id="user-email"
+                    style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;"></span>
+                <button id="logout-btn"
+                    style="display: none; background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; transition: all 0.2s;">Sign
+                    Out</button>
+            </div>
+        </div>
+    </nav>
 
     <header class="hero">
         <div class="hero-content">
@@ -172,7 +187,8 @@
                     </div>
                     <div class="team-name">Prof. Sandeep Juneja</div>
                     <div class="team-role">Professor of Computer Science & Director</div>
-                    <div class="team-affiliation">Safexpress Centre for Data Learning and Decision Sciences, Ashoka University</div>
+                    <div class="team-affiliation">Safexpress Centre for Data Learning and Decision Sciences, Ashoka
+                        University</div>
                     <div class="team-links">
                         <a href="mailto:sandeep.juneja@ashoka.edu.in" class="link">Email</a>
                     </div>
@@ -242,22 +258,23 @@
     </footer>
 
     <script>
-        (function() {
+        (function () {
             var toggle = document.querySelector('.nav-toggle');
             var menu = document.querySelector('.nav-menu');
             if (toggle && menu) {
-                toggle.addEventListener('click', function() {
+                toggle.addEventListener('click', function () {
                     toggle.classList.toggle('open');
                     menu.classList.toggle('open');
                 });
-                menu.querySelectorAll('a').forEach(function(link) {
-                    link.addEventListener('click', function() {
+                menu.querySelectorAll('a').forEach(function (link) {
+                    link.addEventListener('click', function () {
                         toggle.classList.remove('open');
                         menu.classList.remove('open');
                     });
                 });
             }
         })();
-        </script>
+    </script>
 </body>
+
 </html>
