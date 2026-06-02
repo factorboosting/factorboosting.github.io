@@ -691,8 +691,33 @@ const BT = (() => {
             const longDF = applyFilters(mdf, longFilters);
             const shortDF = strategy === 'long_short' ? applyFilters(mdf, shortFilters) : [];
 
-            const currLongCodes = new Set(longDF.map(r => r.Co_Code));
-            const currShortCodes = new Set(shortDF.map(r => r.Co_Code));
+            // 2x3 Double-Sort & 5-Firm Minimum Logic
+            const minFirms = 5;
+            const longS = longDF.filter(r => r.Size_Label === 'S');
+            const longB = longDF.filter(r => r.Size_Label === 'B');
+            const shortS = shortDF.filter(r => r.Size_Label === 'S');
+            const shortB = shortDF.filter(r => r.Size_Label === 'B');
+
+            let validLongS = longS.length >= minFirms;
+            let validLongB = longB.length >= minFirms;
+            let validShortS = shortS.length >= minFirms;
+            let validShortB = shortB.length >= minFirms;
+
+            let validS = strategy === 'long_short' ? (validLongS && validShortS) : validLongS;
+            let validB = strategy === 'long_short' ? (validLongB && validShortB) : validLongB;
+
+            let finalLongDF = [], finalShortDF = [];
+            if (validS) {
+                finalLongDF = finalLongDF.concat(longS);
+                if (strategy === 'long_short') finalShortDF = finalShortDF.concat(shortS);
+            }
+            if (validB) {
+                finalLongDF = finalLongDF.concat(longB);
+                if (strategy === 'long_short') finalShortDF = finalShortDF.concat(shortB);
+            }
+
+            const currLongCodes = new Set(finalLongDF.map(r => r.Co_Code));
+            const currShortCodes = new Set(finalShortDF.map(r => r.Co_Code));
 
             // Turnover: long-only counts only long leg; long-short pays TC on BOTH legs (sum).
             let monthTurnoverRatio = 0;
@@ -710,15 +735,37 @@ const BT = (() => {
             prevLongCodes = currLongCodes;
             prevShortCodes = currShortCodes;
 
-            const ewL = calcEW(longDF), vwL = calcVW(longDF);
-            const ewS = shortDF.length > 0 ? calcEW(shortDF) : 0;
-            const vwS = shortDF.length > 0 ? calcVW(shortDF) : 0;
+            let ewNet = 0, vwNet = 0;
 
-            // Standard dollar-neutral L-S: long return MINUS short return (NOT divided by 2).
-            // This matches Fama-French factor construction. Dividing by 2 would understate.
-            let ewNet, vwNet;
-            if (strategy === 'long_short') { ewNet = (ewL - ewS) / 2; vwNet = (vwL - vwS) / 2; }
-            else { ewNet = ewL; vwNet = vwL; }
+            if (strategy === 'long_short') {
+                let netS_ew = validS ? (calcEW(longS) - calcEW(shortS)) : null;
+                let netB_ew = validB ? (calcEW(longB) - calcEW(shortB)) : null;
+                let netS_vw = validS ? (calcVW(longS) - calcVW(shortS)) : null;
+                let netB_vw = validB ? (calcVW(longB) - calcVW(shortB)) : null;
+
+                if (validS && validB) {
+                    ewNet = (netS_ew + netB_ew) / 2;
+                    vwNet = (netS_vw + netB_vw) / 2;
+                } else if (validS) {
+                    ewNet = netS_ew; vwNet = netS_vw;
+                } else if (validB) {
+                    ewNet = netB_ew; vwNet = netB_vw;
+                }
+            } else {
+                let L_S_ew = validS ? calcEW(longS) : null;
+                let L_B_ew = validB ? calcEW(longB) : null;
+                let L_S_vw = validS ? calcVW(longS) : null;
+                let L_B_vw = validB ? calcVW(longB) : null;
+
+                if (validS && validB) {
+                    ewNet = (L_S_ew + L_B_ew) / 2;
+                    vwNet = (L_S_vw + L_B_vw) / 2;
+                } else if (validS) {
+                    ewNet = L_S_ew; vwNet = L_S_vw;
+                } else if (validB) {
+                    ewNet = L_B_ew; vwNet = L_B_vw;
+                }
+            }
 
             // Apply TC drag after month 0
             if (tc.mode !== 'none' && mi > 0) {
