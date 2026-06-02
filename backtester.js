@@ -27,9 +27,9 @@ const BT = (() => {
         'Classic (FF5 + Momentum)': {
             'Size':           { col: 'Size_Label',     labels: { 'B': 'Big',          'S': 'Small' } },
             'Book-to-Market': { col: 'BM_Label',       labels: { 'G': 'Growth',       'N': 'Neutral', 'V': 'Value' } },
-            'Op. Profitability': { col: 'OpProf_Label', labels: { 'R': 'Robust',       'N': 'Neutral', 'W': 'Weak' } },
-            'Investment':     { col: 'Inv_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
-            'Momentum':       { col: 'Momentum_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
+            'Op. Profitability': { col: 'OP_Label', labels: { 'R': 'Robust',       'N': 'Neutral', 'W': 'Weak' } },
+            'Investment':     { col: 'INV_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
+            'Momentum':       { col: 'MOM_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
         },
         'Extended Factors': {
             'Asset Turnover':      { col: 'AT_Label',  labels: { 'H': 'High',  'N': 'Neutral', 'L': 'Low' } },
@@ -130,7 +130,7 @@ const BT = (() => {
         
         if (notice) { notice.style.display = 'block'; notice.textContent = 'Loading universe data...'; }
         
-        let url = 'Data/Updated_Factor_Data/5_all_labels.csv';
+        let url = 'Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv';
         if (universe === 'top500') url = 'Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv';
         else if (universe === 'top300') url = 'Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv';
 
@@ -138,7 +138,10 @@ const BT = (() => {
             const cache = await loadBenchmarks();
             const benchmarks = cache.b || {};
             const namesMap = cache.names || {};
-            const res = await fetch(url);
+            
+            // Add cache-busting timestamp so updated CSVs are loaded immediately
+            const fetchUrl = url + '?v=' + new Date().getTime();
+            const res = await fetch(fetchUrl);
             if (!res.ok) throw new Error(`CSV fetch failed (HTTP ${res.status}).`);
             const parsed = parseCSV(await res.text());
 
@@ -714,7 +717,7 @@ const BT = (() => {
             // Standard dollar-neutral L-S: long return MINUS short return (NOT divided by 2).
             // This matches Fama-French factor construction. Dividing by 2 would understate.
             let ewNet, vwNet;
-            if (strategy === 'long_short') { ewNet = ewL - ewS; vwNet = vwL - vwS; }
+            if (strategy === 'long_short') { ewNet = (ewL - ewS) / 2; vwNet = (vwL - vwS) / 2; }
             else { ewNet = ewL; vwNet = vwL; }
 
             // Apply TC drag after month 0
