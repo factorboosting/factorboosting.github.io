@@ -53,12 +53,12 @@ const BT = (() => {
     // ── State ─────────────────────────────────────────────────────────────────
     let rawData = [], monthGroups = {}, allMonths = [];
     let chartInst = null, ddChartInst = null;
-    let currentStrategy = 'long_only', currentWeight = 'ew';
+    let currentStrategy = 'long_only', currentWeight = 'vw';
     let portfolios = [], nextId = 1;
     let activeHoldingsId = null, currentMonthIdx = 0, runMonths = [];
     let benchmarkSeries = {};
     let activeBenchmarkId = 'nifty50';
-    let showBenchmark = false;
+    let showBenchmark = true;
     let heatmapOpen = false, heatmapPortfolioId = null;
     let activeFactors = new Set(['Size', 'Book-to-Market', 'Momentum']);
     let dataQualityStats = { dropped: 0, capped: 0, total: 0 };
@@ -93,27 +93,72 @@ const BT = (() => {
     }
 
     // ── Load data ─────────────────────────────────────────────────────────────
-    async function loadData() {
-        const notice = document.getElementById('bt-data-notice');
+    let benchmarkCache = null;
+    let currentUniverse = null;
+
+    async function loadBenchmarks() {
+        if (benchmarkCache) return benchmarkCache;
         try {
             const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
+            if (!res.ok) return {b: {}, names: {}};
+            const parsed = parseCSV(await res.text());
+            const b = {};
+            const names = {};
+            parsed.forEach(row => {
+                const m = row.Month ? row.Month.substring(0, 7) : '';
+                const code = row.Co_Code || row.co_code;
+                if (code && row.Co_Name) names[code] = row.Co_Name;
+                if (!m) return;
+                const n50 = parseFloat(row.nifty50);
+                const n500 = parseFloat(row.nifty500);
+                if (!b[m]) b[m] = {};
+                if (!isNaN(n50)) b[m].nifty50 = n50;
+                if (!isNaN(n500)) b[m].nifty500 = n500;
+            });
+            benchmarkCache = { b, names };
+            return benchmarkCache;
+        } catch(e) {
+            console.error(e);
+            return {b: {}, names: {}};
+        }
+    }
+
+    async function loadData() {
+        const notice = document.getElementById('bt-data-notice');
+        const universe = getToggleVal('bt-universe-toggle') || 'all';
+        if (currentUniverse === universe && rawData && rawData.length > 0) return;
+        
+        if (notice) { notice.style.display = 'block'; notice.textContent = 'Loading universe data...'; }
+        
+        let url = 'Data/Updated_Factor_Data/5_all_labels.csv';
+        if (universe === 'top500') url = 'Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv';
+        else if (universe === 'top300') url = 'Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv';
+
+        try {
+            const cache = await loadBenchmarks();
+            const benchmarks = cache.b || {};
+            const namesMap = cache.names || {};
+            const res = await fetch(url);
             if (!res.ok) throw new Error(`CSV fetch failed (HTTP ${res.status}).`);
             const parsed = parseCSV(await res.text());
 
-            // Detect the return column (handle both monthly_ret and Monthly_Return)
+            // Detect the return column
             const sample = parsed[0] || {};
-            const retCol = 'monthly_ret' in sample ? 'monthly_ret'
-                         : 'Monthly_Return' in sample ? 'Monthly_Return'
-                         : null;
-            if (!retCol) throw new Error('Return column not found. Expected "monthly_ret" or "Monthly_Return".');
+            const retCol = 'monthly_return' in sample ? 'monthly_return'
+                         : 'monthly_ret' in sample ? 'monthly_ret'
+                         : 'Monthly_Return' in sample ? 'Monthly_Return' : null;
+            if (!retCol) throw new Error('Return column not found.');
 
             dataQualityStats = { dropped: 0, capped: 0, total: parsed.length };
             rawData = [];
 
             parsed.forEach(row => {
                 row._month = row.Month ? row.Month.substring(0, 7) : '';
-                row._size = parseFloat(row.Size);
+                row._size = parseFloat(row.eom_mcap || row.Size);
                 if (isNaN(row._size) || row._size <= 0) row._size = 0;
+
+                row.Co_Code = row.co_code || row.Co_Code;
+                row.Co_Name = namesMap[row.Co_Code] || `Stock ${row.Co_Code}`;
 
                 const sanitized = sanitizeReturn(row[retCol]);
                 if (sanitized.action === 'drop') {
@@ -123,11 +168,10 @@ const BT = (() => {
                 if (sanitized.action === 'capped') dataQualityStats.capped++;
                 row._ret = sanitized.value;
 
-                // Benchmarks: keep null if missing/invalid (do NOT default to 0)
-                const n50 = parseFloat(row.nifty50);
-                const n500 = parseFloat(row.nifty500);
-                row._nifty50  = (isNaN(n50)  || !isFinite(n50))  ? null : n50;
-                row._nifty500 = (isNaN(n500) || !isFinite(n500)) ? null : n500;
+                // Benchmarks: keep null if missing/invalid
+                const b = benchmarks[row._month] || {};
+                row._nifty50 = b.nifty50 !== undefined ? b.nifty50 : null;
+                row._nifty500 = b.nifty500 !== undefined ? b.nifty500 : null;
 
                 rawData.push(row);
             });
@@ -139,6 +183,7 @@ const BT = (() => {
                 monthGroups[row._month].push(row);
             });
             allMonths = Object.keys(monthGroups).sort();
+            currentUniverse = universe;
             if (allMonths.length === 0) throw new Error('No data found.');
 
             const smEl = document.getElementById('bt-start-month');
@@ -421,9 +466,23 @@ const BT = (() => {
         currentStrategy = btn.dataset.val;
         document.querySelectorAll('#bt-strategy-toggle .bt-toggle-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.getElementById('bt-short-wrapper').style.display = currentStrategy === 'long_short' ? 'block' : 'none';
+        
+        const benchCheck = document.getElementById('bt-bench-check');
+        if (benchCheck) {
+            benchCheck.checked = currentStrategy === 'long_only';
+            showBenchmark = benchCheck.checked;
+        }
+        
+        if (portfolios.some(p => p.results)) refreshAll();
     }
-    function setToggle(groupId, btn) {
+    async function setToggle(groupId, btn) {
         document.querySelectorAll(`#${groupId} .bt-toggle-btn`).forEach(b => b.classList.toggle('active', b === btn));
+        if (groupId === 'bt-universe-toggle') {
+            await loadData();
+            if (portfolios.some(p => p.results)) {
+                runAll();
+            }
+        }
     }
     function getToggleVal(groupId) {
         const a = document.querySelector(`#${groupId} .bt-toggle-btn.active`);
@@ -625,7 +684,7 @@ const BT = (() => {
         for (let mi = 0; mi < months.length; mi++) {
             const month = months[mi];
             let mdf = monthGroups[month] || [];
-            if (topN) mdf = topNBySize(mdf, topN);
+            // if (topN) mdf = topNBySize(mdf, topN); // Handled by loadData
             const longDF = applyFilters(mdf, longFilters);
             const shortDF = strategy === 'long_short' ? applyFilters(mdf, shortFilters) : [];
 
@@ -739,6 +798,13 @@ const BT = (() => {
     // ── Run ───────────────────────────────────────────────────────────────────
     function runAll() {
         hideError();
+        
+        // Ensure state matches DOM UI before running
+        const activeWtBtn = document.querySelector('#bt-weight-toggle .bt-wt-btn.active');
+        if (activeWtBtn) currentWeight = activeWtBtn.dataset.val;
+        const benchCheck = document.getElementById('bt-bench-check');
+        if (benchCheck) showBenchmark = benchCheck.checked;
+
         if (portfolios.length === 0) {
             const lf = getFilters('long');
             if (Object.values(lf).some(v => v && v.length)) addPortfolio();

@@ -46,67 +46,176 @@
 
     <header class="hero">
         <div class="hero-content">
-            <h1>Financial Factor Data Library</h1>
-            <br>
-            <p>This website is dedicated to the <strong>Fama-French Factors for the Indian equity markets</strong>. The
-                explanatory power of Fama-French factors in capturing stock returns variation is well established in the
-                literature. Several data repositories exist globally, and a handful cover Indian markets. We drew
-                inspiration from these existing resources. What we set out to do differently is to build a resource that
-                is clean, investible, reproducible, and India-aware. We have documented our construction process with
-                full transparency. This will allow practitioners/researchers to replicate, interrogate, and build on our
-                work with confidence. Our coverage includes the Fama-French factors: <strong>Value, Size, Investment,
-                    and Operating Profitability along with Momentum</strong>, for firms listed on both the NSE and BSE,
-                starting April 2002 and updated monthly. Our data source is the CMIE Prowess.</p>
-            <br>
+            <div class="hero-copy">
+                <span class="eyebrow"></span>
+                <h1>Financial Factor Data Library</h1>
 
-            <p><strong>Key contributions of our work:</strong></p>
-            <ul style="margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 1rem;">
-                <li style="margin-bottom: 0.5rem;">Beyond aggregate factor returns, we also provide monthly stock-level
-                    factor labels. This allows users to construct their own portfolios from the ground up, audit factor
-                    exposures in existing holdings, and study cross-sectional variation across the market.</li>
-                <li style="margin-bottom: 0.5rem;">The library includes an <a href="backtester.html"
-                        class="link">interactive analysis tool</a> that lets users visualise factor and portfolio
-                    returns, backtest custom strategies across different factor combinations, and compare multiple
-                    portfolios side by side with detailed performance metrics and stock level holdings.</li>
-                <li style="margin-bottom: 0.5rem;">We have applied rigorously defined filters and market-structure
-                    adjustments throughout. This makes sure that only tradable stocks are included and the time series
-                    is not distorted by outliers. Refer to our <a href="Data/Papers/SCDLDS_Documentation.pdf"
-                        target="_blank" class="link">methodology</a> for details.</li>
-                <li style="margin-bottom: 0.5rem;">Factors will be available across three universes: top 300, top 500
-                    (coming soon), and the full tradeable universe — giving users the flexibility to calibrate exposure
-                    to their own liquidity and risk preferences. All datasets are available in the <a href="#downloads"
-                        class="link">Downloads</a> section.</li>
-                <li style="margin-bottom: 0.5rem;">Unlike the existing resources, every breakpoint used in portfolio
-                    construction is empirically grounded in the structure of the Indian market. Full documentation is
-                    available <a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank" class="link">here</a>.</li>
-            </ul>
-            <br>
-            <p>The Centre is actively exploring what comes next. We are working towards bringing together <strong>factor
-                    frameworks with the frontier of machine learning</strong>. Our current work involves integrating
-                Fama-French factors with modern deep learning architectures for <strong>mutual fund holdings analysis
-                    and portfolio optimization</strong>. We are also investigating <strong>Transaction Cost</strong>
-                modelling under real-world constraints. We will update the website with additional features in the near
-                future.</p>
-        </div>
+                <div class="hero-actions">
+                    <a class="primary-btn" href="backtester.html">Open Analysis Studio</a>
+                    <a class="secondary-btn" href="#about">Read Methodology</a>
+                </div>
+            </div>
+            <div class="hero-visual" aria-label="Portfolio analytics dashboard preview">
+                <div class="visual-shell" data-focus="all">
+                    <div class="visual-toolbar">
+                        <span></span><span></span><span></span>
+                        <strong>Analysis Studio</strong>
+                        <em class="visual-status">Live preview</em>
+                    </div>
+                    <div class="visual-mode-controls" aria-label="Preview focus controls">
+                        <button class="visual-mode active" type="button" data-preview="all"
+                            onclick="setVisualPreview('all')">All</button>
+                        <button class="visual-mode" type="button" data-preview="comparison"
+                            onclick="setVisualPreview('comparison')">Compare</button>
+                        <button class="visual-mode" type="button" data-preview="performance"
+                            onclick="setVisualPreview('performance')">Chart</button>
+                        <button class="visual-mode" type="button" data-preview="holdings"
+                            onclick="setVisualPreview('holdings')">Stats</button>
+                    </div>
+                    <div class="visual-comparison visual-panel" data-panel="comparison">
+                        <div class="visual-head">
+                            <strong>Portfolio Comparison</strong>
+                            <span>2016-10 to 2026-04</span>
+                        </div>
+                        <div class="visual-row">
+                            <b><i class="dot blue"></i>Big</b>
+                            <em class="gain">+15.27%</em>
+                            <span>16.82%</span>
+                            <em class="gain">0.908</em>
+                            <em class="loss">-25.77%</em>
+                        </div>
+                        <div class="visual-row">
+                            <b><i class="dot" style="background: #10b981;"></i>Value</b>
+                            <em class="gain">+19.02%</em>
+                            <span>29.11%</span>
+                            <em class="gain">0.653</em>
+                            <em class="loss">-66.04%</em>
+                        </div>
+                    </div>
+                    <div class="visual-performance visual-panel" data-panel="performance">
+                        <div class="visual-head">
+                            <strong>Portfolio Performance</strong>
+                            <span>Log scale off</span>
+                        </div>
+                        <svg viewBox="0 0 560 250" role="img" aria-label="Portfolio performance line chart">
+                            <defs>
+                                <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
+                                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.22" />
+                                    <stop offset="100%" stop-color="#10b981" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <path class="grid" d="M22 36H540M22 88H540M22 140H540M22 192H540" />
+                            <path class="benchmark-fill"
+                                d="M28 208 C80 196,110 150,150 158 C198 166,218 118,258 98 C318 68,346 108,382 72 C432 30,478 42,536 18 L536 226 L28 226Z" />
+                            <path class="portfolio-line"
+                                d="M28 210 C84 212,116 204,160 206 C210 198,250 211,296 205 C346 201,392 211,438 207 C486 205,512 208,536 210" />
+                            <path class="benchmark-line" style="stroke: #10b981;"
+                                d="M28 208 C80 196,110 150,150 158 C198 166,218 118,258 98 C318 68,346 108,382 72 C432 30,478 42,536 18" />
+                            <circle class="chart-marker marker-blue" cx="536" cy="210" r="5" />
+                            <circle class="chart-marker" style="stroke: #10b981;" cx="536" cy="18" r="5" />
+                        </svg>
+                        <div class="visual-legend"><span><i class="line blue"></i>Big</span><span><i class="line"
+                                    style="background: #10b981;"></i>Value</span></div>
+                    </div>
+                    <div class="visual-table visual-panel" data-panel="holdings">
+                        <div><span>Strategy</span><b>Value</b><em>Active</em></div>
+                        <div><span>Ann. Return</span><b>+19.02%</b><em>High</em></div>
+                        <div><span>Sharpe Ratio</span><b>0.653</b><em>Stable</em></div>
+                    </div>
+                    <div class="visual-signal" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
     <main class="container">
+        <section id="about" class="section">
+            <div class="about-content" style="max-width: 900px; margin: 0 auto;">
+                <p>This website is dedicated to the <strong>Fama-French Factors for the Indian equity markets</strong>.
+                    The
+                    explanatory power of Fama-French factors in capturing stock returns variation is well established in
+                    the
+                    literature. Several data repositories exist globally, and a handful cover Indian markets. We drew
+                    inspiration from these existing resources. What we set out to do differently is to build a resource
+                    that
+                    is clean, investible, reproducible, and India-aware. We have documented our construction process
+                    with
+                    full transparency. This will allow practitioners/researchers to replicate, interrogate, and build on
+                    our
+                    work with confidence. Our coverage includes the Fama-French factors: <strong>Value, Size,
+                        Investment,
+                        and Operating Profitability along with Momentum</strong>, for firms listed on both the NSE and
+                    BSE,
+                    starting April 2002 and updated monthly. Our data source is the CMIE Prowess.</p>
+
+                <h3>Key contributions of our work:</h3>
+                <ul class="contact-list" style="margin-bottom: 2rem;">
+                    <li>Beyond aggregate factor returns, we also provide monthly stock-level
+                        factor labels. This allows users to construct their own portfolios from the ground up, audit
+                        factor
+                        exposures in existing holdings, and study cross-sectional variation across the market.</li>
+                    <li>The library includes an <a href="backtester.html" class="link">interactive analysis tool</a>
+                        that lets users visualise factor and portfolio
+                        returns, backtest custom strategies across different factor combinations, and compare multiple
+                        portfolios side by side with detailed performance metrics and stock level holdings.</li>
+                    <li>We have applied rigorously defined filters and market-structure
+                        adjustments throughout. This makes sure that only tradable stocks are included and the time
+                        series
+                        is not distorted by outliers. Refer to our <a href="Data/Papers/SCDLDS_Documentation.pdf"
+                            target="_blank" class="link">methodology</a> for details.</li>
+                    <li>Factors will be available across three universes: top 300, top 500
+                        (coming soon), and the full tradeable universe — giving users the flexibility to calibrate
+                        exposure
+                        to their own liquidity and risk preferences. All datasets are available in the <a
+                            href="#downloads" class="link">Downloads</a> section.</li>
+                    <li>Unlike the existing resources, every breakpoint used in portfolio
+                        construction is empirically grounded in the structure of the Indian market. Full documentation
+                        is
+                        available <a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank" class="link">here</a>.
+                    </li>
+                </ul>
+                <p>The Centre is actively exploring what comes next. We are working towards bringing together
+                    <strong>factor
+                        frameworks with the frontier of machine learning</strong>. Our current work involves integrating
+                    Fama-French factors with modern deep learning architectures for <strong>mutual fund holdings
+                        analysis
+                        and portfolio optimization</strong>. We are also investigating <strong>Transaction Cost</strong>
+                    modelling under real-world constraints. We will update the website with additional features in the
+                    near
+                    future.
+                </p>
+            </div>
+        </section>
         <section id="factors" class="section">
             <h2 class="section-title">Research Factors &amp; Portfolios</h2>
 
-            <div class="tabs">
-                <button class="tab-btn active" data-tab="factors">Research Factors</button>
-                <button class="tab-btn" data-tab="bookmarket">Size &amp; Book-to-Market</button>
-                <button class="tab-btn" data-tab="profitability">Size &amp; Operating Profitability</button>
-                <button class="tab-btn" data-tab="investment">Size &amp; Investment</button>
-                <button class="tab-btn" data-tab="momentum">Size &amp; Momentum</button>
-                <button class="tab-btn" data-tab="asset_turnover">Size &amp; Asset Turnover</button>
-                <button class="tab-btn" data-tab="sales_growth">Size &amp; Sales Growth</button>
-                <button class="tab-btn" data-tab="accruals">Size &amp; Accruals</button>
-                <button class="tab-btn" data-tab="volatility">Size &amp; Volatility</button>
-                <button class="tab-btn" data-tab="short_term_reversal"> Size &amp; Short-Term Reversal</button>
-
+            <div class="tabs-container">
+                <div class="scroll-fade left hidden">
+                    <button class="scroll-btn" onclick="scrollTabs(-1)" aria-label="Scroll left">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="factors">Research Factors</button>
+                    <button class="tab-btn" data-tab="bookmarket">Size &amp; Book-to-Market</button>
+                    <button class="tab-btn" data-tab="profitability">Size &amp; Operating Profitability</button>
+                    <button class="tab-btn" data-tab="investment">Size &amp; Investment</button>
+                    <button class="tab-btn" data-tab="momentum">Size &amp; Momentum</button>
+                    <button class="tab-btn" data-tab="asset_turnover">Size &amp; Asset Turnover</button>
+                    <button class="tab-btn" data-tab="sales_growth">Size &amp; Sales Growth</button>
+                    <button class="tab-btn" data-tab="accruals">Size &amp; Accruals</button>
+                    <button class="tab-btn" data-tab="volatility">Size &amp; Volatility</button>
+                    <button class="tab-btn" data-tab="short_term_reversal"> Size &amp; Short-Term Reversal</button>
+                </div>
+                
+                <div class="scroll-fade right">
+                    <button class="scroll-btn" onclick="scrollTabs(1)" aria-label="Scroll right">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Research Factors Tab -->
@@ -116,19 +225,117 @@
                     <div class="factor-group">
                         <h3 class="factor-title">9 Research Factors </h3>
                         <div class="table-container">
-                            <table class="data-table factor-table" id="dynamic-factor-table">
-                                <thead id="dynamic-factor-thead">
-                                    <tr>
-                                        <th></th>
-                                        <th>Latest Month</th>
-                                        <th>Last 3 Months</th>
-                                        <th>Last 12 Months</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="dynamic-factor-tbody">
-                                    <!-- Populated dynamically by script.js -->
-                                </tbody>
+                            <table class="data-table factor-table">
+                                <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>March 2025<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 3 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th>Last 12 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                                <tbody>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="Rm-Rf = Market Risk Premium.">
+                                            Rm-Rf (Using Nifty 500)
+                                        </span>
+                                    </td>
+                                    <td class="positive">+1.75%</td>
+                                    <td class="positive">+7.30%</td>
+                                    <td class="positive">+46.14%</td>
+                                    <td><a href="backtester.html?factor=MKT" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="SMB = Small Minus Big.">
+                                            SMB
+                                        </span>
+                                    </td>
+                                    <td class="positive">+0.24%</td>
+                                    <td class="negative">-7.17%</td>
+                                    <td class="negative">-12.84%</td>
+                                    <td><a href="backtester.html?factor=SMB" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="HML = High Minus Low.">
+                                            HML
+                                        </span>
+                                    </td>
+                                    <td class="negative">-3.13%</td>
+                                    <td class="positive">+5.21%</td>
+                                    <td class="positive">+15.62%</td>
+                                    <td><a href="backtester.html?factor=HML" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="WML = Winners Minus Losers.">
+                                            WML
+                                        </span>
+                                    </td>
+                                    <td class="positive">+4.42%</td>
+                                    <td class="positive">+9.03%</td>
+                                    <td class="positive">+17.92%</td>
+                                    <td><a href="backtester.html?factor=WML" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="RMW = Robust Minus Weak.">
+                                            RMW
+                                        </span>
+                                    </td>
+                                    <td class="positive">+0.47%</td>
+                                    <td class="positive">+2.37%</td>
+                                    <td class="negative">-5.46%</td>
+                                    <td><a href="backtester.html?factor=RMW" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="CMA = Conservative Minus Aggressive.">
+                                            CMA
+                                        </span>
+                                    </td>
+                                    <td class="positive">+3.66%</td>
+                                    <td class="positive">+4.78%</td>
+                                    <td class="positive">+2.58%</td>
+                                    <td><a href="backtester.html?factor=CMA" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="AT = Asset Turnover.">
+                                            AT (Asset Turnover)
+                                        </span>
+                                    </td>
+                                    <td class="negative">-3.02%</td>
+                                    <td class="negative">-0.37%</td>
+                                    <td class="negative">-3.05%</td>
+                                    <td><a href="backtester.html?factor=AT" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="SG = Sales Growth.">
+                                            SG (Sales Growth)
+                                        </span>
+                                    </td>
+                                    <td class="negative">-0.74%</td>
+                                    <td class="positive">+0.08%</td>
+                                    <td class="positive">+1.91%</td>
+                                    <td><a href="backtester.html?factor=SG" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                                <tr>
+                                    <td class="factor-name">
+                                        <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="ACC = Accruals.">
+                                            ACC (Accruals)
+                                        </span>
+                                    </td>
+                                    <td class="negative">-1.23%</td>
+                                    <td class="negative">-1.13%</td>
+                                    <td class="positive">+4.00%</td>
+                                    <td><a href="backtester.html?factor=ACC" class="analyze-link">Analyze &rarr;</a></td>
+                                </tr>
+                            </tbody>
                             </table>
                         </div>
                     </div>
@@ -144,7 +351,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span
+                                    <th>March 2025<br><span
                                             style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns
                                             %)</span></th>
                                     <th>Last 3 Months<br><span
@@ -219,7 +426,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span
+                                    <th>March 2025<br><span
                                             style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns
                                             %)</span></th>
                                     <th>Last 3 Months<br><span
@@ -294,7 +501,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span
+                                    <th>March 2025<br><span
                                             style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns
                                             %)</span></th>
                                     <th>Last 3 Months<br><span
@@ -369,7 +576,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span
+                                    <th>March 2025<br><span
                                             style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns
                                             %)</span></th>
                                     <th>Last 3 Months<br><span
@@ -447,7 +654,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span class="col-sub">(Returns %)</span></th>
+                                    <th>March 2025<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 3 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 12 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Analyze</th>
@@ -518,7 +725,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span class="col-sub">(Returns %)</span></th>
+                                    <th>March 2025<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 3 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 12 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Analyze</th>
@@ -588,7 +795,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span class="col-sub">(Returns %)</span></th>
+                                    <th>March 2025<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 3 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 12 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Analyze</th>
@@ -658,7 +865,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span class="col-sub">(Returns %)</span></th>
+                                    <th>March 2025<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 3 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 12 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Analyze</th>
@@ -728,7 +935,7 @@
                             <thead>
                                 <tr>
                                     <th></th>
-                                    <th>March 2026<br><span class="col-sub">(Returns %)</span></th>
+                                    <th>March 2025<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 3 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Last 12 Months<br><span class="col-sub">(Returns %)</span></th>
                                     <th>Analyze</th>

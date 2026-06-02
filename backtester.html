@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Factor Analysis | SCDLDS @ Ashoka</title>
+    <title>Analysis | SCDLDS Factor Library</title>
     <link rel="icon" href="Data/scdlds_ashoka_logo.jpeg">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -479,27 +479,38 @@
         style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.98); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
         <img src="Data/scdlds_ashoka_logo.jpeg" alt="SCDLDS Logo"
             style="height: 80px; margin-bottom: 24px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 12px;">Authentication Required</h2>
-        <p style="color: #475569; margin-bottom: 32px; max-width: 400px; line-height: 1.6;">The Analysis Studio is
-            exclusively available to authenticated users. Please sign in with your Google account to continue.</p>
-        <button id="google-login-btn"
-            style="background-color: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4" />
-                <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853" />
-                <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05" />
-                <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335" />
-            </svg>
-            Sign in with Google
-        </button>
+        
+        <!-- Loading State -->
+        <div id="auth-loading-state" style="display: flex; flex-direction: column; align-items: center;">
+            <div style="width: 32px; height: 32px; border: 3px solid rgba(37,99,235,0.2); border-top-color: #2563eb; border-radius: 50%; animation: bt-spin 1s linear infinite; margin-bottom: 16px;"></div>
+            <h2 style="font-size: 1.25rem; color: #475569; margin-bottom: 12px;">Verifying Session...</h2>
+            <style>@keyframes bt-spin { to { transform: rotate(360deg); } }</style>
+        </div>
+
+        <!-- Auth Required State -->
+        <div id="auth-required-state" style="display: none; flex-direction: column; align-items: center;">
+            <h2 style="font-size: 1.5rem; color: #0f172a; margin-bottom: 12px;">Authentication Required</h2>
+            <p style="color: #475569; margin-bottom: 32px; max-width: 400px; line-height: 1.6;">The Analysis Studio is
+                exclusively available to authenticated users. Please sign in with your Google account to continue.</p>
+            <button id="google-login-btn"
+                style="background-color: #2563eb; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <path
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        fill="#4285F4" />
+                    <path
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        fill="#34A853" />
+                    <path
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        fill="#FBBC05" />
+                    <path
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        fill="#EA4335" />
+                </svg>
+                Sign in with Google
+            </button>
+        </div>
     </div>
 
     <div class="beta-banner">
@@ -519,7 +530,7 @@
             <ul class="nav-menu">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="backtester.html">Analysis</a></li>
-                <li><a href="#downloads">Downloads</a></li>
+                <li><a href="index.html#downloads">Downloads</a></li>
                 <li><a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank">Documentation</a></li>
                 <li><a href="team.html">Team</a></li>
             </ul>
@@ -543,7 +554,7 @@
         </div>
     </header>
 
-    <div class="container" style="margin-bottom: 0; padding-bottom: 0;">
+    <div class="container" style="margin-top: 2rem; margin-bottom: 0; padding-bottom: 0;">
         <div class="section" style="margin-bottom: 0;">
             <p class="subtitle">Fama-French factor portfolios on Indian equities &mdash; compare up to 4 strategies</p>
             <h2 class="section-title" style="font-size: 1.25rem; margin-bottom: 0.75rem;">How to Use</h2>
@@ -731,7 +742,7 @@
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span style="font-weight:600; color:var(--text-primary);">Weighting:</span>
                         <div class="bt-weight-toggle" id="bt-weight-toggle">
-                            <button class="bt-wt-btn " data-val="ew" onclick="BT.setWeight('ew')">Equal</button>
+                            <button class="bt-wt-btn" data-val="ew" onclick="BT.setWeight('ew')">Equal</button>
                             <button class="bt-wt-btn active" data-val="vw" onclick="BT.setWeight('vw')">Value</button>
                         </div>
                     </div>

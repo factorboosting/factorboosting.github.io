@@ -398,3 +398,81 @@ async function loadDynamicFactorTable() {
         console.error("Error loading dynamic factor table:", error);
     }
 }
+
+window.setVisualPreview = function setVisualPreview(mode) {
+    const shell = document.querySelector('.visual-shell');
+    const controls = document.querySelectorAll('.visual-mode');
+    if (!shell || controls.length === 0) return;
+
+    const nextMode = mode || 'all';
+    shell.dataset.focus = nextMode;
+    controls.forEach(control => {
+        control.classList.toggle('active', control.dataset.preview === nextMode);
+    });
+};
+
+function initPointerTilt() {
+    const shell = document.querySelector('.visual-shell');
+    if (!shell || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    shell.addEventListener('pointermove', event => {
+        if (window.innerWidth < 980) return;
+
+        const rect = shell.getBoundingClientRect();
+        const x = (event.clientX - rect.left) / rect.width - 0.5;
+        const y = (event.clientY - rect.top) / rect.height - 0.5;
+
+        shell.style.setProperty('--tilt-x', `${4 - y * 5}deg`);
+        shell.style.setProperty('--tilt-y', `${-6 + x * 7}deg`);
+    });
+
+    shell.addEventListener('pointerleave', () => {
+        shell.style.removeProperty('--tilt-x');
+        shell.style.removeProperty('--tilt-y');
+    });
+}
+
+function downloadFile(filename) {
+    const link = document.createElement('a');
+    link.href = filename;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+document.addEventListener('DOMContentLoaded', initPointerTilt);
+
+// ── Horizontal Scroll Tabs Logic ──
+document.addEventListener('DOMContentLoaded', () => {
+    const tabsContainer = document.querySelector('.tabs-container');
+    if (!tabsContainer) return;
+    const tabs = tabsContainer.querySelector('.tabs');
+    const leftFade = tabsContainer.querySelector('.scroll-fade.left');
+    const rightFade = tabsContainer.querySelector('.scroll-fade.right');
+    
+    function updateScrollFades() {
+        if (!tabs || !leftFade || !rightFade) return;
+        if (tabs.scrollLeft > 0) {
+            leftFade.classList.remove('hidden');
+        } else {
+            leftFade.classList.add('hidden');
+        }
+        if (tabs.scrollLeft + tabs.clientWidth >= tabs.scrollWidth - 1) {
+            rightFade.classList.add('hidden');
+        } else {
+            rightFade.classList.remove('hidden');
+        }
+    }
+    
+    tabs.addEventListener('scroll', updateScrollFades);
+    window.addEventListener('resize', updateScrollFades);
+    setTimeout(updateScrollFades, 100);
+});
+
+function scrollTabs(direction) {
+    const tabs = document.querySelector('.tabs-container .tabs');
+    if (tabs) {
+        tabs.scrollBy({ left: direction * 300, behavior: 'smooth' });
+    }
+}
