@@ -671,7 +671,7 @@ const BT = (() => {
             // Standard dollar-neutral L-S: long return MINUS short return (NOT divided by 2).
             // This matches Fama-French factor construction. Dividing by 2 would understate.
             let ewNet, vwNet;
-            if (strategy === 'long_short') { ewNet = (ewL - ewS) / 2; vwNet = (vwL - vwS) / 2; }
+            if (strategy === 'long_short') { ewNet = (ewL - ewS) ; vwNet = (vwL - vwS); }
             else { ewNet = ewL; vwNet = vwL; }
 
             // Apply TC drag after month 0
