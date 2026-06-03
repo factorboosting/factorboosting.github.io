@@ -4,12 +4,13 @@
 const BT = (() => {
     'use strict';
 
-    const MAX_PORTFOLIOS = 4;
+    const MAX_PORTFOLIOS = 5;
     const COLORS = [
         { line: '#3b82f6', bg: 'rgba(59,130,246,0.08)', chip: '#3b82f6' },
         { line: '#10b981', bg: 'rgba(16,185,129,0.08)', chip: '#10b981' },
         { line: '#f59e0b', bg: 'rgba(245,158,11,0.08)', chip: '#f59e0b' },
         { line: '#8b5cf6', bg: 'rgba(139,92,246,0.08)', chip: '#8b5cf6' },
+        { line: '#ec4899', bg: 'rgba(236,72,153,0.08)', chip: '#ec4899' },
     ];
     const BENCH_COLOR = { line: '#ef4444', bg: 'rgba(239,68,68,0.06)' };
     const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -60,7 +61,7 @@ const BT = (() => {
     let activeBenchmarkId = 'nifty50';
     let showBenchmark = true;
     let heatmapOpen = false, heatmapPortfolioId = null;
-    let activeFactors = new Set(['Size', 'Book-to-Market', 'Momentum']);
+    let activeFactors = new Set(['Momentum']);
     let dataQualityStats = { dropped: 0, capped: 0, total: 0 };
 
     // ── CSV parser ────────────────────────────────────────────────────────────
@@ -193,7 +194,7 @@ const BT = (() => {
             const emEl = document.getElementById('bt-end-month');
             smEl.min = emEl.min = allMonths[0];
             smEl.max = emEl.max = allMonths[allMonths.length - 1];
-            smEl.value = allMonths[0];
+            smEl.value = allMonths.includes('2003-10') ? '2003-10' : allMonths[0];
             emEl.value = allMonths[allMonths.length - 1];
 
             buildFactorPicker();
@@ -698,22 +699,35 @@ const BT = (() => {
             const shortS = shortDF.filter(r => r.Size_Label === 'S');
             const shortB = shortDF.filter(r => r.Size_Label === 'B');
 
-            let validLongS = longS.length >= minFirms;
-            let validLongB = longB.length >= minFirms;
-            let validShortS = shortS.length >= minFirms;
-            let validShortB = shortB.length >= minFirms;
+            // Determine if the user's filters INTEND to include S or B
+            const longAllowsS = !longFilters['Size'] || longFilters['Size'].includes('S');
+            const longAllowsB = !longFilters['Size'] || longFilters['Size'].includes('B');
+            const shortAllowsS = strategy === 'long_short' && (!shortFilters['Size'] || shortFilters['Size'].includes('S'));
+            const shortAllowsB = strategy === 'long_short' && (!shortFilters['Size'] || shortFilters['Size'].includes('B'));
 
-            let validS = strategy === 'long_short' ? (validLongS && validShortS) : validLongS;
-            let validB = strategy === 'long_short' ? (validLongB && validShortB) : validLongB;
+            let validLongS = longAllowsS && (longS.length >= minFirms);
+            let validLongB = longAllowsB && (longB.length >= minFirms);
+            let validShortS = shortAllowsS && (shortS.length >= minFirms);
+            let validShortB = shortAllowsB && (shortB.length >= minFirms);
+
+            // If a strategy is long-short and BOTH legs intend to trade a size bracket,
+            // we enforce size neutrality: if one leg fails the firm count, drop it from the other leg too.
+            if (strategy === 'long_short') {
+                if (longAllowsS && shortAllowsS) {
+                    if (!validLongS || !validShortS) { validLongS = false; validShortS = false; }
+                }
+                if (longAllowsB && shortAllowsB) {
+                    if (!validLongB || !validShortB) { validLongB = false; validShortB = false; }
+                }
+            }
 
             let finalLongDF = [], finalShortDF = [];
-            if (validS) {
-                finalLongDF = finalLongDF.concat(longS);
-                if (strategy === 'long_short') finalShortDF = finalShortDF.concat(shortS);
-            }
-            if (validB) {
-                finalLongDF = finalLongDF.concat(longB);
-                if (strategy === 'long_short') finalShortDF = finalShortDF.concat(shortB);
+            if (validLongS) finalLongDF = finalLongDF.concat(longS);
+            if (validLongB) finalLongDF = finalLongDF.concat(longB);
+            
+            if (strategy === 'long_short') {
+                if (validShortS) finalShortDF = finalShortDF.concat(shortS);
+                if (validShortB) finalShortDF = finalShortDF.concat(shortB);
             }
 
             const currLongCodes = new Set(finalLongDF.map(r => r.Co_Code));
@@ -737,33 +751,47 @@ const BT = (() => {
 
             let ewNet = 0, vwNet = 0;
 
-            if (strategy === 'long_short') {
-                let netS_ew = validS ? (calcEW(longS) - calcEW(shortS)) : null;
-                let netB_ew = validB ? (calcEW(longB) - calcEW(shortB)) : null;
-                let netS_vw = validS ? (calcVW(longS) - calcVW(shortS)) : null;
-                let netB_vw = validB ? (calcVW(longB) - calcVW(shortB)) : null;
+            let L_ew = null, L_vw = null;
+            // SIZE-NEUTRAL LONG-ONLY LOGIC
+            // Computes the 50/50 average of the Small and Big bucket returns
+            if (validLongS && validLongB) {
+                L_ew = (calcEW(longS) + calcEW(longB)) / 2;
+                L_vw = (calcVW(longS) + calcVW(longB)) / 2;
+            } else if (validLongS) {
+                L_ew = calcEW(longS); L_vw = calcVW(longS);
+            } else if (validLongB) {
+                L_ew = calcEW(longB); L_vw = calcVW(longB);
+            }
 
-                if (validS && validB) {
-                    ewNet = (netS_ew + netB_ew) / 2;
-                    vwNet = (netS_vw + netB_vw) / 2;
-                } else if (validS) {
-                    ewNet = netS_ew; vwNet = netS_vw;
-                } else if (validB) {
-                    ewNet = netB_ew; vwNet = netB_vw;
+            let S_ew = null, S_vw = null;
+            if (strategy === 'long_short') {
+                // SIZE-NEUTRAL SHORT-ONLY LOGIC
+                // Computes the 50/50 average of the Small and Big short bucket returns
+                if (validShortS && validShortB) {
+                    S_ew = (calcEW(shortS) + calcEW(shortB)) / 2;
+                    S_vw = (calcVW(shortS) + calcVW(shortB)) / 2;
+                } else if (validShortS) {
+                    S_ew = calcEW(shortS); S_vw = calcVW(shortS);
+                } else if (validShortB) {
+                    S_ew = calcEW(shortB); S_vw = calcVW(shortB);
+                }
+            }
+
+            if (strategy === 'long_short') {
+                // FINAL FAMA-FRENCH L-S PREMIUM
+                // Subtracts the Size-Neutral Short leg from the Size-Neutral Long leg
+                if (L_ew !== null && S_ew !== null) {
+                    ewNet = L_ew - S_ew;
+                    vwNet = L_vw - S_vw;
+                } else {
+                    ewNet = 0; vwNet = 0;
                 }
             } else {
-                let L_S_ew = validS ? calcEW(longS) : null;
-                let L_B_ew = validB ? calcEW(longB) : null;
-                let L_S_vw = validS ? calcVW(longS) : null;
-                let L_B_vw = validB ? calcVW(longB) : null;
-
-                if (validS && validB) {
-                    ewNet = (L_S_ew + L_B_ew) / 2;
-                    vwNet = (L_S_vw + L_B_vw) / 2;
-                } else if (validS) {
-                    ewNet = L_S_ew; vwNet = L_S_vw;
-                } else if (validB) {
-                    ewNet = L_B_ew; vwNet = L_B_vw;
+                if (L_ew !== null) {
+                    ewNet = L_ew;
+                    vwNet = L_vw;
+                } else {
+                    ewNet = 0; vwNet = 0;
                 }
             }
 

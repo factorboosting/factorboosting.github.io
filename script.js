@@ -198,22 +198,12 @@ function initHeroPreview() {
 
     controls.forEach(control => {
         control.addEventListener('click', () => {
-            window.setVisualPreview(control.dataset.preview || 'all');
+            window.setVisualPreview(control.dataset.preview || 'long_only');
         });
     });
 }
 
-window.setVisualPreview = function setVisualPreview(mode) {
-    const shell = document.querySelector('.visual-shell');
-    const controls = document.querySelectorAll('.visual-mode');
-    if (!shell || controls.length === 0) return;
 
-    const nextMode = mode || 'all';
-    shell.dataset.focus = nextMode;
-    controls.forEach(control => {
-        control.classList.toggle('active', control.dataset.preview === nextMode);
-    });
-};
 
 function initPointerTilt() {
     const shell = document.querySelector('.visual-shell');
@@ -315,7 +305,8 @@ function copyBibtex() {
 
 async function loadDynamicFactorTable() {
     try {
-        const response = await fetch('factor_table.csv');
+        const fetchUrl = 'factor_table.csv?v=' + new Date().getTime();
+        const response = await fetch(fetchUrl);
         if (!response.ok) return;
         const csvText = await response.text();
         
@@ -402,12 +393,22 @@ async function loadDynamicFactorTable() {
 window.setVisualPreview = function setVisualPreview(mode) {
     const shell = document.querySelector('.visual-shell');
     const controls = document.querySelectorAll('.visual-mode');
+    const panels = document.querySelectorAll('.visual-panel');
     if (!shell || controls.length === 0) return;
 
-    const nextMode = mode || 'all';
+    const nextMode = mode || 'long_only';
     shell.dataset.focus = nextMode;
+    
     controls.forEach(control => {
         control.classList.toggle('active', control.dataset.preview === nextMode);
+    });
+    
+    panels.forEach(panel => {
+        if (panel.dataset.panel === nextMode) {
+            panel.style.display = 'block';
+        } else {
+            panel.style.display = 'none';
+        }
     });
 };
 

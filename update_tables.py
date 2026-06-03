@@ -3,7 +3,7 @@ import os
 import re
 from datetime import datetime
 
-DATA_DIR = "Data/Updated_Factor_Data/"
+DATA_DIR = "Data/Updated_Factor_Data/total_universe/"
 
 def calc_returns(file_path, cols):
     if not os.path.exists(file_path):
@@ -178,7 +178,7 @@ html = 'data-content="'.join(new_tabs)
 res_smb, _ = calc_returns(os.path.join(DATA_DIR, "1_smb_hml_mine.csv"), ["SMB", "HML"])
 all_results.update(res_smb)
 
-res_wml, _ = calc_returns(os.path.join(DATA_DIR, "2_motm_factor_mine.csv"), ["WML"])
+res_wml, _ = calc_returns(os.path.join(DATA_DIR, "2_mom_factor_mine.csv"), ["WML"])
 all_results.update(res_wml)
 
 res_rmw, _ = calc_returns(os.path.join(DATA_DIR, "3_rmw_long_short.csv"), ["RMW"])

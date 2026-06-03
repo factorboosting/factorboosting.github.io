@@ -556,7 +556,7 @@
 
     <div class="container" style="margin-top: 2rem; margin-bottom: 0; padding-bottom: 0;">
         <div class="section" style="margin-bottom: 0;">
-            <p class="subtitle">Fama-French factor portfolios on Indian equities &mdash; compare up to 4 strategies</p>
+            <p class="subtitle">Fama-French factor portfolios on Indian equities &mdash; compare up to 5 strategies</p>
             <h2 class="section-title" style="font-size: 1.25rem; margin-bottom: 0.75rem;">How to Use</h2>
             <p style="color: var(--text-secondary); margin-bottom: 0.75rem;">
                 This tool lets you build and compare portfolios based on Fama-French factors. Select characteristics
@@ -583,7 +583,7 @@
                         chart, statistics, and stock holdings.</li>
                     <li><strong>Compare strategies</strong> — To compare multiple portfolios, click <strong>"+ Add
                             Portfolio"</strong> to save your current selection, pick new portfolios, add again, then
-                        click <strong>"Run Comparison"</strong>. You can compare up to 4 portfolios side by side.</li>
+                        click <strong>"Run Comparison"</strong>. You can compare up to 5 portfolios side by side.</li>
                     <li><strong>Explore holdings</strong> — Use the slider below the chart to scrub through months and
                         see exactly which stocks were in the portfolio at any point in time. Hovering on the chart also
                         updates the holdings panel.</li>
@@ -609,7 +609,8 @@
     </div>
 
     <main class="container">
-        <div id="bt-data-notice" class="bt-data-notice loading">Loading factor data&hellip; this may take a moment.
+        <div id="bt-data-notice" class="bt-data-notice loading">
+            <strong>Note:</strong> Please wait for a few seconds for the data to load initially...
         </div>
 
         <div class="bt-layout" style="margin-top:1rem;">
@@ -723,7 +724,7 @@
                 <div>
                     <div class="bt-sec-label">Portfolios</div>
                     <div class="bt-portfolio-shelf" id="bt-portfolio-shelf"></div>
-                    <div class="bt-shelf-limit" id="bt-shelf-limit">Maximum 4 portfolios. Remove one to add another.
+                    <div class="bt-shelf-limit" id="bt-shelf-limit">Maximum 5 portfolios. Remove one to add another.
                     </div>
                     <div style="display:flex;gap:6px;margin-top:8px;">
                         <button class="bt-add-btn" id="bt-add-btn" onclick="BT.addPortfolio()">+ Add Portfolio</button>
