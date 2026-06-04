@@ -250,6 +250,10 @@ const BT = (() => {
             document.getElementById('bt-run-btn').textContent = 'Run Analysis';
             setTimeout(() => { notice.style.display = 'none'; }, 5000);
 
+            // Hide the full-screen data loading overlay
+            const loaderOverlay = document.getElementById('data-loading-overlay');
+            if (loaderOverlay) loaderOverlay.style.display = 'none';
+
             // Handle URL Parameters for deep linking
             const urlParams = new URLSearchParams(window.location.search);
             const factorParam = urlParams.get('factor');
@@ -407,6 +411,10 @@ const BT = (() => {
         } catch (err) {
             notice.className = 'bt-data-notice error';
             notice.innerHTML = `Failed to load: ${err.message}`;
+
+            // Hide the full-screen data loading overlay on error
+            const loaderOverlay = document.getElementById('data-loading-overlay');
+            if (loaderOverlay) loaderOverlay.style.display = 'none';
         }
     }
 
