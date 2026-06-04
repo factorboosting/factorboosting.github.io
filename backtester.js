@@ -810,21 +810,27 @@ const BT = (() => {
 
             // SIZE-NEUTRAL LONG-ONLY LOGIC
             // Computes the 50/50 average of the Small and Big bucket returns
-            if (isPureSize && validLongB) {
+            if (isPureSize) {
                 const bmBuckets = ['G', 'N', 'V'];
                 let sub_ews = [], sub_vws = [];
-                for (const bm of bmBuckets) {
-                    const subB = longB.filter(r => r.BM_Label === bm);
-                    if (subB.length >= minFirms) {
-                        sub_ews.push(calcEW(subB));
-                        sub_vws.push(calcVW(subB));
+                const isLongS = longFilters['Size'].includes('S');
+                const legDF = isLongS ? longS : longB;
+                const isValid = isLongS ? validLongS : validLongB;
+                
+                if (isValid) {
+                    for (const bm of bmBuckets) {
+                        const sub = legDF.filter(r => r.BM_Label === bm);
+                        if (sub.length >= minFirms) {
+                            sub_ews.push(calcEW(sub));
+                            sub_vws.push(calcVW(sub));
+                        }
                     }
-                }
-                if (sub_vws.length > 0) {
-                    L_ew = sub_ews.reduce((a, b) => a + b, 0) / sub_ews.length;
-                    L_vw = sub_vws.reduce((a, b) => a + b, 0) / sub_vws.length;
-                } else {
-                    L_ew = null; L_vw = null;
+                    if (sub_vws.length > 0) {
+                        L_ew = sub_ews.reduce((a, b) => a + b, 0) / sub_ews.length;
+                        L_vw = sub_vws.reduce((a, b) => a + b, 0) / sub_vws.length;
+                    } else {
+                        L_ew = null; L_vw = null;
+                    }
                 }
             } else if (validLongS && validLongB) {
                 L_ew = (calcEW(longS) + calcEW(longB)) / 2;
@@ -839,21 +845,27 @@ const BT = (() => {
             if (strategy === 'long_short') {
                 // SIZE-NEUTRAL SHORT-ONLY LOGIC
                 // Computes the 50/50 average of the Small and Big short bucket returns
-                if (isPureSize && validShortS) {
+                if (isPureSize) {
                     const bmBuckets = ['G', 'N', 'V'];
                     let sub_ews = [], sub_vws = [];
-                    for (const bm of bmBuckets) {
-                        const subS = shortS.filter(r => r.BM_Label === bm);
-                        if (subS.length >= minFirms) {
-                            sub_ews.push(calcEW(subS));
-                            sub_vws.push(calcVW(subS));
+                    const isShortS = shortFilters['Size'].includes('S');
+                    const legDF = isShortS ? shortS : shortB;
+                    const isValid = isShortS ? validShortS : validShortB;
+                    
+                    if (isValid) {
+                        for (const bm of bmBuckets) {
+                            const sub = legDF.filter(r => r.BM_Label === bm);
+                            if (sub.length >= minFirms) {
+                                sub_ews.push(calcEW(sub));
+                                sub_vws.push(calcVW(sub));
+                            }
                         }
-                    }
-                    if (sub_vws.length > 0) {
-                        S_ew = sub_ews.reduce((a, b) => a + b, 0) / sub_ews.length;
-                        S_vw = sub_vws.reduce((a, b) => a + b, 0) / sub_vws.length;
-                    } else {
-                        S_ew = null; S_vw = null;
+                        if (sub_vws.length > 0) {
+                            S_ew = sub_ews.reduce((a, b) => a + b, 0) / sub_ews.length;
+                            S_vw = sub_vws.reduce((a, b) => a + b, 0) / sub_vws.length;
+                        } else {
+                            S_ew = null; S_vw = null;
+                        }
                     }
                 } else if (validShortS && validShortB) {
                     S_ew = (calcEW(shortS) + calcEW(shortB)) / 2;
@@ -895,9 +907,9 @@ const BT = (() => {
             if (!isFinite(ewNet)) ewNet = 0;
             if (!isFinite(vwNet)) vwNet = 0;
             // Cap monthly portfolio return at sensible bounds to prevent compounding blowup
-            // from any residual data issue. ±50% in a single month for an aggregate portfolio
-            // would itself be highly anomalous.
-            const PORT_CAP = 0.50;
+            // from any residual data issue. ±99% in a single month for an aggregate portfolio
+            // would itself be highly anomalous, but covers extreme historical recoveries.
+            const PORT_CAP = 0.99;
             if (ewNet > PORT_CAP) ewNet = PORT_CAP; else if (ewNet < -PORT_CAP) ewNet = -PORT_CAP;
             if (vwNet > PORT_CAP) vwNet = PORT_CAP; else if (vwNet < -PORT_CAP) vwNet = -PORT_CAP;
 
