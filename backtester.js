@@ -4,12 +4,13 @@
 const BT = (() => {
     'use strict';
 
-    const MAX_PORTFOLIOS = 4;
+    const MAX_PORTFOLIOS = 5;
     const COLORS = [
         { line: '#3b82f6', bg: 'rgba(59,130,246,0.08)', chip: '#3b82f6' },
         { line: '#10b981', bg: 'rgba(16,185,129,0.08)', chip: '#10b981' },
         { line: '#f59e0b', bg: 'rgba(245,158,11,0.08)', chip: '#f59e0b' },
         { line: '#8b5cf6', bg: 'rgba(139,92,246,0.08)', chip: '#8b5cf6' },
+        { line: '#ec4899', bg: 'rgba(236,72,153,0.08)', chip: '#ec4899' },
     ];
     const BENCH_COLOR = { line: '#ef4444', bg: 'rgba(239,68,68,0.06)' };
     const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -27,9 +28,9 @@ const BT = (() => {
         'Classic (FF5 + Momentum)': {
             'Size':           { col: 'Size_Label',     labels: { 'B': 'Big',          'S': 'Small' } },
             'Book-to-Market': { col: 'BM_Label',       labels: { 'G': 'Growth',       'N': 'Neutral', 'V': 'Value' } },
-            'Op. Profitability': { col: 'OpProf_Label', labels: { 'R': 'Robust',       'N': 'Neutral', 'W': 'Weak' } },
-            'Investment':     { col: 'Inv_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
-            'Momentum':       { col: 'Momentum_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
+            'Op. Profitability': { col: 'OP_Label', labels: { 'R': 'Robust',       'N': 'Neutral', 'W': 'Weak' } },
+            'Investment':     { col: 'INV_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
+            'Momentum':       { col: 'MOM_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
         },
         'Other Factors': {
             'Asset Turnover':      { col: 'AT_Label',  labels: { 'H': 'High',  'N': 'Neutral', 'L': 'Low' } },
@@ -53,7 +54,7 @@ const BT = (() => {
     // ── State ─────────────────────────────────────────────────────────────────
     let rawData = [], monthGroups = {}, allMonths = [];
     let chartInst = null, ddChartInst = null;
-    let currentStrategy = 'long_only', currentWeight = 'ew';
+    let currentStrategy = 'long_only', currentWeight = 'vw';
     let portfolios = [], nextId = 1;
     let activeHoldingsId = null, currentMonthIdx = 0, runMonths = [];
     let benchmarkSeries = {};
@@ -93,14 +94,73 @@ const BT = (() => {
     }
 
     // ── Load data ─────────────────────────────────────────────────────────────
+    let benchmarkCache = null;
+    let currentUniverse = null;
+    let rfData = {};
+
+    async function loadBenchmarks() {
+        if (benchmarkCache) return benchmarkCache;
+        try {
+            // Also fetch ff5.csv for the Risk-Free Rate (Rf)
+            fetch('Data/Factor_Data/ff5.csv')
+                .then(res => res.ok ? res.text() : '')
+                .then(text => {
+                    const rfParsed = parseCSV(text);
+                    rfParsed.forEach(row => {
+                        if (row.Month && row.Rf) {
+                            rfData[row.Month.substring(0, 7)] = parseFloat(row.Rf);
+                        }
+                    });
+                })
+                .catch(e => console.error("Failed to load ff5.csv Rf data", e));
+
+            const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
+            if (!res.ok) return {b: {}, names: {}};
+            const parsed = parseCSV(await res.text());
+            const b = {};
+            const names = {};
+            parsed.forEach(row => {
+                const m = row.Month ? row.Month.substring(0, 7) : '';
+                const code = row.Co_Code || row.co_code;
+                if (code && row.Co_Name) names[code] = row.Co_Name;
+                if (!m) return;
+                const n50 = parseFloat(row.nifty50);
+                const n500 = parseFloat(row.nifty500);
+                if (!b[m]) b[m] = {};
+                if (!isNaN(n50)) b[m].nifty50 = n50;
+                if (!isNaN(n500)) b[m].nifty500 = n500;
+            });
+            benchmarkCache = { b, names };
+            return benchmarkCache;
+        } catch(e) {
+            console.error(e);
+            return {b: {}, names: {}};
+        }
+    }
+
     async function loadData() {
         const notice = document.getElementById('bt-data-notice');
+        const universe = getToggleVal('bt-universe-toggle') || 'all';
+        if (currentUniverse === universe && rawData && rawData.length > 0) return;
+        
+        if (notice) { notice.style.display = 'block'; notice.textContent = 'Loading universe data...'; }
+        
+        let url = 'Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv';
+        if (universe === 'top500') url = 'Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv';
+        else if (universe === 'top300') url = 'Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv';
+
         try {
-            const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
+            const cache = await loadBenchmarks();
+            const benchmarks = cache.b || {};
+            const namesMap = cache.names || {};
+            
+            // Add cache-busting timestamp so updated CSVs are loaded immediately
+            const fetchUrl = url + '?v=' + new Date().getTime();
+            const res = await fetch(fetchUrl);
             if (!res.ok) throw new Error(`CSV fetch failed (HTTP ${res.status}).`);
             const parsed = parseCSV(await res.text());
 
-            // Detect the return column (handle both monthly_ret and Monthly_Return)
+            // Detect the return column
             const sample = parsed[0] || {};
             const retCol = 'monthly_ret' in sample ? 'monthly_ret'
                          : 'Monthly_Return' in sample ? 'Monthly_Return'
@@ -113,8 +173,16 @@ const BT = (() => {
 
             parsed.forEach(row => {
                 row._month = row.Month ? row.Month.substring(0, 7) : '';
-                row._size = parseFloat(row.Size);
+                row._size = parseFloat(row.mktcap || row.eom_mcap || row.Size);
                 if (isNaN(row._size) || row._size <= 0) row._size = 0;
+
+                if (row.prev_mktcap !== undefined && row.prev_mktcap !== '') {
+                    row.prev_Size = parseFloat(row.prev_mktcap);
+                    if (isNaN(row.prev_Size) || row.prev_Size <= 0) row.prev_Size = null;
+                }
+
+                row.Co_Code = row.co_code || row.Co_Code;
+                row.Co_Name = namesMap[row.Co_Code] || `Stock ${row.Co_Code}`;
 
                 const sanitized = sanitizeReturn(row[retCol]);
                 if (sanitized.action === 'drop') {
@@ -124,13 +192,34 @@ const BT = (() => {
                 if (sanitized.action === 'capped') dataQualityStats.capped++;
                 row._ret = sanitized.value;
 
-                // Benchmarks: keep null if missing/invalid (do NOT default to 0)
-                const n50 = parseFloat(row.nifty50);
-                const n500 = parseFloat(row.nifty500);
-                row._nifty50  = (isNaN(n50)  || !isFinite(n50))  ? null : n50;
-                row._nifty500 = (isNaN(n500) || !isFinite(n500)) ? null : n500;
+                // Benchmarks: keep null if missing/invalid
+                const b = benchmarks[row._month] || {};
+                row._nifty50 = b.nifty50 !== undefined ? b.nifty50 : null;
+                row._nifty500 = b.nifty500 !== undefined ? b.nifty500 : null;
 
+                // We temporarily push rawData, then we'll compute prev_Size
                 rawData.push(row);
+            });
+
+            const stockMap = {};
+            for (let i = 0; i < rawData.length; i++) {
+                const code = rawData[i].Co_Code;
+                if (!stockMap[code]) stockMap[code] = [];
+                stockMap[code].push(rawData[i]);
+            }
+            
+            Object.values(stockMap).forEach(rows => {
+                rows.sort((a, b) => a._month.localeCompare(b._month));
+                for (let i = 1; i < rows.length; i++) {
+                    const curr = rows[i];
+                    const prev = rows[i - 1];
+                    // Strict Fama-French requires lagged size. 
+                    // Use pre-computed prev_Size from file if available, else compute from previous row.
+                    if (curr.prev_Size == null) {
+                        curr.prev_Size = prev._size;
+                    }
+                }
+                // First month naturally has no prev_Size
             });
 
             monthGroups = {};
@@ -140,13 +229,14 @@ const BT = (() => {
                 monthGroups[row._month].push(row);
             });
             allMonths = Object.keys(monthGroups).sort();
+            currentUniverse = universe;
             if (allMonths.length === 0) throw new Error('No data found.');
 
             const smEl = document.getElementById('bt-start-month');
             const emEl = document.getElementById('bt-end-month');
             smEl.min = emEl.min = allMonths[0];
             smEl.max = emEl.max = allMonths[allMonths.length - 1];
-            smEl.value = allMonths[0];
+            smEl.value = allMonths.includes('2003-10') ? '2003-10' : allMonths[0];
             emEl.value = allMonths[allMonths.length - 1];
 
             buildFactorPicker();
@@ -168,6 +258,10 @@ const BT = (() => {
             document.getElementById('bt-run-btn').disabled = false;
             document.getElementById('bt-run-btn').textContent = 'Run Analysis';
             setTimeout(() => { notice.style.display = 'none'; }, 5000);
+
+            // Hide the full-screen data loading overlay
+            const loaderOverlay = document.getElementById('data-loading-overlay');
+            if (loaderOverlay) loaderOverlay.style.display = 'none';
 
             // Handle URL Parameters for deep linking
             const urlParams = new URLSearchParams(window.location.search);
@@ -326,6 +420,10 @@ const BT = (() => {
         } catch (err) {
             notice.className = 'bt-data-notice error';
             notice.innerHTML = `Failed to load: ${err.message}`;
+
+            // Hide the full-screen data loading overlay on error
+            const loaderOverlay = document.getElementById('data-loading-overlay');
+            if (loaderOverlay) loaderOverlay.style.display = 'none';
         }
     }
 
@@ -422,9 +520,23 @@ const BT = (() => {
         currentStrategy = btn.dataset.val;
         document.querySelectorAll('#bt-strategy-toggle .bt-toggle-btn').forEach(b => b.classList.toggle('active', b === btn));
         document.getElementById('bt-short-wrapper').style.display = currentStrategy === 'long_short' ? 'block' : 'none';
+        
+        const benchCheck = document.getElementById('bt-bench-check');
+        if (benchCheck) {
+            benchCheck.checked = currentStrategy === 'long_only';
+            showBenchmark = benchCheck.checked;
+        }
+        
+        if (portfolios.some(p => p.results)) refreshAll();
     }
-    function setToggle(groupId, btn) {
+    async function setToggle(groupId, btn) {
         document.querySelectorAll(`#${groupId} .bt-toggle-btn`).forEach(b => b.classList.toggle('active', b === btn));
+        if (groupId === 'bt-universe-toggle') {
+            await loadData();
+            if (portfolios.some(p => p.results)) {
+                runAll();
+            }
+        }
     }
     function getToggleVal(groupId) {
         const a = document.querySelector(`#${groupId} .bt-toggle-btn.active`);
@@ -569,15 +681,14 @@ const BT = (() => {
         return n === 0 ? 0 : sum / n;
     }
     // Value-weight: weights MUST be from PRIOR month's size to avoid look-ahead bias.
-    // Falls back to current size if prev_Size is unavailable; falls back to EW if no positive weights.
+    // Skips the row if prev_Size is unavailable; falls back to EW if no positive weights.
     function calcVW(rows) {
         if (rows.length === 0) return 0;
-        let totalW = 0, weighted = 0, usedFallback = false;
+        let totalW = 0, weighted = 0;
         for (const r of rows) {
             if (r._ret == null || !isFinite(r._ret)) continue;
             let w = parseFloat(r.prev_Size);
-            if (isNaN(w) || w <= 0) { w = r._size; usedFallback = true; }
-            if (w <= 0 || !isFinite(w)) continue;
+            if (isNaN(w) || w <= 0) continue; // strictly require valid lagged size
             totalW += w;
             weighted += r._ret * w;
         }
@@ -641,12 +752,50 @@ const BT = (() => {
         for (let mi = 0; mi < months.length; mi++) {
             const month = months[mi];
             let mdf = monthGroups[month] || [];
-            if (topN) mdf = topNBySize(mdf, topN);
+            // if (topN) mdf = topNBySize(mdf, topN); // Handled by loadData
             const longDF = applyFilters(mdf, longFilters);
             const shortDF = strategy === 'long_short' ? applyFilters(mdf, shortFilters) : [];
 
-            const currLongCodes = new Set(longDF.map(r => r.Co_Code));
-            const currShortCodes = new Set(shortDF.map(r => r.Co_Code));
+            // 2x3 Double-Sort & 5-Firm Minimum Logic
+            const minFirms = 5;
+            const longS = longDF.filter(r => r.Size_Label === 'S');
+            const longB = longDF.filter(r => r.Size_Label === 'B');
+            const shortS = shortDF.filter(r => r.Size_Label === 'S');
+            const shortB = shortDF.filter(r => r.Size_Label === 'B');
+
+            // Determine if the user's filters INTEND to include S or B
+            const longAllowsS = !longFilters['Size'] || longFilters['Size'].includes('S');
+            const longAllowsB = !longFilters['Size'] || longFilters['Size'].includes('B');
+            const shortAllowsS = strategy === 'long_short' && (!shortFilters['Size'] || shortFilters['Size'].includes('S'));
+            const shortAllowsB = strategy === 'long_short' && (!shortFilters['Size'] || shortFilters['Size'].includes('B'));
+
+            let validLongS = longAllowsS && (longS.length >= minFirms);
+            let validLongB = longAllowsB && (longB.length >= minFirms);
+            let validShortS = shortAllowsS && (shortS.length >= minFirms);
+            let validShortB = shortAllowsB && (shortB.length >= minFirms);
+
+            // If a strategy is long-short and BOTH legs intend to trade a size bracket,
+            // we enforce size neutrality: if one leg fails the firm count, drop it from the other leg too.
+            if (strategy === 'long_short') {
+                if (longAllowsS && shortAllowsS) {
+                    if (!validLongS || !validShortS) { validLongS = false; validShortS = false; }
+                }
+                if (longAllowsB && shortAllowsB) {
+                    if (!validLongB || !validShortB) { validLongB = false; validShortB = false; }
+                }
+            }
+
+            let finalLongDF = [], finalShortDF = [];
+            if (validLongS) finalLongDF = finalLongDF.concat(longS);
+            if (validLongB) finalLongDF = finalLongDF.concat(longB);
+            
+            if (strategy === 'long_short') {
+                if (validShortS) finalShortDF = finalShortDF.concat(shortS);
+                if (validShortB) finalShortDF = finalShortDF.concat(shortB);
+            }
+
+            const currLongCodes = new Set(finalLongDF.map(r => r.Co_Code));
+            const currShortCodes = new Set(finalShortDF.map(r => r.Co_Code));
 
             // Turnover: long-only counts only long leg; long-short pays TC on BOTH legs (sum).
             let monthTurnoverRatio = 0;
@@ -664,9 +813,73 @@ const BT = (() => {
             prevLongCodes = currLongCodes;
             prevShortCodes = currShortCodes;
 
-            const ewL = calcEW(longDF), vwL = calcVW(longDF);
-            const ewS = shortDF.length > 0 ? calcEW(shortDF) : 0;
-            const vwS = shortDF.length > 0 ? calcVW(shortDF) : 0;
+            let ewNet = 0, vwNet = 0;
+
+            let L_ew = null, L_vw = null, S_ew = null, S_vw = null;
+            
+            // Check if user is building a pure Big vs Small (or Small vs Big) factor
+            const isPureSize = Object.keys(longFilters).length === 1 && Object.keys(shortFilters).length === 1 &&
+                               longFilters['Size'] && shortFilters['Size'] &&
+                               ((longFilters['Size'].includes('B') && shortFilters['Size'].includes('S')) ||
+                                (longFilters['Size'].includes('S') && shortFilters['Size'].includes('B')));
+
+            // For pure size factor, ensure strict matching of BM buckets across both legs.
+            if (isPureSize) {
+                const bmBuckets = ['G', 'N', 'V'];
+                const isLongS = longFilters['Size'].includes('S');
+                const legDF_L = isLongS ? longS : longB;
+                const legDF_S = isLongS ? shortB : shortS; 
+                const isValidL = isLongS ? validLongS : validLongB;
+                const isValidS = isLongS ? validShortB : validShortS;
+
+                let validBuckets = [];
+                if (isValidL && isValidS) {
+                    for (const bm of bmBuckets) {
+                        const subL = legDF_L.filter(r => r.BM_Label === bm);
+                        const subS = legDF_S.filter(r => r.BM_Label === bm);
+                        if (subL.length >= minFirms && subS.length >= minFirms) {
+                            validBuckets.push(bm);
+                        }
+                    }
+                }
+                
+                if (validBuckets.length > 0) {
+                    let l_ews = [], l_vws = [], s_ews = [], s_vws = [];
+                    for (const bm of validBuckets) {
+                        const subL = legDF_L.filter(r => r.BM_Label === bm);
+                        const subS = legDF_S.filter(r => r.BM_Label === bm);
+                        l_ews.push(calcEW(subL)); l_vws.push(calcVW(subL));
+                        s_ews.push(calcEW(subS)); s_vws.push(calcVW(subS));
+                    }
+                    L_ew = l_ews.reduce((a, b) => a + b, 0) / validBuckets.length;
+                    L_vw = l_vws.reduce((a, b) => a + b, 0) / validBuckets.length;
+                    S_ew = s_ews.reduce((a, b) => a + b, 0) / validBuckets.length;
+                    S_vw = s_vws.reduce((a, b) => a + b, 0) / validBuckets.length;
+                } else {
+                    L_ew = null; L_vw = null; S_ew = null; S_vw = null;
+                }
+            } else {
+                if (validLongS && validLongB) {
+                    L_ew = (calcEW(longS) + calcEW(longB)) / 2;
+                    L_vw = (calcVW(longS) + calcVW(longB)) / 2;
+                } else if (validLongS) {
+                    L_ew = calcEW(longS); L_vw = calcVW(longS);
+                } else if (validLongB) {
+                    L_ew = calcEW(longB); L_vw = calcVW(longB);
+                }
+                
+                if (strategy === 'long_short') {
+                    if (validShortS && validShortB) {
+                        S_ew = (calcEW(shortS) + calcEW(shortB)) / 2;
+                        S_vw = (calcVW(shortS) + calcVW(shortB)) / 2;
+                    } else if (validShortS) {
+                        S_ew = calcEW(shortS); S_vw = calcVW(shortS);
+                    } else if (validShortB) {
+                        S_ew = calcEW(shortB); S_vw = calcVW(shortB);
+                    }
+                }
+            }
+
 
             // Standard dollar-neutral L-S: long return MINUS short return (NOT divided by 2).
             // This matches Fama-French factor construction. Dividing by 2 would understate.
@@ -684,9 +897,9 @@ const BT = (() => {
             if (!isFinite(ewNet)) ewNet = 0;
             if (!isFinite(vwNet)) vwNet = 0;
             // Cap monthly portfolio return at sensible bounds to prevent compounding blowup
-            // from any residual data issue. ±50% in a single month for an aggregate portfolio
-            // would itself be highly anomalous.
-            const PORT_CAP = 0.50;
+            // from any residual data issue. ±99% in a single month for an aggregate portfolio
+            // would itself be highly anomalous, but covers extreme historical recoveries.
+            const PORT_CAP = 0.99;
             if (ewNet > PORT_CAP) ewNet = PORT_CAP; else if (ewNet < -PORT_CAP) ewNet = -PORT_CAP;
             if (vwNet > PORT_CAP) vwNet = PORT_CAP; else if (vwNet < -PORT_CAP) vwNet = -PORT_CAP;
 
@@ -755,6 +968,13 @@ const BT = (() => {
     // ── Run ───────────────────────────────────────────────────────────────────
     function runAll() {
         hideError();
+        
+        // Ensure state matches DOM UI before running
+        const activeWtBtn = document.querySelector('#bt-weight-toggle .bt-wt-btn.active');
+        if (activeWtBtn) currentWeight = activeWtBtn.dataset.val;
+        const benchCheck = document.getElementById('bt-bench-check');
+        if (benchCheck) showBenchmark = benchCheck.checked;
+
         if (portfolios.length === 0) {
             const lf = getFilters('long');
             if (Object.values(lf).some(v => v && v.length)) addPortfolio();

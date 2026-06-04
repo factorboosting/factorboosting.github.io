@@ -58,6 +58,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // No user is signed in.
             if (authOverlay) {
                 authOverlay.style.display = 'flex';
+                
+                const loadingState = document.getElementById('auth-loading-state');
+                const requiredState = document.getElementById('auth-required-state');
+                if (loadingState) loadingState.style.display = 'none';
+                if (requiredState) requiredState.style.display = 'flex';
+                
                 document.body.style.overflow = 'hidden'; // prevent scrolling while locked
             }
             if (logoutBtn) logoutBtn.style.display = 'none';
