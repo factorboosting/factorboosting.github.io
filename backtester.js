@@ -665,15 +665,14 @@ const BT = (() => {
         return n === 0 ? 0 : sum / n;
     }
     // Value-weight: weights MUST be from PRIOR month's size to avoid look-ahead bias.
-    // Falls back to current size if prev_Size is unavailable; falls back to EW if no positive weights.
+    // Skips the row if prev_Size is unavailable; falls back to EW if no positive weights.
     function calcVW(rows) {
         if (rows.length === 0) return 0;
-        let totalW = 0, weighted = 0, usedFallback = false;
+        let totalW = 0, weighted = 0;
         for (const r of rows) {
             if (r._ret == null || !isFinite(r._ret)) continue;
             let w = parseFloat(r.prev_Size);
-            if (isNaN(w) || w <= 0) { w = r._size; usedFallback = true; }
-            if (w <= 0 || !isFinite(w)) continue;
+            if (isNaN(w) || w <= 0) continue; // strictly require valid lagged size
             totalW += w;
             weighted += r._ret * w;
         }
@@ -808,72 +807,60 @@ const BT = (() => {
                                ((longFilters['Size'].includes('B') && shortFilters['Size'].includes('S')) ||
                                 (longFilters['Size'].includes('S') && shortFilters['Size'].includes('B')));
 
-            // SIZE-NEUTRAL LONG-ONLY LOGIC
-            // Computes the 50/50 average of the Small and Big bucket returns
+            // For pure size factor, ensure strict matching of BM buckets across both legs.
             if (isPureSize) {
                 const bmBuckets = ['G', 'N', 'V'];
-                let sub_ews = [], sub_vws = [];
                 const isLongS = longFilters['Size'].includes('S');
-                const legDF = isLongS ? longS : longB;
-                const isValid = isLongS ? validLongS : validLongB;
-                
-                if (isValid) {
+                const legDF_L = isLongS ? longS : longB;
+                const legDF_S = isLongS ? shortB : shortS; 
+                const isValidL = isLongS ? validLongS : validLongB;
+                const isValidS = isLongS ? validShortB : validShortS;
+
+                let validBuckets = [];
+                if (isValidL && isValidS) {
                     for (const bm of bmBuckets) {
-                        const sub = legDF.filter(r => r.BM_Label === bm);
-                        if (sub.length >= minFirms) {
-                            sub_ews.push(calcEW(sub));
-                            sub_vws.push(calcVW(sub));
+                        const subL = legDF_L.filter(r => r.BM_Label === bm);
+                        const subS = legDF_S.filter(r => r.BM_Label === bm);
+                        if (subL.length >= minFirms && subS.length >= minFirms) {
+                            validBuckets.push(bm);
                         }
-                    }
-                    if (sub_vws.length > 0) {
-                        L_ew = sub_ews.reduce((a, b) => a + b, 0) / sub_ews.length;
-                        L_vw = sub_vws.reduce((a, b) => a + b, 0) / sub_vws.length;
-                    } else {
-                        L_ew = null; L_vw = null;
                     }
                 }
-            } else if (validLongS && validLongB) {
-                L_ew = (calcEW(longS) + calcEW(longB)) / 2;
-                L_vw = (calcVW(longS) + calcVW(longB)) / 2;
-            } else if (validLongS) {
-                L_ew = calcEW(longS); L_vw = calcVW(longS);
-            } else if (validLongB) {
-                L_ew = calcEW(longB); L_vw = calcVW(longB);
-            }
-
-            let S_ew = null, S_vw = null;
-            if (strategy === 'long_short') {
-                // SIZE-NEUTRAL SHORT-ONLY LOGIC
-                // Computes the 50/50 average of the Small and Big short bucket returns
-                if (isPureSize) {
-                    const bmBuckets = ['G', 'N', 'V'];
-                    let sub_ews = [], sub_vws = [];
-                    const isShortS = shortFilters['Size'].includes('S');
-                    const legDF = isShortS ? shortS : shortB;
-                    const isValid = isShortS ? validShortS : validShortB;
-                    
-                    if (isValid) {
-                        for (const bm of bmBuckets) {
-                            const sub = legDF.filter(r => r.BM_Label === bm);
-                            if (sub.length >= minFirms) {
-                                sub_ews.push(calcEW(sub));
-                                sub_vws.push(calcVW(sub));
-                            }
-                        }
-                        if (sub_vws.length > 0) {
-                            S_ew = sub_ews.reduce((a, b) => a + b, 0) / sub_ews.length;
-                            S_vw = sub_vws.reduce((a, b) => a + b, 0) / sub_vws.length;
-                        } else {
-                            S_ew = null; S_vw = null;
-                        }
+                
+                if (validBuckets.length > 0) {
+                    let l_ews = [], l_vws = [], s_ews = [], s_vws = [];
+                    for (const bm of validBuckets) {
+                        const subL = legDF_L.filter(r => r.BM_Label === bm);
+                        const subS = legDF_S.filter(r => r.BM_Label === bm);
+                        l_ews.push(calcEW(subL)); l_vws.push(calcVW(subL));
+                        s_ews.push(calcEW(subS)); s_vws.push(calcVW(subS));
                     }
-                } else if (validShortS && validShortB) {
-                    S_ew = (calcEW(shortS) + calcEW(shortB)) / 2;
-                    S_vw = (calcVW(shortS) + calcVW(shortB)) / 2;
-                } else if (validShortS) {
-                    S_ew = calcEW(shortS); S_vw = calcVW(shortS);
-                } else if (validShortB) {
-                    S_ew = calcEW(shortB); S_vw = calcVW(shortB);
+                    L_ew = l_ews.reduce((a, b) => a + b, 0) / validBuckets.length;
+                    L_vw = l_vws.reduce((a, b) => a + b, 0) / validBuckets.length;
+                    S_ew = s_ews.reduce((a, b) => a + b, 0) / validBuckets.length;
+                    S_vw = s_vws.reduce((a, b) => a + b, 0) / validBuckets.length;
+                } else {
+                    L_ew = null; L_vw = null; S_ew = null; S_vw = null;
+                }
+            } else {
+                if (validLongS && validLongB) {
+                    L_ew = (calcEW(longS) + calcEW(longB)) / 2;
+                    L_vw = (calcVW(longS) + calcVW(longB)) / 2;
+                } else if (validLongS) {
+                    L_ew = calcEW(longS); L_vw = calcVW(longS);
+                } else if (validLongB) {
+                    L_ew = calcEW(longB); L_vw = calcVW(longB);
+                }
+                
+                if (strategy === 'long_short') {
+                    if (validShortS && validShortB) {
+                        S_ew = (calcEW(shortS) + calcEW(shortB)) / 2;
+                        S_vw = (calcVW(shortS) + calcVW(shortB)) / 2;
+                    } else if (validShortS) {
+                        S_ew = calcEW(shortS); S_vw = calcVW(shortS);
+                    } else if (validShortB) {
+                        S_ew = calcEW(shortB); S_vw = calcVW(shortB);
+                    }
                 }
             }
 
