@@ -799,7 +799,7 @@ const BT = (() => {
 
             let ewNet = 0, vwNet = 0;
 
-            let L_ew = null, L_vw = null;
+            let L_ew = null, L_vw = null, S_ew = null, S_vw = null;
             
             // Check if user is building a pure Big vs Small (or Small vs Big) factor
             const isPureSize = Object.keys(longFilters).length === 1 && Object.keys(shortFilters).length === 1 &&
