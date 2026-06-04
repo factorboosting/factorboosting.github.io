@@ -172,8 +172,13 @@ const BT = (() => {
 
             parsed.forEach(row => {
                 row._month = row.Month ? row.Month.substring(0, 7) : '';
-                row._size = parseFloat(row.eom_mcap || row.Size);
+                row._size = parseFloat(row.mktcap || row.eom_mcap || row.Size);
                 if (isNaN(row._size) || row._size <= 0) row._size = 0;
+
+                if (row.prev_mktcap !== undefined && row.prev_mktcap !== '') {
+                    row.prev_Size = parseFloat(row.prev_mktcap);
+                    if (isNaN(row.prev_Size) || row.prev_Size <= 0) row.prev_Size = null;
+                }
 
                 row.Co_Code = row.co_code || row.Co_Code;
                 row.Co_Name = namesMap[row.Co_Code] || `Stock ${row.Co_Code}`;
@@ -207,8 +212,11 @@ const BT = (() => {
                 for (let i = 1; i < rows.length; i++) {
                     const curr = rows[i];
                     const prev = rows[i - 1];
-                    // Strict Fama-French requires lagged size. We assign previous month's size:
-                    curr.prev_Size = prev._size;
+                    // Strict Fama-French requires lagged size. 
+                    // Use pre-computed prev_Size from file if available, else compute from previous row.
+                    if (curr.prev_Size == null) {
+                        curr.prev_Size = prev._size;
+                    }
                 }
                 // First month naturally has no prev_Size
             });
