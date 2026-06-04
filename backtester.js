@@ -96,10 +96,24 @@ const BT = (() => {
     // ── Load data ─────────────────────────────────────────────────────────────
     let benchmarkCache = null;
     let currentUniverse = null;
+    let rfData = {};
 
     async function loadBenchmarks() {
         if (benchmarkCache) return benchmarkCache;
         try {
+            // Also fetch ff5.csv for the Risk-Free Rate (Rf)
+            fetch('Data/Factor_Data/ff5.csv')
+                .then(res => res.ok ? res.text() : '')
+                .then(text => {
+                    const rfParsed = parseCSV(text);
+                    rfParsed.forEach(row => {
+                        if (row.Month && row.Rf) {
+                            rfData[row.Month.substring(0, 7)] = parseFloat(row.Rf);
+                        }
+                    });
+                })
+                .catch(e => console.error("Failed to load ff5.csv Rf data", e));
+
             const res = await fetch('Data/Factor_Data/finalMonthlyLabels_aman.csv');
             if (!res.ok) return {b: {}, names: {}};
             const parsed = parseCSV(await res.text());
@@ -177,7 +191,26 @@ const BT = (() => {
                 row._nifty50 = b.nifty50 !== undefined ? b.nifty50 : null;
                 row._nifty500 = b.nifty500 !== undefined ? b.nifty500 : null;
 
+                // We temporarily push rawData, then we'll compute prev_Size
                 rawData.push(row);
+            });
+
+            const stockMap = {};
+            for (let i = 0; i < rawData.length; i++) {
+                const code = rawData[i].Co_Code;
+                if (!stockMap[code]) stockMap[code] = [];
+                stockMap[code].push(rawData[i]);
+            }
+            
+            Object.values(stockMap).forEach(rows => {
+                rows.sort((a, b) => a._month.localeCompare(b._month));
+                for (let i = 1; i < rows.length; i++) {
+                    const curr = rows[i];
+                    const prev = rows[i - 1];
+                    // Strict Fama-French requires lagged size. We assign previous month's size:
+                    curr.prev_Size = prev._size;
+                }
+                // First month naturally has no prev_Size
             });
 
             monthGroups = {};
@@ -752,9 +785,32 @@ const BT = (() => {
             let ewNet = 0, vwNet = 0;
 
             let L_ew = null, L_vw = null;
+            
+            // Check if user is building a pure Big vs Small (or Small vs Big) factor
+            const isPureSize = Object.keys(longFilters).length === 1 && Object.keys(shortFilters).length === 1 &&
+                               longFilters['Size'] && shortFilters['Size'] &&
+                               ((longFilters['Size'].includes('B') && shortFilters['Size'].includes('S')) ||
+                                (longFilters['Size'].includes('S') && shortFilters['Size'].includes('B')));
+
             // SIZE-NEUTRAL LONG-ONLY LOGIC
             // Computes the 50/50 average of the Small and Big bucket returns
-            if (validLongS && validLongB) {
+            if (isPureSize && validLongB) {
+                const bmBuckets = ['G', 'N', 'V'];
+                let sub_ews = [], sub_vws = [];
+                for (const bm of bmBuckets) {
+                    const subB = longB.filter(r => r.BM_Label === bm);
+                    if (subB.length >= minFirms) {
+                        sub_ews.push(calcEW(subB));
+                        sub_vws.push(calcVW(subB));
+                    }
+                }
+                if (sub_vws.length > 0) {
+                    L_ew = sub_ews.reduce((a, b) => a + b, 0) / sub_ews.length;
+                    L_vw = sub_vws.reduce((a, b) => a + b, 0) / sub_vws.length;
+                } else {
+                    L_ew = null; L_vw = null;
+                }
+            } else if (validLongS && validLongB) {
                 L_ew = (calcEW(longS) + calcEW(longB)) / 2;
                 L_vw = (calcVW(longS) + calcVW(longB)) / 2;
             } else if (validLongS) {
@@ -767,7 +823,23 @@ const BT = (() => {
             if (strategy === 'long_short') {
                 // SIZE-NEUTRAL SHORT-ONLY LOGIC
                 // Computes the 50/50 average of the Small and Big short bucket returns
-                if (validShortS && validShortB) {
+                if (isPureSize && validShortS) {
+                    const bmBuckets = ['G', 'N', 'V'];
+                    let sub_ews = [], sub_vws = [];
+                    for (const bm of bmBuckets) {
+                        const subS = shortS.filter(r => r.BM_Label === bm);
+                        if (subS.length >= minFirms) {
+                            sub_ews.push(calcEW(subS));
+                            sub_vws.push(calcVW(subS));
+                        }
+                    }
+                    if (sub_vws.length > 0) {
+                        S_ew = sub_ews.reduce((a, b) => a + b, 0) / sub_ews.length;
+                        S_vw = sub_vws.reduce((a, b) => a + b, 0) / sub_vws.length;
+                    } else {
+                        S_ew = null; S_vw = null;
+                    }
+                } else if (validShortS && validShortB) {
                     S_ew = (calcEW(shortS) + calcEW(shortB)) / 2;
                     S_vw = (calcVW(shortS) + calcVW(shortB)) / 2;
                 } else if (validShortS) {
@@ -776,6 +848,7 @@ const BT = (() => {
                     S_ew = calcEW(shortB); S_vw = calcVW(shortB);
                 }
             }
+
 
             if (strategy === 'long_short') {
                 // FINAL FAMA-FRENCH L-S PREMIUM
@@ -788,6 +861,7 @@ const BT = (() => {
                 }
             } else {
                 if (L_ew !== null) {
+                    // For Long-Only, calculate absolute raw return without subtracting Rf
                     ewNet = L_ew;
                     vwNet = L_vw;
                 } else {
