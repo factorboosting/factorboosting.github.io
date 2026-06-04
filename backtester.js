@@ -32,7 +32,7 @@ const BT = (() => {
             'Investment':     { col: 'INV_Label',      labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
             'Momentum':       { col: 'MOM_Label', labels: { 'W': 'Winner',       'N': 'Neutral', 'L': 'Loser' } },
         },
-        'Extended Factors': {
+        'Other Factors': {
             'Asset Turnover':      { col: 'AT_Label',  labels: { 'H': 'High',  'N': 'Neutral', 'L': 'Low' } },
             'Sales Growth':        { col: 'SG_Label',  labels: { 'H': 'High',  'N': 'Neutral', 'L': 'Low' } },
             'Accruals':            { col: 'ACC_Label', labels: { 'C': 'Conservative', 'N': 'Neutral', 'A': 'Aggressive' } },
@@ -162,10 +162,11 @@ const BT = (() => {
 
             // Detect the return column
             const sample = parsed[0] || {};
-            const retCol = 'monthly_return' in sample ? 'monthly_return'
-                         : 'monthly_ret' in sample ? 'monthly_ret'
-                         : 'Monthly_Return' in sample ? 'Monthly_Return' : null;
-            if (!retCol) throw new Error('Return column not found.');
+            const retCol = 'monthly_ret' in sample ? 'monthly_ret'
+                         : 'Monthly_Return' in sample ? 'Monthly_Return'
+                         : null;
+            if (!retCol) throw new Error('The website is under maintainance. We will get back soon.');
+            // if (!retCol) throw new Error('Return column not found. Expected "monthly_ret" or "Monthly_Return".');
 
             dataQualityStats = { dropped: 0, capped: 0, total: parsed.length };
             rawData = [];
@@ -595,12 +596,27 @@ const BT = (() => {
         if (!Object.values(longFilters).some(v => v && v.length)) { showError('Select at least one factor label.'); return; }
         if (currentStrategy === 'long_short' && !Object.values(shortFilters).some(v => v && v.length)) { showError('Select at least one short-side label.'); return; }
 
+        const SHORT_NAMES = {
+            'Size': 'Sz', 'Book-to-Market': 'BM', 'Op. Profitability': 'OP',
+            'Investment': 'Inv', 'Momentum': 'Mom', 'Asset Turnover': 'AT',
+            'Sales Growth': 'SG', 'Accruals': 'Acc', 'Volatility': 'Vol',
+            'Short-Term Reversal': 'STR',
+        };
         const nameParts = [];
-        for (const [f, codes] of Object.entries(longFilters)) nameParts.push(codes.map(c => FACTORS[f]?.labels[c] || c).join('/'));
+        for (const [f, codes] of Object.entries(longFilters)) {
+            const prefix = SHORT_NAMES[f] || f;
+            const vals = codes.map(c => FACTORS[f]?.labels[c] || c).join('/');
+            nameParts.push(`${prefix}:${vals}`);
+        }
+        
         let name = nameParts.join(' · ');
         if (currentStrategy === 'long_short') {
             const sp = [];
-            for (const [f, codes] of Object.entries(shortFilters)) sp.push(codes.map(c => FACTORS[f]?.labels[c] || c).join('/'));
+            for (const [f, codes] of Object.entries(shortFilters)) {
+                const prefix = SHORT_NAMES[f] || f;
+                const vals = codes.map(c => FACTORS[f]?.labels[c] || c).join('/');
+                sp.push(`${prefix}:${vals}`);
+            }
             name += ' − ' + sp.join(' · ');
         }
 
@@ -865,24 +881,11 @@ const BT = (() => {
             }
 
 
-            if (strategy === 'long_short') {
-                // FINAL FAMA-FRENCH L-S PREMIUM
-                // Subtracts the Size-Neutral Short leg from the Size-Neutral Long leg
-                if (L_ew !== null && S_ew !== null) {
-                    ewNet = L_ew - S_ew;
-                    vwNet = L_vw - S_vw;
-                } else {
-                    ewNet = 0; vwNet = 0;
-                }
-            } else {
-                if (L_ew !== null) {
-                    // For Long-Only, calculate absolute raw return without subtracting Rf
-                    ewNet = L_ew;
-                    vwNet = L_vw;
-                } else {
-                    ewNet = 0; vwNet = 0;
-                }
-            }
+            // Standard dollar-neutral L-S: long return MINUS short return (NOT divided by 2).
+            // This matches Fama-French factor construction. Dividing by 2 would understate.
+            let ewNet, vwNet;
+            if (strategy === 'long_short') { ewNet = (ewL - ewS) ; vwNet = (vwL - vwS); }
+            else { ewNet = ewL; vwNet = vwL; }
 
             // Apply TC drag after month 0
             if (tc.mode !== 'none' && mi > 0) {
