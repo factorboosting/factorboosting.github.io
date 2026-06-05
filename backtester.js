@@ -31,10 +31,10 @@ const BT = (() => {
   // ── Return sanitization config ────────────────────────────────────────────
   // Monthly returns above/below these get *winsorized* (capped), not zeroed.
   // Zeroing biases portfolios downward; capping preserves direction.
-  const RET_CAP_HI = 1.5; // +150% in a month → cap
-  const RET_CAP_LO = -0.9; // −90% in a month → cap (true delisting/wipeout is rare and noisy)
-  const RET_DROP_HI = 5.0; // Beyond this, treat as corrupt and DROP the row entirely
-  const RET_DROP_LO = -0.99; // ≤ −99% almost certainly a data error (would be delisted)
+  const RET_CAP_HI = Infinity; // cap it at the max return seen in CSV (effectively no cap)
+  const RET_CAP_LO = -Infinity; 
+  const RET_DROP_HI = Infinity; // also disable drop to ensure max return is kept
+  const RET_DROP_LO = -Infinity;
 
   // ── All 10 factors ────────────────────────────────────────────────────────
   const FACTOR_GROUPS = {
@@ -1423,10 +1423,8 @@ const BT = (() => {
       // Final safety guard on net portfolio return
       if (!isFinite(ewNet)) ewNet = 0;
       if (!isFinite(vwNet)) vwNet = 0;
-      // Cap monthly portfolio return at sensible bounds to prevent compounding blowup
-      // from any residual data issue. ±99% in a single month for an aggregate portfolio
-      // would itself be highly anomalous, but covers extreme historical recoveries.
-      const PORT_CAP = 0.99;
+      // Cap monthly portfolio return at 200%
+      const PORT_CAP = 2.0;
       if (ewNet > PORT_CAP) ewNet = PORT_CAP;
       else if (ewNet < -PORT_CAP) ewNet = -PORT_CAP;
       if (vwNet > PORT_CAP) vwNet = PORT_CAP;
