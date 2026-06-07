@@ -39,18 +39,18 @@ const BT = (() => {
   // ── All 10 factors ────────────────────────────────────────────────────────
   const FACTOR_GROUPS = {
     "Classic (FF5 + Momentum)": {
-      Size: { col: "Size_Label", labels: { B: "Big", S: "Small" } },
+      Size: { col: "Size_Label", labels: { B: "Big Cap", S: "Small Cap" } },
       "Book-to-Market": {
         col: "BM_Label",
         labels: { G: "Growth", N: "Neutral", V: "Value" },
       },
       "Op. Profitability": {
         col: "OP_Label",
-        labels: { R: "Robust", N: "Neutral", W: "Weak" },
+        labels: { R: "Profitable", N: "Neutral", W: "Weak" },
       },
       Investment: {
         col: "INV_Label",
-        labels: { C: "Conservative", N: "Neutral", A: "Aggressive" },
+        labels: { C: "Hi Investment", N: "Neutral", A: "Low Investment" },
       },
       Momentum: {
         col: "MOM_Label",
@@ -87,8 +87,8 @@ const BT = (() => {
   }
 
   const BENCHMARK_OPTIONS = {
-    nifty50: { col: "nifty50", label: "Nifty 50" },
-    nifty500: { col: "nifty500", label: "Nifty 500" },
+    nifty50: { col: "nifty50", label: "NIFTY" },
+    nifty500: { col: "nifty500", label: "NIFTY 500" },
   };
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -1006,34 +1006,42 @@ const BT = (() => {
       return;
     }
 
-    const SHORT_NAMES = {
-      Size: "Sz",
-      "Book-to-Market": "BM",
-      "Op. Profitability": "OP",
-      Investment: "Inv",
-      Momentum: "Mom",
-      "Asset Turnover": "AT",
-      "Sales Growth": "SG",
-      Accruals: "Acc",
-      Volatility: "Vol",
-      "Short-Term Reversal": "STR",
-    };
     const nameParts = [];
     for (const [f, codes] of Object.entries(longFilters)) {
-      const prefix = SHORT_NAMES[f] || f;
       const vals = codes.map((c) => FACTORS[f]?.labels[c] || c).join("/");
-      nameParts.push(`${prefix}:${vals}`);
+      nameParts.push(vals);
     }
 
     let name = nameParts.join(" · ");
     if (currentStrategy === "long_short") {
-      const sp = [];
-      for (const [f, codes] of Object.entries(shortFilters)) {
-        const prefix = SHORT_NAMES[f] || f;
-        const vals = codes.map((c) => FACTORS[f]?.labels[c] || c).join("/");
-        sp.push(`${prefix}:${vals}`);
+      const isSize = longFilters["Size"]?.includes("S") && shortFilters["Size"]?.includes("B");
+      const isValue = longFilters["Book-to-Market"]?.includes("V") && shortFilters["Book-to-Market"]?.includes("G");
+      const isProf = longFilters["Op. Profitability"]?.includes("R") && shortFilters["Op. Profitability"]?.includes("W");
+      const isInv = longFilters["Investment"]?.includes("C") && shortFilters["Investment"]?.includes("A");
+      const isMom = longFilters["Momentum"]?.includes("W") && shortFilters["Momentum"]?.includes("L");
+
+      if (Object.keys(longFilters).length === 1 && Object.keys(shortFilters).length === 1) {
+        if (isSize) name = "SMB";
+        else if (isValue) name = "HML";
+        else if (isProf) name = "RMW";
+        else if (isInv) name = "CMA";
+        else if (isMom) name = "WML";
+        else {
+          const sp = [];
+          for (const [f, codes] of Object.entries(shortFilters)) {
+            const vals = codes.map((c) => FACTORS[f]?.labels[c] || c).join("/");
+            sp.push(vals);
+          }
+          name += " − " + sp.join(" · ");
+        }
+      } else {
+        const sp = [];
+        for (const [f, codes] of Object.entries(shortFilters)) {
+          const vals = codes.map((c) => FACTORS[f]?.labels[c] || c).join("/");
+          sp.push(vals);
+        }
+        name += " − " + sp.join(" · ");
       }
-      name += " − " + sp.join(" · ");
     }
 
     portfolios.push({
@@ -1170,8 +1178,6 @@ const BT = (() => {
         annualized_volatility: 0,
         sharpe_ratio: 0,
         max_drawdown: 0,
-        pct_positive_months: 0,
-        n_months: 0,
       };
     let cumProd = 1;
     rets.forEach((r) => {
@@ -1201,11 +1207,6 @@ const BT = (() => {
       annualized_volatility: +(annVol * 100).toFixed(2),
       sharpe_ratio: +sharpe.toFixed(3),
       max_drawdown: +(maxDD * 100).toFixed(2),
-      pct_positive_months: +(
-        (rets.filter((r) => r > 0).length / n) *
-        100
-      ).toFixed(1),
-      n_months: n,
     };
   }
 
@@ -1224,8 +1225,6 @@ const BT = (() => {
   function computePortfolio(config, months) {
     const { longFilters, shortFilters, strategy } = config;
     const universe = getToggleVal("bt-universe-toggle");
-    const topN =
-      universe === "top300" ? 300 : universe === "top500" ? 500 : null;
     const tc = getTCConfig();
     const ewPort = [100],
       vwPort = [100],
@@ -1240,7 +1239,6 @@ const BT = (() => {
     for (let mi = 0; mi < months.length; mi++) {
       const month = months[mi];
       let mdf = monthGroups[month] || [];
-      // if (topN) mdf = topNBySize(mdf, topN); // Handled by loadData
       const longDF = applyFilters(mdf, longFilters);
       const shortDF =
         strategy === "long_short" ? applyFilters(mdf, shortFilters) : [];
@@ -1835,7 +1833,7 @@ const BT = (() => {
     if (irHeader)
       irHeader.textContent = `IR (vs ${BENCHMARK_OPTIONS[activeBenchmarkId]?.label || ""})`;
 
-    const addRow = (name, color, m, turnover, ir) => {
+    const addRow = (name, color, m, ir) => {
       const cls = (v) => (v >= 0 ? "bt-stat-pos" : "bt-stat-neg");
       const sign = (v) => (v > 0 ? "+" : "");
       const irDisplay = ir != null ? ir : "—";
@@ -1847,9 +1845,7 @@ const BT = (() => {
                 <td>${m.annualized_volatility}%</td>
                 <td class="${cls(m.sharpe_ratio)}">${m.sharpe_ratio}</td>
                 <td class="${cls(m.max_drawdown)}">${m.max_drawdown}%</td>
-                <td>${m.pct_positive_months}%</td>
-                <td class="${ir != null ? cls(ir) : ""}">${irDisplay}</td>
-                <td>${turnover}</td>`;
+                <td class="${ir != null ? cls(ir) : ""}">${irDisplay}</td>`;
       body.appendChild(tr);
     };
 
@@ -1860,7 +1856,6 @@ const BT = (() => {
         p.name,
         (COLORS[p.colorIdx] || COLORS[0]).line,
         m,
-        p.results.avgTurnover + "%",
         m.ir,
       );
     });
@@ -1871,8 +1866,7 @@ const BT = (() => {
           BENCHMARK_OPTIONS[activeBenchmarkId]?.label || "",
           BENCH_COLOR.line,
           bench.metrics,
-          "—",
-          null,
+          null
         );
     }
   }

@@ -122,37 +122,32 @@
     <main class="container">
         <section id="about" class="section">
             <div class="about-content" style="max-width: 900px; margin: 0 auto">
-                <h3>Key contributions of our work:</h3>
+                <h3>Key Features:</h3>
                 <ul class="contact-list" style="margin-bottom: 2rem">
                     <li>
-                        <strong>Stock-level factor labels:</strong> Construct portfolios,
-                        audit exposures, and study cross-sectional market variation.
+                        <strong>Stock-level factor labels:</strong> Construct customized portfolios with your own
+                        weights.
                     </li>
                     <li>
                         <a href="backtester.html" class="link">Interactive analysis tool:</a>
-                        Visualize factor and portfolio returns, backtest strategies, and
-                        compare multiple portfolios with stock-level details.
+                        Visualize factor and portfolio returns, backtest strategies for multiple portfolio strategies .
                     </li>
                     <li>
-                        <strong>Tradable stock focus:</strong> Filters and market
-                        adjustments ensure reliable time series and outlier-free data.
+                        <strong>Tradable stock universe:</strong> Filters for illiquid stocks.
                     </li>
                     <li>
-                        <strong>Flexible universes:</strong> Top 300, top 500, and full
-                        tradable universe options. All datasets are available in the
-                        <a href="#downloads" class="link">Downloads</a> section.
+                        <strong>Flexible universes:</strong> Top 300, top 500, and full tradable universe options.
                     </li>
                     <li>
-                        <strong>India-specific breakpoints:</strong> Empirically grounded
-                        in Indian market structure.
+                        <strong>India-specific breakpoints:</strong> Portfolio cut points based on Indian market
+                        structure.
                     </li>
                 </ul>
                 <p>
-                    <strong>Ongoing Research:</strong> Besides enhancing factors, focus
-                    areas for the finance group include applications to fund management,
-                    machine learning pipelines, portfolio optimization, and modeling
-                    transaction costs. We will share updates periodically, and those
-                    interested in collaborating with us are welcome to write to
+                    <strong>Ongoing Research:</strong> Besides enhancing factors, focus areas for the finance group
+                    include applications to fund management, machine learning pipelines, portfolio optimization, and
+                    modeling transaction costs. We will share updates periodically. Individuals interested in
+                    collaborating with us are welcome to write to
                     <a href="mailto:factor.boosting@gmail.com">factor.boosting@gmail.com</a>.
                 </p>
             </div>
@@ -221,9 +216,7 @@
                 flex-wrap: wrap;
                 overflow: visible;
               ">
-                        <button class="tab-btn" data-tab="asset_turnover">
-                            Size &amp; Asset Turnover
-                        </button>
+                        <!-- Asset Turnover removed per user request -->
                         <button class="tab-btn" data-tab="sales_growth">
                             Size &amp; Sales Growth
                         </button>
@@ -363,13 +356,6 @@
                                     <tr>
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
-                                                data-tooltip="AT = Asset Turnover.">
-                                                AT (Asset Turnover)
-                                            </span>
-                                        </td>
-                                        <td class="negative">-0.16%</td>
-                                        <td class="positive">+0.51%</td>
-                                        <td class="negative">-3.29%</td>
                                         <td>
                                             <a href="backtester.html?factor=AT" class="analyze-link">Analyze &rarr;</a>
                                         </td>
@@ -798,53 +784,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Asset Turnover Tab -->
-            <div class="tab-content" data-content="asset_turnover">
-                <div class="factor-group">
-                    <h3 class="factor-title">Size and Asset Turnover Portfolios</h3>
-                    <div class="table-container">
-                        <table class="data-table factor-table">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>
-                                        April 2026<br /><span class="col-sub">(Returns %)</span>
-                                    </th>
-                                    <th>
-                                        Last 3 Months<br /><span class="col-sub">(Returns %)</span>
-                                    </th>
-                                    <th>
-                                        Last 12 Months<br /><span class="col-sub">(Returns %)</span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Small High</td>
-                                    <td class="positive">+19.36%</td>
-                                    <td class="positive">+9.23%</td>
-                                    <td class="positive">+6.68%</td>
-                                </tr>
-                                <tr>
-                                    <td>Small Neutral</td>
-                                    <td class="positive">+20.19%</td>
-                                    <td class="positive">+8.93%</td>
-                                    <td class="positive">+3.65%</td>
-                                </tr>
-                                <tr>
-                                    <td>Small Low</td>
-                                    <td class="positive">+21.39%</td>
-                                    <td class="positive">+5.22%</td>
-                                    <td class="positive">+2.36%</td>
-                                </tr>
-                                <tr>
-                                    <td>Big High</td>
-                                    <td class="positive">+9.56%</td>
-                                    <td class="negative">-0.23%</td>
-                                    <td class="positive">+1.55%</td>
-                                </tr>
-                                <tr>
-                                    <td>Big Neutral</td>
                                     <td class="positive">+13.04%</td>
                                     <td class="positive">+2.90%</td>
                                     <td class="positive">+5.01%</td>
