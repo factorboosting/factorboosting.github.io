@@ -451,7 +451,7 @@ body {
 
 .about-content p {
   margin-bottom: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .about-content h3 {
@@ -466,7 +466,7 @@ body {
 
 .contact-list li {
   padding: 0.5rem 0;
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 /* Downloads Section */
@@ -1806,6 +1806,29 @@ table {
     flex-shrink: 0;
   }
 
+  .factor-browser-header {
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .factor-family-toggle {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-radius: 8px;
+  }
+
+  .factor-family-toggle .tab-btn {
+    width: 100%;
+    white-space: normal;
+  }
+
+  .factor-tabs {
+    flex-wrap: nowrap;
+    gap: 0.45rem;
+    overflow-x: auto;
+  }
+
   /* --- Tables: allow horizontal scroll on mobile --- */
   .table-container {
     overflow-x: auto;
@@ -2904,6 +2927,78 @@ table {
 .factor-group {
   padding: 1rem;
   margin-bottom: 1rem;
+}
+
+.research-factor-summary {
+  margin-bottom: 1.5rem;
+}
+
+.factor-browser {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.5rem;
+}
+
+.factor-browser-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.section-kicker,
+.factor-tab-label {
+  margin: 0 0 0.4rem;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.factor-browser-title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.factor-family-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 0.45rem;
+  padding: 0.35rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: #f8fbfa;
+}
+
+.factor-family-toggle .tab-btn {
+  border-color: transparent;
+  padding: 0.62rem 1rem;
+}
+
+.factor-tab-group {
+  display: none;
+  margin-bottom: 1rem;
+}
+
+.factor-tab-group.active {
+  display: block;
+}
+
+.factor-tabs {
+  margin-bottom: 0;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.factor-portfolio-panel {
+  display: none;
+}
+
+.factor-portfolio-panel.active {
+  display: block;
 }
 
 .tabs-container {

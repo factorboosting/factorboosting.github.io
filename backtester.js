@@ -46,11 +46,11 @@ const BT = (() => {
       },
       "Op. Profitability": {
         col: "OP_Label",
-        labels: { R: "Profitable", N: "Neutral", W: "Weak" },
+        labels: { R: "Robust", N: "Neutral", W: "Weak" },
       },
       Investment: {
         col: "INV_Label",
-        labels: { C: "Hi Investment", N: "Neutral", A: "Low Investment" },
+        labels: { A: "Hi Investment (Aggressive)", N: "Neutral", C: "Low Investment (Conservative)" },
       },
       Momentum: {
         col: "MOM_Label",
@@ -155,7 +155,8 @@ const BT = (() => {
     if (benchmarkCache) return benchmarkCache;
     try {
       // Also fetch ff5.csv for the Risk-Free Rate (Rf)
-      fetch("Data/Factor_Data/ff5.csv")
+      const cacheBuster = "?v=" + new Date().getTime();
+      fetch("Data/Factor_Data/ff5.csv" + cacheBuster)
         .then((res) => (res.ok ? res.text() : ""))
         .then((text) => {
           const rfParsed = parseCSV(text);
@@ -167,7 +168,7 @@ const BT = (() => {
         })
         .catch((e) => console.error("Failed to load ff5.csv Rf data", e));
 
-      const res = await fetch("Data/Factor_Data/finalMonthlyLabels_aman.csv");
+      const res = await fetch("Data/Factor_Data/finalMonthlyLabels_aman.csv?v=" + new Date().getTime());
       if (!res.ok) return { b: {}, names: {} };
       const parsed = parseCSV(await res.text());
       const b = {};
@@ -305,7 +306,8 @@ const BT = (() => {
       const emEl = document.getElementById("bt-end-month");
       smEl.min = emEl.min = allMonths[0];
       smEl.max = emEl.max = allMonths[allMonths.length - 1];
-      smEl.value = allMonths.includes("2003-10") ? "2003-10" : allMonths[0];
+      const defaultStartIdx = Math.max(0, allMonths.length - 1 - 120);
+      smEl.value = allMonths[defaultStartIdx];
       emEl.value = allMonths[allMonths.length - 1];
 
       buildFactorPicker();
@@ -1106,10 +1108,26 @@ const BT = (() => {
   // ── Core computation ──────────────────────────────────────────────────────
   function applyFilters(rows, filters) {
     let result = rows;
+    const hasMom = !!filters["Momentum"];
+    const hasOP = !!filters["Op. Profitability"];
+    const hasINV = !!filters["Investment"];
+    const hasAT = !!filters["Asset Turnover"];
+    const hasSG = !!filters["Sales Growth"];
+    const hasACC = !!filters["Accruals"];
+    
     for (const [factor, labels] of Object.entries(filters)) {
       if (labels && labels.length && FACTORS[factor]) {
-        const col = FACTORS[factor].col,
-          set = new Set(labels);
+        let col = FACTORS[factor].col;
+        if (factor === "Size") {
+          if (hasMom) col = "Size_Label_Monthly";
+          else if (hasOP) col = "Size_Label_OP";
+          else if (hasINV) col = "Size_Label_INV";
+          else if (hasAT) col = "Size_Label_AT";
+          else if (hasSG) col = "Size_Label_SG";
+          else if (hasACC) col = "Size_Label_ACC";
+          else col = "Size_Label_Yearly";
+        }
+        const set = new Set(labels);
         result = result.filter((r) => set.has(r[col]));
       }
     }
@@ -1245,10 +1263,26 @@ const BT = (() => {
 
       // 2x3 Double-Sort & 5-Firm Minimum Logic
       const minFirms = 5;
-      const longS = longDF.filter((r) => r.Size_Label === "S");
-      const longB = longDF.filter((r) => r.Size_Label === "B");
-      const shortS = shortDF.filter((r) => r.Size_Label === "S");
-      const shortB = shortDF.filter((r) => r.Size_Label === "B");
+      
+      const hasMom = !!(longFilters["Momentum"] || (shortFilters && shortFilters["Momentum"]));
+      const hasOP = !!(longFilters["Op. Profitability"] || (shortFilters && shortFilters["Op. Profitability"]));
+      const hasINV = !!(longFilters["Investment"] || (shortFilters && shortFilters["Investment"]));
+      const hasAT = !!(longFilters["Asset Turnover"] || (shortFilters && shortFilters["Asset Turnover"]));
+      const hasSG = !!(longFilters["Sales Growth"] || (shortFilters && shortFilters["Sales Growth"]));
+      const hasACC = !!(longFilters["Accruals"] || (shortFilters && shortFilters["Accruals"]));
+
+      let sizeCol = "Size_Label_Yearly";
+      if (hasMom) sizeCol = "Size_Label_Monthly";
+      else if (hasOP) sizeCol = "Size_Label_OP";
+      else if (hasINV) sizeCol = "Size_Label_INV";
+      else if (hasAT) sizeCol = "Size_Label_AT";
+      else if (hasSG) sizeCol = "Size_Label_SG";
+      else if (hasACC) sizeCol = "Size_Label_ACC";
+
+      const longS = longDF.filter((r) => r[sizeCol] === "S");
+      const longB = longDF.filter((r) => r[sizeCol] === "B");
+      const shortS = shortDF.filter((r) => r[sizeCol] === "S");
+      const shortB = shortDF.filter((r) => r[sizeCol] === "B");
 
       // Determine if the user's filters INTEND to include S or B
       const longAllowsS =

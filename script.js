@@ -108,12 +108,70 @@ function filterPublications(type) {
   return publicationsData.filter((pub) => pub.type === normalizedType);
 }
 
+function initFactorBrowser(section) {
+  const browser = section.querySelector("[data-factor-browser]");
+  if (!browser) return;
+
+  const groupButtons = browser.querySelectorAll("[data-factor-group-btn]");
+  const tabGroups = browser.querySelectorAll("[data-factor-tab-group]");
+  const factorTabs = browser.querySelectorAll("[data-factor-tab]");
+  const panels = browser.querySelectorAll("[data-factor-panel]");
+
+  const activatePanel = (panelName) => {
+    panels.forEach((panel) => {
+      panel.classList.toggle("active", panel.dataset.factorPanel === panelName);
+    });
+    factorTabs.forEach((tab) => {
+      tab.classList.toggle("active", tab.dataset.factorTab === panelName);
+    });
+  };
+
+  const activateGroup = (groupName) => {
+    groupButtons.forEach((button) => {
+      button.classList.toggle(
+        "active",
+        button.dataset.factorGroupBtn === groupName,
+      );
+    });
+    tabGroups.forEach((group) => {
+      group.classList.toggle(
+        "active",
+        group.dataset.factorTabGroup === groupName,
+      );
+    });
+
+    const firstTab = browser.querySelector(
+      `[data-factor-tab-group="${groupName}"] [data-factor-tab]`,
+    );
+    if (firstTab) {
+      activatePanel(firstTab.dataset.factorTab);
+    }
+  };
+
+  groupButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      activateGroup(button.dataset.factorGroupBtn);
+    });
+  });
+
+  factorTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      activatePanel(tab.dataset.factorTab);
+    });
+  });
+}
+
 // Universal tab functionality for all sections
 function initTabs() {
   // Get all sections with tabs
   const sections = document.querySelectorAll(".section");
 
   sections.forEach((section) => {
+    if (section.id === "factors") {
+      initFactorBrowser(section);
+      return;
+    }
+
     const tabBtns = section.querySelectorAll(".tab-btn");
     const tabContents = section.querySelectorAll(".tab-content");
 
@@ -363,24 +421,38 @@ async function loadDynamicFactorTable() {
 
     const factorCodeMap = {
       "Rm-Rf (Using Nifty 500)": "MKT",
+      "NIFTY": "MKT",
       SMB: "SMB",
       HML: "HML",
       WML: "WML",
       RMW: "RMW",
       CMA: "CMA",
       "AT (Asset Turnover)": "AT",
+      "AT": "AT",
       "SG (Sales Growth)": "SG",
+      "SG": "SG",
       "ACC (Accruals)": "ACC",
+      "ACC": "ACC",
+    };
+
+    
+    const displayNames = {
+      "Rm-Rf (Using Nifty 500)": "NIFTY",
+      "AT (Asset Turnover)": "AT",
+      "SG (Sales Growth)": "SG",
+      "ACC (Accruals)": "ACC"
     };
 
     const tbody = document.getElementById("dynamic-factor-tbody");
+
     if (tbody) {
       let html = "";
       for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(",");
         if (cols.length < 4) continue;
 
-        const factor = cols[0];
+        const factor = cols[0] ? cols[0].trim() : "";
+        if (!factor) continue;
         const val1m = parseFloat(cols[1]);
         const val3m = parseFloat(cols[2]);
         const val12m = parseFloat(cols[3]);
@@ -390,12 +462,13 @@ async function loadDynamicFactorTable() {
         const formatVal = (v, str) =>
           isNaN(v) ? str : v > 0 ? "+" + str + "%" : str + "%";
         const fcode = factorCodeMap[factor] || factor;
+        const displayName = displayNames[factor] || factor;
 
         html += `
                     <tr>
                         <td class="factor-name">
-                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="${tooltips[factor] || factor}">
-                                ${factor}
+                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="${tooltips[factor] || displayName}">
+                                ${displayName}
                             </span>
                         </td>
                         <td class="${getCls(val1m)}">${formatVal(val1m, cols[1])}</td>
