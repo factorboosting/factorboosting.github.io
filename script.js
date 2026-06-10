@@ -231,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initScrollReveal();
   initHeroPreview();
   initPointerTilt();
-  loadDynamicFactorTable();
 });
 
 function initScrollReveal() {
@@ -378,113 +377,6 @@ function copyBibtex() {
 }
 
 async function loadDynamicFactorTable() {
-  try {
-    const fetchUrl = "factor_table.csv?v=" + new Date().getTime();
-    const response = await fetch(fetchUrl);
-    if (!response.ok) return;
-    const csvText = await response.text();
-
-    const lines = csvText.trim().split(/\r?\n/);
-    if (lines.length < 2) return;
-
-    const headers = lines[0].split(",");
-    const latestMonth = headers[1];
-
-    const thead = document.getElementById("dynamic-factor-thead");
-    if (thead) {
-      thead.innerHTML = `
-                <tr>
-                    <th></th>
-                    <th>${latestMonth}<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
-                    <th>Last 3 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
-                    <th>Last 12 Months<br><span style="font-size: 0.8em; font-weight: 500; color: #64748b;">(Returns %)</span></th>
-                    <th></th>
-                </tr>
-            `;
-    }
-
-    const tooltips = {
-      "Rm-Rf (Using Nifty 500)":
-        "Rm-Rf = Market Risk Premium. Measures the excess return of the market portfolio over the risk-free rate.",
-      SMB: "SMB = Small Minus Big. Measures the size factor: small-cap stocks minus large-cap stocks.",
-      HML: "HML = High Minus Low. Measures the value factor: high book-to-market stocks minus low book-to-market stocks.",
-      WML: "WML = Winners Minus Losers. Measures the momentum factor: past winners minus past losers.",
-      RMW: "RMW = Robust Minus Weak. Measures the operating profitability factor: robust vs weak operating profitability.",
-      CMA: "CMA = Conservative Minus Aggressive. Measures the investment factor: conservative vs aggressive investment.",
-      "AT (Asset Turnover)":
-        "AT = Asset Turnover. Measures the asset turnover factor: high vs low asset turnover.",
-      "SG (Sales Growth)":
-        "SG = Sales Growth. Measures the sales growth factor: high vs low sales growth.",
-      "ACC (Accruals)":
-        "ACC = Accruals. Measures the accruals factor: conservative vs aggressive accruals.",
-    };
-
-    const factorCodeMap = {
-      "Rm-Rf (Using Nifty 500)": "MKT",
-      "NIFTY": "MKT",
-      SMB: "SMB",
-      HML: "HML",
-      WML: "WML",
-      RMW: "RMW",
-      CMA: "CMA",
-      "AT (Asset Turnover)": "AT",
-      "AT": "AT",
-      "SG (Sales Growth)": "SG",
-      "SG": "SG",
-      "ACC (Accruals)": "ACC",
-      "ACC": "ACC",
-    };
-
-    
-    const displayNames = {
-      "Rm-Rf (Using Nifty 500)": "NIFTY",
-      "AT (Asset Turnover)": "AT",
-      "SG (Sales Growth)": "SG",
-      "ACC (Accruals)": "ACC"
-    };
-
-    const tbody = document.getElementById("dynamic-factor-tbody");
-
-    if (tbody) {
-      let html = "";
-      for (let i = 1; i < lines.length; i++) {
-        const cols = lines[i].split(",");
-        if (cols.length < 4) continue;
-
-        const factor = cols[0] ? cols[0].trim() : "";
-        if (!factor) continue;
-        const val1m = parseFloat(cols[1]);
-        const val3m = parseFloat(cols[2]);
-        const val12m = parseFloat(cols[3]);
-
-        const getCls = (v) =>
-          isNaN(v) ? "" : v >= 0 ? "positive" : "negative";
-        const formatVal = (v, str) =>
-          isNaN(v) ? str : v > 0 ? "+" + str + "%" : str + "%";
-        const fcode = factorCodeMap[factor] || factor;
-        const displayName = displayNames[factor] || factor;
-
-        html += `
-                    <tr>
-                        <td class="factor-name">
-                            <span class="factor-tooltip-trigger" tabindex="0" data-tooltip="${tooltips[factor] || displayName}">
-                                ${displayName}
-                            </span>
-                        </td>
-                        <td class="${getCls(val1m)}">${formatVal(val1m, cols[1])}</td>
-                        <td class="${getCls(val3m)}">${formatVal(val3m, cols[2])}</td>
-                        <td class="${getCls(val12m)}">${formatVal(val12m, cols[3])}</td>
-                        <td><a href="backtester.html?factor=${fcode}" class="analyze-link">Analyze &rarr;</a></td>
-                    </tr>
-                `;
-      }
-      tbody.innerHTML = html;
-    }
-  } catch (error) {
-    console.error("Error loading dynamic factor table:", error);
-  }
-}
-
 window.setVisualPreview = function setVisualPreview(mode) {
   const shell = document.querySelector(".visual-shell");
   const controls = document.querySelectorAll(".visual-mode");
