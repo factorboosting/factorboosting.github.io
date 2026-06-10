@@ -39,7 +39,7 @@ const BT = (() => {
   // ── All 10 factors ────────────────────────────────────────────────────────
   const FACTOR_GROUPS = {
     "Classic (FF5 + Momentum)": {
-      Size: { col: "Size_Label", labels: { B: "Big Cap", S: "Small Cap" } },
+      Size: { col: "Size_Label", labels: { B: "Big", S: "Small" } },
       "Book-to-Market": {
         col: "BM_Label",
         labels: { G: "Growth", N: "Neutral", V: "Value" },
@@ -50,7 +50,7 @@ const BT = (() => {
       },
       Investment: {
         col: "INV_Label",
-        labels: { A: "Hi Investment (Aggressive)", N: "Neutral", C: "Low Investment (Conservative)" },
+        labels: { A: "Aggressive", N: "Neutral", C: "Conservative" },
       },
       Momentum: {
         col: "MOM_Label",
@@ -1525,7 +1525,7 @@ const BT = (() => {
         rows
           .filter((r) => r._ret != null && isFinite(r._ret))
           .map((r) => ({
-            name: r.Co_Name || r.co_name || "—",
+            name: r.Co_Name || r.co_name || r.company_name || r["Company Name"] || "—",
             ret: +(r._ret * 100).toFixed(2),
             size: r._size,
           }))
@@ -1606,8 +1606,8 @@ const BT = (() => {
   }
 
   function getGrowthVsBenchmark(m, benchMetrics) {
-    if (!m || !benchMetrics) return null;
-    return +(m.growth_multiple - benchMetrics.growth_multiple).toFixed(2);
+    if (!m || !benchMetrics || benchMetrics.growth_multiple === 0) return null;
+    return +(m.growth_multiple / benchMetrics.growth_multiple).toFixed(2);
   }
 
   // ── Run ───────────────────────────────────────────────────────────────────
@@ -1944,7 +1944,7 @@ const BT = (() => {
 
     if (periodHeader) periodHeader.textContent = period.titlePrefix;
     if (growthVsHeader) {
-      growthVsHeader.textContent = `Growth vs ${benchmarkLabel}`;
+      growthVsHeader.innerHTML = `Growth<br>vs ${benchmarkLabel}`;
       growthVsHeader.hidden = !showGrowthVsNifty;
     }
     if (growthVsCol) growthVsCol.style.display = showGrowthVsNifty ? "" : "none";
@@ -1959,15 +1959,15 @@ const BT = (() => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
                 <td><span class="bt-compare-dot" style="background:${color}"></span><span class="bt-compare-name">${name}</span></td>
-                <td><span class="bt-compare-factor">${factorLabel || "—"}</span></td>
-                <td>${m.growth_multiple}x</td>
-                <td class="${cls(m.annualized_return)}">${sign(m.annualized_return)}${m.annualized_return}%</td>
-                <td>${m.annualized_volatility}%</td>
-                <td class="${cls(m.sharpe_ratio)}">${m.sharpe_ratio}</td>
-                <td class="${cls(m.max_drawdown)}">${m.max_drawdown}%</td>
+                <td style="padding-left: 15px;"><span class="bt-compare-factor">${factorLabel || "—"}</span></td>
+                <td style="text-align: center;">${m.growth_multiple}x</td>
+                <td class="${cls(m.annualized_return)}" style="text-align: center;">${sign(m.annualized_return)}${m.annualized_return}%</td>
+                <td style="text-align: center;">${m.annualized_volatility}%</td>
+                <td class="${cls(m.sharpe_ratio)}" style="text-align: center;">${m.sharpe_ratio}</td>
+                <td class="${cls(m.max_drawdown)}" style="text-align: center;">${m.max_drawdown}%</td>
                 ${
                   showGrowthVsNifty
-                    ? `<td class="${growthVsNifty != null ? cls(growthVsNifty) : ""}">${growthDisplay}</td>`
+                    ? `<td class="${growthVsNifty != null ? cls(growthVsNifty) : ""}" style="text-align: center;">${growthDisplay}</td>`
                     : ""
                 }`;
       body.appendChild(tr);
