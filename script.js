@@ -375,8 +375,6 @@ function copyBibtex() {
       alert("Failed to copy BibTeX. Please copy manually.");
     });
 }
-
-async function loadDynamicFactorTable() {
 window.setVisualPreview = function setVisualPreview(mode) {
   const shell = document.querySelector(".visual-shell");
   const controls = document.querySelectorAll(".visual-mode");
