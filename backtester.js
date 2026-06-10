@@ -1991,7 +1991,7 @@ const BT = (() => {
           "Benchmark",
           BENCH_COLOR.line,
           bench.metrics,
-          0
+          null
         );
     }
   }
