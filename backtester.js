@@ -1208,8 +1208,9 @@ const BT = (() => {
     const mean = rets.reduce((s, r) => s + r, 0) / n;
     const variance =
       rets.reduce((s, r) => s + (r - mean) ** 2, 0) / Math.max(n - 1, 1);
+    const annMean = mean * 12;
     const annVol = Math.sqrt(variance * 12);
-    const sharpe = annVol > 0 ? annRet / annVol : 0;
+    const sharpe = annVol > 0 ? annMean / annVol : 0;
     let cum = 1,
       peak = 1,
       maxDD = 0;

@@ -9,8 +9,8 @@
 :root {
   --primary-color: #2563eb;
   --secondary-color: #1e40af;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
+  --text-primary: #000000;
+  --text-secondary: #000000;
   --border-color: #e5e7eb;
   --bg-light: #f9fafb;
   --bg-white: #ffffff;
@@ -350,7 +350,7 @@ body {
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
 }
 
 .data-table thead {
@@ -358,7 +358,7 @@ body {
 }
 
 .data-table th {
-  padding: 0.75rem 1rem;
+  padding: 0.4rem 0.75rem;
   text-align: left;
   font-weight: 600;
   color: var(--text-primary);
@@ -367,16 +367,76 @@ body {
 }
 
 .data-table td {
-  padding: 0.75rem 1rem;
+  padding: 0.4rem 0.75rem;
   border-bottom: 1px solid var(--border-color);
+}
+
+.data-table tbody tr {
+  transition: all 0.2s ease;
 }
 
 .data-table tbody tr:hover {
   background-color: var(--bg-light);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .data-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* Factor Tables specific styles */
+.factor-table {
+  table-layout: fixed;
+}
+
+.factor-table th,
+.factor-table td {
+  text-align: center;
+}
+
+.factor-table th:first-child,
+.factor-table td:first-child {
+  text-align: left;
+  width: 25%;
+}
+
+.factor-table th:last-child,
+.factor-table td:last-child {
+  width: 15%;
+}
+
+/* Factor Separator Row */
+.factor-separator:hover {
+  background-color: transparent !important;
+}
+
+.factor-separator td {
+  border-bottom: none !important;
+  padding: 1rem 0.5rem 0.5rem !important;
+}
+
+.factor-separator-content {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.factor-separator-line {
+  flex: 1;
+  height: 2px;
+  background-color: var(--text-primary);
+  opacity: 0.1;
+}
+
+.factor-separator-text {
+  padding: 0 1.5rem;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
 }
 
 .link {
@@ -2940,15 +3000,15 @@ table {
 
 .factor-browser-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1.25rem;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
 }
 
 .section-kicker,
 .factor-tab-label {
-  margin: 0 0 0.4rem;
+  margin: 0;
   color: var(--text-secondary);
   font-size: 0.78rem;
   font-weight: 800;
@@ -2957,9 +3017,9 @@ table {
 }
 
 .factor-browser-title {
-  margin: 0;
+  margin: 0.5rem 0 0;
   color: var(--text-primary);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   line-height: 1.25;
 }
 
