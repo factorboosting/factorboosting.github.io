@@ -438,6 +438,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const leftFade = tabsContainer.querySelector(".scroll-fade.left");
   const rightFade = tabsContainer.querySelector(".scroll-fade.right");
 
+  if (!tabs) return;
+
   function updateScrollFades() {
     if (!tabs || !leftFade || !rightFade) return;
     if (tabs.scrollLeft > 0) {
