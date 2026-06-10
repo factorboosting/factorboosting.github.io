@@ -111,10 +111,10 @@
       /* ── Comparison table ──────────────────────────────────────────────── */
       .bt-compare-card {
         background: var(--bg-white);
-        border-radius: 14px;
+        border-radius: 10px;
         border: 1px solid var(--border-color);
-        padding: 18px 20px;
-        overflow-x: auto;
+        padding: 12px 14px;
+        overflow: hidden;
       }
 
       .bt-compare-title {
@@ -125,27 +125,53 @@
 
       .bt-compare-table {
         width: 100%;
+        table-layout: fixed;
         border-collapse: collapse;
-        font-size: 12px;
+        font-size: 11.5px;
       }
 
       .bt-compare-table th {
-        text-align: left;
-        padding: 6px 10px;
-        font-weight: 500;
+        text-align: center;
+        padding: 7px 6px;
+        font-weight: 700;
         color: var(--text-secondary);
         border-bottom: 1px solid var(--border-color);
-        white-space: nowrap;
+        white-space: normal;
+        line-height: 1.18;
       }
 
       .bt-compare-table td {
-        padding: 6px 10px;
+        padding: 7px 6px;
         border-bottom: 1px solid #f1f5f9;
         white-space: nowrap;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      .bt-compare-table th:first-child,
+      .bt-compare-table td:first-child {
+        text-align: left;
+      }
+
+      .bt-compare-table thead tr:first-child th:nth-child(2),
+      .bt-compare-table tbody td:nth-child(2) {
+        text-align: left;
       }
 
       .bt-compare-table tbody tr:last-child td {
         border-bottom: none;
+      }
+
+      .bt-compare-table .bt-period-head {
+        color: var(--text-primary);
+        font-size: 12px;
+      }
+
+      .bt-compare-table .bt-subhead th {
+        font-size: 10.5px;
+        font-weight: 650;
+        color: var(--text-secondary);
+        padding-top: 4px;
       }
 
       .bt-compare-dot {
@@ -162,12 +188,83 @@
         color: var(--text-primary);
       }
 
+      .bt-compare-factor {
+        color: var(--text-secondary);
+        font-weight: 600;
+      }
+
       .bt-stat-pos {
         color: #059669;
       }
 
       .bt-stat-neg {
         color: #dc2626;
+      }
+
+      .bt-chart-empty {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 24px;
+        border-radius: 10px;
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(255, 255, 255, 0.92));
+        color: var(--text-secondary);
+        text-align: center;
+        pointer-events: none;
+      }
+
+      .bt-chart-empty strong {
+        color: var(--text-primary);
+        font-size: 0.98rem;
+      }
+
+      .bt-chart-empty span {
+        max-width: 380px;
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+
+      .quickstart-panel {
+        background-color: #f8fafc;
+        border-left: 4px solid #2563eb;
+        border-radius: 6px;
+        padding: 0;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .quickstart-panel summary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 18px;
+        cursor: pointer;
+        list-style: none;
+      }
+
+      .quickstart-panel summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .quickstart-panel summary::after {
+        content: "Collapse";
+        margin-left: auto;
+        color: var(--text-secondary);
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .quickstart-panel:not([open]) summary::after {
+        content: "Expand";
+      }
+
+      .quickstart-content {
+        padding: 0 20px 18px;
       }
 
       /* ── Month navigator ───────────────────────────────────────────────── */
@@ -354,9 +451,9 @@
         font-size: 10.5px;
       }
 
-      /* ── IR column highlight ───────────────────────────────────────────── */
-      .bt-compare-table th.bt-ir-col {
-        color: #7c3aed;
+      .bt-compare-table th[hidden],
+      .bt-compare-table td[hidden] {
+        display: none;
       }
 
       /* ── Drawdown chart ────────────────────────────────────────────────── */
@@ -578,24 +675,8 @@
           profitability, and investment style to see how a portfolio of stocks
           matching those traits would have performed historically.
         </p>
-        <div
-          style="
-            background-color: #f8fafc;
-            border-left: 4px solid #2563eb;
-            border-radius: 4px;
-            padding: 20px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-          "
-        >
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              margin-bottom: 12px;
-            "
-          >
+        <details class="quickstart-panel" open>
+          <summary>
             <svg
               width="20"
               height="20"
@@ -621,7 +702,8 @@
             >
               Quick Start Guide
             </h3>
-          </div>
+          </summary>
+          <div class="quickstart-content">
           <ol
             style="
               margin-left: 1.5rem;
@@ -689,7 +771,8 @@
               >Read Full Documentation &rarr;</a
             >
           </div>
-        </div>
+          </div>
+        </details>
         <br />
       </div>
     </div>
@@ -940,15 +1023,31 @@
             style="display: none"
           >
             <table class="bt-compare-table">
+              <colgroup>
+                <col style="width: 13%" />
+                <col style="width: 16%" />
+                <col style="width: 8%" />
+                <col style="width: 11%" />
+                <col style="width: 12%" />
+                <col style="width: 10%" />
+                <col style="width: 14%" />
+                <col id="bt-growth-vs-nifty-col" style="width: 16%" />
+              </colgroup>
               <thead>
                 <tr>
-                  <th>Portfolio</th>
-                  <th>Growth</th>
-                  <th>Ann. Ret.</th>
-                  <th>Ann. Vol.</th>
-                  <th>Sharpe</th>
-                  <th>Max DD</th>
-                  <th id="bt-ir-col-header">IR (vs Nifty 50)</th>
+                  <th rowspan="2">Portfolio</th>
+                  <th rowspan="2">Factor</th>
+                  <th rowspan="2">Growth</th>
+                  <th class="bt-period-head" id="bt-period-col-header" colspan="3">
+                    Period Metrics
+                  </th>
+                  <th rowspan="2">Maximum Drawdown</th>
+                  <th rowspan="2" id="bt-growth-vs-nifty-header">Growth vs NIFTY</th>
+                </tr>
+                <tr class="bt-subhead">
+                  <th>Annual Return</th>
+                  <th>Annual Volatility</th>
+                  <th>Sharpe Ratio</th>
                 </tr>
               </thead>
               <tbody id="bt-compare-body"></tbody>
@@ -960,10 +1059,10 @@
             <div class="bt-chart-header">
               <div>
                 <div class="bt-chart-title" id="bt-chart-title">
-                  Portfolio Performance
+                  Portfolio Returns
                 </div>
                 <div class="bt-chart-sub" id="bt-chart-sub">
-                  Select factors and press Run Analysis
+                  Build a portfolio to view performance over time
                 </div>
               </div>
               <label class="bt-log-toggle">
@@ -976,6 +1075,10 @@
               </label>
             </div>
             <div class="bt-chart-wrap">
+              <div class="bt-chart-empty" id="bt-chart-empty">
+                <strong>Select a portfolio to continue</strong>
+                <span>Choose factor labels in the sidebar, then run the analysis to view returns, drawdowns, and holdings.</span>
+              </div>
               <canvas id="bt-perf-chart"></canvas>
               <div class="bt-chart-loading" id="bt-chart-loading">
                 <div class="bt-spinner"></div>

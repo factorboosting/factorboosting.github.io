@@ -116,14 +116,35 @@ const BT = (() => {
   function parseCSV(text) {
     const lines = text.split("\n");
     if (lines.length < 2) return [];
-    const headers = lines[0]
-      .split(",")
-      .map((h) => h.trim().replace(/^"|"$/g, ""));
+
+    function splitCSVRow(str) {
+      const result = [];
+      let current = "";
+      let inQuotes = false;
+      for (let i = 0; i < str.length; i++) {
+        const char = str[i];
+        if (char === '"' && str[i + 1] === '"') {
+          current += '"';
+          i++; // skip escaped quote
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
+    const headers = splitCSVRow(lines[0]);
     const rows = [];
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-      const vals = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
+      const vals = splitCSVRow(line);
       const obj = {};
       headers.forEach((h, idx) => {
         obj[h] = vals[idx] !== undefined ? vals[idx] : "";
@@ -154,19 +175,21 @@ const BT = (() => {
   async function loadBenchmarks() {
     if (benchmarkCache) return benchmarkCache;
     try {
-      // Also fetch ff5.csv for the Risk-Free Rate (Rf)
       const cacheBuster = "?v=" + new Date().getTime();
-      fetch("Data/Factor_Data/ff5.csv" + cacheBuster)
-        .then((res) => (res.ok ? res.text() : ""))
-        .then((text) => {
-          const rfParsed = parseCSV(text);
+      try {
+        const rfRes = await fetch("Data/Factor_Data/ff5.csv" + cacheBuster);
+        if (rfRes.ok) {
+          const rfText = await rfRes.text();
+          const rfParsed = parseCSV(rfText);
           rfParsed.forEach((row) => {
-            if (row.Month && row.Rf) {
+            if (row.Month && row.Rf !== undefined && row.Rf !== "") {
               rfData[row.Month.substring(0, 7)] = parseFloat(row.Rf);
             }
           });
-        })
-        .catch((e) => console.error("Failed to load ff5.csv Rf data", e));
+        }
+      } catch (e) {
+        console.error("Failed to load ff5.csv Rf data", e);
+      }
 
       const res = await fetch("Data/Factor_Data/finalMonthlyLabels_aman.csv?v=" + new Date().getTime());
       if (!res.ok) return { b: {}, names: {} };
@@ -243,16 +266,22 @@ const BT = (() => {
 
       parsed.forEach((row) => {
         row._month = row.Month ? row.Month.substring(0, 7) : "";
-        row._size = parseFloat(row.mktcap || row.eom_mcap || row.Size);
+        row._size = parseFloat(row.mktcap || row.eom_mcap || row.Size || row.lagged_mktcap);
         if (isNaN(row._size) || row._size <= 0) row._size = 0;
 
         if (row.prev_mktcap !== undefined && row.prev_mktcap !== "") {
           row.prev_Size = parseFloat(row.prev_mktcap);
           if (isNaN(row.prev_Size) || row.prev_Size <= 0) row.prev_Size = null;
+        } else if (row.lagged_mktcap !== undefined && row.lagged_mktcap !== "") {
+          row.prev_Size = parseFloat(row.lagged_mktcap);
+          if (isNaN(row.prev_Size) || row.prev_Size <= 0) row.prev_Size = null;
         }
 
         row.Co_Code = row.co_code || row.Co_Code;
         row.Co_Name = namesMap[row.Co_Code] || `Stock ${row.Co_Code}`;
+
+        if (!row.Size_Label) row.Size_Label = row.Size_Label_Yearly || row.Size_Label_Monthly || row.Size_Label_Monthly_Any;
+        if (!row.VOL_Label && row.BAV_Label) row.VOL_Label = row.BAV_Label;
 
         const sanitized = sanitizeReturn(row[retCol]);
         if (sanitized.action === "drop") {
@@ -306,7 +335,7 @@ const BT = (() => {
       const emEl = document.getElementById("bt-end-month");
       smEl.min = emEl.min = allMonths[0];
       smEl.max = emEl.max = allMonths[allMonths.length - 1];
-      const defaultStartIdx = Math.max(0, allMonths.length - 1 - 120);
+      const defaultStartIdx = Math.max(0, allMonths.length - 120);
       smEl.value = allMonths[defaultStartIdx];
       emEl.value = allMonths[allMonths.length - 1];
 
@@ -1013,6 +1042,7 @@ const BT = (() => {
       const vals = codes.map((c) => FACTORS[f]?.labels[c] || c).join("/");
       nameParts.push(vals);
     }
+    const factorLabel = getPortfolioFactorLabel(longFilters, shortFilters);
 
     let name = nameParts.join(" · ");
     if (currentStrategy === "long_short") {
@@ -1049,6 +1079,7 @@ const BT = (() => {
     portfolios.push({
       id: nextId++,
       name: name.length > 50 ? name.substring(0, 47) + "…" : name,
+      factorLabel,
       colorIdx: portfolios.length,
       config: {
         longFilters: JSON.parse(JSON.stringify(longFilters)),
@@ -1187,7 +1218,22 @@ const BT = (() => {
     return te > 0 ? +((mean * 12) / te).toFixed(3) : null;
   }
 
-  function computeMetrics(rets) {
+  function getPeriodDescriptor(monthCount = runMonths.length) {
+    if (!monthCount) return { label: "", titlePrefix: "" };
+    if (monthCount % 12 === 0) {
+      const years = monthCount / 12;
+      return {
+        label: `${years} ${years === 1 ? "year" : "years"}`,
+        titlePrefix: `${years}-Year`,
+      };
+    }
+    return {
+      label: `${monthCount} ${monthCount === 1 ? "month" : "months"}`,
+      titlePrefix: `${monthCount}-Month`,
+    };
+  }
+
+  function computeMetrics(rets, rfs = []) {
     const n = rets.length;
     if (n === 0)
       return {
@@ -1205,12 +1251,19 @@ const BT = (() => {
     // Guard against negative cumProd (which can happen for a wiped-out L-S portfolio)
     const annRet =
       nYears > 0 && cumProd > 0 ? Math.pow(cumProd, 1 / nYears) - 1 : 0;
+    
+    // For standard display
     const mean = rets.reduce((s, r) => s + r, 0) / n;
     const variance =
       rets.reduce((s, r) => s + (r - mean) ** 2, 0) / Math.max(n - 1, 1);
-    const annMean = mean * 12;
     const annVol = Math.sqrt(variance * 12);
-    const sharpe = annVol > 0 ? annMean / annVol : 0;
+
+    // Compute Sharpe using Excess Returns
+    const excessRets = rets.map((r, i) => r - (rfs[i] || 0));
+    const meanExcess = excessRets.reduce((s, r) => s + r, 0) / n;
+    const annMeanExcess = meanExcess * 12;
+    
+    const sharpe = annVol > 0 ? annMeanExcess / annVol : 0;
     let cum = 1,
       peak = 1,
       maxDD = 0;
@@ -1493,8 +1546,8 @@ const BT = (() => {
       vw_portfolio: vwPort.slice(1).map((v) => +v.toFixed(4)),
       ew_rets: ewRets,
       vw_rets: vwRets,
-      ew_metrics: computeMetrics(ewRets),
-      vw_metrics: computeMetrics(vwRets),
+      ew_metrics: computeMetrics(ewRets, months.map(m => rfData[m] || 0)),
+      vw_metrics: computeMetrics(vwRets, months.map(m => rfData[m] || 0)),
       ew_drawdown: computeDrawdown(ewRets),
       vw_drawdown: computeDrawdown(vwRets),
       holdings,
@@ -1528,7 +1581,7 @@ const BT = (() => {
     return {
       rets,
       portfolio: port.slice(1).map((v) => +v.toFixed(4)),
-      metrics: computeMetrics(rets.map((x) => (x == null ? 0 : x))),
+      metrics: computeMetrics(rets.map((x) => (x == null ? 0 : x)), months.map(m => rfData[m] || 0)),
       drawdown: computeDrawdown(rets.map((x) => (x == null ? 0 : x))),
     };
   }
@@ -1546,6 +1599,15 @@ const BT = (() => {
         p.results.vw_metrics.ir = computeIR(p.results.vw_rets, bench.rets);
       }
     });
+  }
+
+  function getActiveBenchmark() {
+    return benchmarkSeries[activeBenchmarkId] || null;
+  }
+
+  function getGrowthVsBenchmark(m, benchMetrics) {
+    if (!m || !benchMetrics) return null;
+    return +(m.growth_multiple - benchMetrics.growth_multiple).toFixed(2);
   }
 
   // ── Run ───────────────────────────────────────────────────────────────────
@@ -1791,17 +1853,26 @@ const BT = (() => {
     }
     chartInst.data.labels = ["Initial", ...runMonths];
     chartInst.data.datasets = datasets;
+    setChartEmpty(datasets.length === 0);
     chartInst.options.scales.y.type = document.getElementById("bt-log-scale")
       .checked
       ? "logarithmic"
       : "linear";
     chartInst.update("active");
+    const period = getPeriodDescriptor();
     document.getElementById("bt-chart-title").textContent =
-      "Portfolio Performance";
+      runMonths.length > 0
+        ? `${period.titlePrefix} Portfolio Returns`
+        : "Portfolio Returns";
     document.getElementById("bt-chart-sub").textContent =
       runMonths.length > 0
-        ? `${runMonths[0]} → ${runMonths[runMonths.length - 1]}  ·  ${runMonths.length} months  ·  ${wt.toUpperCase()}`
-        : "Select factors and press Run";
+        ? `${runMonths[0]} → ${runMonths[runMonths.length - 1]}  ·  ${period.label}  ·  ${wt.toUpperCase()}`
+        : "Build a portfolio to view performance over time";
+  }
+
+  function setChartEmpty(isEmpty) {
+    const empty = document.getElementById("bt-chart-empty");
+    if (empty) empty.style.display = isEmpty ? "flex" : "none";
   }
 
   function toggleLog() {
@@ -1864,23 +1935,41 @@ const BT = (() => {
     card.style.display = "block";
     body.innerHTML = "";
 
-    const irHeader = document.getElementById("bt-ir-col-header");
-    if (irHeader)
-      irHeader.textContent = `IR (vs ${BENCHMARK_OPTIONS[activeBenchmarkId]?.label || ""})`;
+    const period = getPeriodDescriptor();
+    const benchmarkLabel = BENCHMARK_OPTIONS[activeBenchmarkId]?.label || "NIFTY";
+    const showGrowthVsNifty = currentStrategy === "long_only";
+    const periodHeader = document.getElementById("bt-period-col-header");
+    const growthVsHeader = document.getElementById("bt-growth-vs-nifty-header");
+    const growthVsCol = document.getElementById("bt-growth-vs-nifty-col");
 
-    const addRow = (name, color, m, ir) => {
+    if (periodHeader) periodHeader.textContent = period.titlePrefix;
+    if (growthVsHeader) {
+      growthVsHeader.textContent = `Growth vs ${benchmarkLabel}`;
+      growthVsHeader.hidden = !showGrowthVsNifty;
+    }
+    if (growthVsCol) growthVsCol.style.display = showGrowthVsNifty ? "" : "none";
+
+    const bench = getActiveBenchmark();
+    const benchMetrics = bench?.metrics || null;
+
+    const addRow = (name, factorLabel, color, m, growthVsNifty) => {
       const cls = (v) => (v >= 0 ? "bt-stat-pos" : "bt-stat-neg");
       const sign = (v) => (v > 0 ? "+" : "");
-      const irDisplay = ir != null ? ir : "—";
+      const growthDisplay = growthVsNifty != null ? `${sign(growthVsNifty)}${growthVsNifty}x` : "—";
       const tr = document.createElement("tr");
       tr.innerHTML = `
                 <td><span class="bt-compare-dot" style="background:${color}"></span><span class="bt-compare-name">${name}</span></td>
+                <td><span class="bt-compare-factor">${factorLabel || "—"}</span></td>
                 <td>${m.growth_multiple}x</td>
                 <td class="${cls(m.annualized_return)}">${sign(m.annualized_return)}${m.annualized_return}%</td>
                 <td>${m.annualized_volatility}%</td>
                 <td class="${cls(m.sharpe_ratio)}">${m.sharpe_ratio}</td>
                 <td class="${cls(m.max_drawdown)}">${m.max_drawdown}%</td>
-                <td class="${ir != null ? cls(ir) : ""}">${irDisplay}</td>`;
+                ${
+                  showGrowthVsNifty
+                    ? `<td class="${growthVsNifty != null ? cls(growthVsNifty) : ""}">${growthDisplay}</td>`
+                    : ""
+                }`;
       body.appendChild(tr);
     };
 
@@ -1889,19 +1978,20 @@ const BT = (() => {
       const m = wt === "ew" ? p.results.ew_metrics : p.results.vw_metrics;
       addRow(
         p.name,
+        p.factorLabel,
         (COLORS[p.colorIdx] || COLORS[0]).line,
         m,
-        m.ir,
+        showGrowthVsNifty ? getGrowthVsBenchmark(m, benchMetrics) : null,
       );
     });
     if (showBenchmark) {
-      const bench = benchmarkSeries[activeBenchmarkId];
       if (bench)
         addRow(
           BENCHMARK_OPTIONS[activeBenchmarkId]?.label || "",
+          "Benchmark",
           BENCH_COLOR.line,
           bench.metrics,
-          null
+          0
         );
     }
   }
@@ -2072,7 +2162,9 @@ const BT = (() => {
     document.getElementById("bt-error-msg").style.display = "block";
   }
   function hideError() {
-    document.getElementById("bt-error-msg").style.display = "none";
+    const error = document.getElementById("bt-error-msg");
+    error.textContent = "";
+    error.style.display = "none";
   }
   function resetResults() {
     if (chartInst) {
@@ -2080,6 +2172,10 @@ const BT = (() => {
       chartInst.data.datasets = [];
       chartInst.update();
     }
+    setChartEmpty(true);
+    document.getElementById("bt-chart-title").textContent = "Portfolio Returns";
+    document.getElementById("bt-chart-sub").textContent =
+      "Build a portfolio to view performance over time";
     if (ddChartInst) {
       ddChartInst.data.labels = [];
       ddChartInst.data.datasets = [];
@@ -2096,6 +2192,15 @@ const BT = (() => {
     initChart();
     loadData();
     renderShelf();
+  }
+
+  function getPortfolioFactorLabel(longFilters, shortFilters = {}) {
+    const factors = new Set([
+      ...Object.keys(longFilters || {}),
+      ...Object.keys(shortFilters || {}),
+    ]);
+    if (factors.size === 0) return "—";
+    return [...factors].join(" + ");
   }
 
   return {
