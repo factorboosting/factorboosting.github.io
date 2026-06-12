@@ -1,0 +1,15 @@
+node_modules/
+.DS_Store
+.venv/
+.DS_Store
+.next/
+out/
+.env
+.env.local
+.env.*.local
+!.env.example
+Data/Factor_Data/finalMonthlyLabels_aman.csv
+Data/Derived/universe-*.json
+Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv
+Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv
+Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv
