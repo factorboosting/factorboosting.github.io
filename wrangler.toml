@@ -31,10 +31,10 @@ pages_build_output_dir = "dist"
 # so the site still works before the namespace is wired up.
 [[kv_namespaces]]
 binding = "BACKTEST_KV"
-id = "4432bac75d994c14a36b0b722f2d40a2"
+id = "265b83411bce4e8c9f81f187f0932feb"
 
 # Preview deployments (every branch/PR) get their own binding. Re-use the same namespace
 # or create a separate preview one with `wrangler kv namespace create BACKTEST_KV --preview`.
 [[env.preview.kv_namespaces]]
 binding = "BACKTEST_KV"
-id = "42cca858e7734b62ae63d9133098354a"
+id = "18b6235a3b30492eb53038e5100bcaca"
