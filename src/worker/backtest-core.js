@@ -15,6 +15,7 @@ const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
 const BACKTEST_CACHE_VERSION = "size-label-policy-v2";
+const RPC_PAGE_SIZE = 1000;
 
 export function normalizeUniverse(universe) {
   return UNIVERSES.has(universe) ? universe : "all";
@@ -30,21 +31,36 @@ function supabaseBase(env) {
   return { url: url.replace(/\/$/, ""), key };
 }
 
-async function callRpc(env, fn, args) {
+async function callRpc(env, fn, args, options = {}) {
   const { url, key } = supabaseBase(env);
-  const res = await fetch(`${url}/rest/v1/rpc/${fn}`, {
-    method: "POST",
-    headers: {
+  const fetchPage = async (from = null) => {
+    const headers = {
       apikey: key,
       Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
-    },
-    body: JSON.stringify(args),
-  });
-  if (!res.ok) {
-    throw new Error(`RPC ${fn} failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
+    };
+    const pageQuery = from == null ? "" : `?limit=${RPC_PAGE_SIZE}&offset=${from}`;
+    const res = await fetch(`${url}/rest/v1/rpc/${fn}${pageQuery}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(args),
+    });
+    if (!res.ok) {
+      throw new Error(`RPC ${fn} failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
+    }
+    return res.json();
+  };
+
+  if (!options.paginate) return fetchPage();
+
+  const rows = [];
+  for (let from = 0; ; from += RPC_PAGE_SIZE) {
+    const page = await fetchPage(from);
+    if (!Array.isArray(page)) return page;
+    rows.push(...page);
+    if (page.length < RPC_PAGE_SIZE) break;
   }
-  return res.json();
+  return rows;
 }
 
 async function selectTable(env, table, query) {
@@ -540,26 +556,36 @@ export async function runBacktest(env, input) {
     const sizeCol = getSizeColumn(longFilters, shortFilters);
 
     const longParams = buildLegParams(longFilters);
-    const longRows = await callRpc(env, "run_backtest_legs", {
-      p_universe: universe,
-      p_start: startMonth,
-      p_end: endMonth,
-      p_size_col: sizeCol,
-      p_size_labels: longParams.sizeLabels,
-      p_filters: longParams.pFilters,
-    });
-
-    let shortRows = [];
-    if (strategy === "long_short") {
-      const shortParams = buildLegParams(shortFilters);
-      shortRows = await callRpc(env, "run_backtest_legs", {
+    const longRows = await callRpc(
+      env,
+      "run_backtest_legs",
+      {
         p_universe: universe,
         p_start: startMonth,
         p_end: endMonth,
         p_size_col: sizeCol,
-        p_size_labels: shortParams.sizeLabels,
-        p_filters: shortParams.pFilters,
-      });
+        p_size_labels: longParams.sizeLabels,
+        p_filters: longParams.pFilters,
+      },
+      { paginate: true },
+    );
+
+    let shortRows = [];
+    if (strategy === "long_short") {
+      const shortParams = buildLegParams(shortFilters);
+      shortRows = await callRpc(
+        env,
+        "run_backtest_legs",
+        {
+          p_universe: universe,
+          p_start: startMonth,
+          p_end: endMonth,
+          p_size_col: sizeCol,
+          p_size_labels: shortParams.sizeLabels,
+          p_filters: shortParams.pFilters,
+        },
+        { paginate: true },
+      );
     }
 
     const longIndex = rpcRowsToIndex(longRows);
