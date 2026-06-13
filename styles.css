@@ -403,7 +403,8 @@ body {
 
 .factor-table th:last-child,
 .factor-table td:last-child {
-  width: 15%;
+  width: 12%;
+  text-align: center;
 }
 
 /* Factor Separator Row */
@@ -2299,23 +2300,24 @@ table {
 .analyze-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
   color: var(--primary-color);
-  font-size: 0.8rem;
+  font-size: 1.1rem;
   font-weight: 600;
   text-decoration: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--primary-color);
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--primary-color);
+  background-color: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .analyze-link:hover {
   background-color: var(--primary-color);
   color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  transform: scale(1.1) translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
 .hero-visual {
