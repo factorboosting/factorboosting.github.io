@@ -22,7 +22,7 @@
 # After `wrangler kv namespace create BACKTEST_KV` (and `... --preview`), paste the
 # returned ids into the placeholders below.
 
-name = "factorboosting"
+name = "factorboosting-github-io"
 compatibility_date = "2025-05-01"
 pages_build_output_dir = "dist"
 
