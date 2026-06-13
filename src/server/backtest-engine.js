@@ -36,6 +36,13 @@ function sanitizeReturn(raw) {
   return { value, action: "ok" };
 }
 
+function firstPresent(row, keys) {
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== "") return row[key];
+  }
+  return "";
+}
+
 async function loadRuntimeData() {
   if (runtimeDataPromise) return runtimeDataPromise;
 
@@ -146,11 +153,15 @@ async function loadUniverseRange(universeInput, startMonth = null, endMonth = nu
       if (sanitized.action === "capped") dataQualityStats.capped++;
 
       row._month = row.Month ? row.Month.substring(0, 7) : "";
-      row._size = Number.parseFloat(row.mktcap || row.eom_mcap || row.Size || row.lagged_mktcap);
+      row._size = Number.parseFloat(
+        firstPresent(row, ["mktcap", "eom_mcap", "Size", "lagged_mktcap", "prev_mcap"]),
+      );
       if (Number.isNaN(row._size) || row._size <= 0) row._size = 0;
 
       if (row.prev_mktcap !== undefined && row.prev_mktcap !== "") {
         row.prev_Size = Number.parseFloat(row.prev_mktcap);
+      } else if (row.prev_mcap !== undefined && row.prev_mcap !== "") {
+        row.prev_Size = Number.parseFloat(row.prev_mcap);
       } else if (row.lagged_mktcap !== undefined && row.lagged_mktcap !== "") {
         row.prev_Size = Number.parseFloat(row.lagged_mktcap);
       } else if (row.prev_Size !== undefined && row.prev_Size !== "") {
@@ -168,10 +179,27 @@ async function loadUniverseRange(universeInput, startMonth = null, endMonth = nu
       if (!row.Size_Label) {
         row.Size_Label =
           row.Size_Label_Yearly ||
+          row.Size_Label_annual ||
           row.Size_Label_Monthly ||
+          row.Size_Label_monthly_mom ||
+          row.Size_Label_monthly_vol ||
+          row.Size_Label_monthly_str ||
           row.Size_Label_Monthly_Any;
       }
+      if (!row.Size_Label_Yearly && row.Size_Label_annual) {
+        row.Size_Label_Yearly = row.Size_Label_annual;
+      }
+      if (!row.Size_Label_Monthly) {
+        row.Size_Label_Monthly =
+          row.Size_Label_monthly_mom ||
+          row.Size_Label_monthly_vol ||
+          row.Size_Label_monthly_str ||
+          row.Size_Label_Monthly_Any;
+      }
+      if (!row.MOM_Label) row.MOM_Label = row.Momentum_Label || row.Mom_Label;
       if (!row.VOL_Label && row.BAV_Label) row.VOL_Label = row.BAV_Label;
+      if (!row.VOL_Label && row.Vol_Label) row.VOL_Label = row.Vol_Label;
+      if (!row.STR_Label && row.Str_Label) row.STR_Label = row.Str_Label;
 
       row._ret = sanitized.value;
       const benchmark = benchmarkByMonth[row._month] || {};
@@ -330,21 +358,14 @@ export async function preloadUniverseRange(
 }
 
 function getSizeColumn(longFilters = {}, shortFilters = {}) {
-  const hasMom = Boolean(longFilters.Momentum || shortFilters.Momentum);
-  const hasOP = Boolean(
-    longFilters["Op. Profitability"] || shortFilters["Op. Profitability"],
-  );
-  const hasINV = Boolean(longFilters.Investment || shortFilters.Investment);
-  const hasAT = Boolean(longFilters["Asset Turnover"] || shortFilters["Asset Turnover"]);
-  const hasSG = Boolean(longFilters["Sales Growth"] || shortFilters["Sales Growth"]);
-  const hasACC = Boolean(longFilters.Accruals || shortFilters.Accruals);
-
-  if (hasMom) return "Size_Label_Monthly";
-  if (hasOP) return "Size_Label_OP";
-  if (hasINV) return "Size_Label_INV";
-  if (hasAT) return "Size_Label_AT";
-  if (hasSG) return "Size_Label_SG";
-  if (hasACC) return "Size_Label_ACC";
+  const needsMonthly =
+    longFilters.Momentum ||
+    shortFilters.Momentum ||
+    longFilters.Volatility ||
+    shortFilters.Volatility ||
+    longFilters["Short-Term Reversal"] ||
+    shortFilters["Short-Term Reversal"];
+  if (needsMonthly) return "Size_Label_Monthly";
   return "Size_Label_Yearly";
 }
 

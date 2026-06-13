@@ -17,6 +17,13 @@ import {
   RISK_FREE_SOURCE_FILE,
 } from "../src/server/data-source.js";
 
+const DERIVE_UNIVERSES = new Set(
+  (process.env.DATA_DERIVE_UNIVERSES || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
+
 const SNAPSHOT_COLUMNS = [
   "Co_Code",
   "_ret",
@@ -59,32 +66,61 @@ async function readText(relativePath) {
   return readFile(path.join(process.cwd(), relativePath), "utf8");
 }
 
+async function readTextIfExists(relativePath) {
+  const fullPath = path.join(process.cwd(), relativePath);
+  if (!existsSync(fullPath)) return null;
+  return readFile(fullPath, "utf8");
+}
+
+function firstPresent(row, keys) {
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== "") return row[key];
+  }
+  return "";
+}
+
 async function buildRuntimeData() {
+  const runtimePath = path.join(process.cwd(), BACKTEST_RUNTIME_FILE);
+  const existingRuntime = existsSync(runtimePath)
+    ? JSON.parse(readFileSync(runtimePath, "utf8"))
+    : {};
   const rfData = {};
   const benchmarkByMonth = {};
   const names = {};
-  const universes = {};
+  const universes = { ...(existingRuntime.universes || {}) };
 
-  parseCSV(await readText(RISK_FREE_SOURCE_FILE), (row) => {
-    if (row.Month && row.Rf !== undefined && row.Rf !== "") {
-      rfData[row.Month.substring(0, 7)] = Number.parseFloat(row.Rf);
-    }
-  });
+  const rfText = await readTextIfExists(RISK_FREE_SOURCE_FILE);
+  if (rfText) {
+    parseCSV(rfText, (row) => {
+      if (row.Month && row.Rf !== undefined && row.Rf !== "") {
+        rfData[row.Month.substring(0, 7)] = Number.parseFloat(row.Rf);
+      }
+    });
+  } else {
+    Object.assign(rfData, existingRuntime.rfData || {});
+  }
 
-  parseCSV(await readText(LEGACY_BENCHMARK_SOURCE_FILE), (row) => {
-    const month = row.Month ? row.Month.substring(0, 7) : "";
-    const code = row.Co_Code || row.co_code;
-    if (code && row.Co_Name) names[code] = row.Co_Name;
-    if (!month) return;
-    if (!benchmarkByMonth[month]) benchmarkByMonth[month] = {};
+  const benchmarkText = await readTextIfExists(LEGACY_BENCHMARK_SOURCE_FILE);
+  if (benchmarkText) {
+    parseCSV(benchmarkText, (row) => {
+      const month = row.Month ? row.Month.substring(0, 7) : "";
+      const code = row.Co_Code || row.co_code;
+      if (code && row.Co_Name) names[code] = row.Co_Name;
+      if (!month) return;
+      if (!benchmarkByMonth[month]) benchmarkByMonth[month] = {};
 
-    const nifty50 = Number.parseFloat(row.nifty50);
-    const nifty500 = Number.parseFloat(row.nifty500);
-    if (!Number.isNaN(nifty50)) benchmarkByMonth[month].nifty50 = nifty50;
-    if (!Number.isNaN(nifty500)) benchmarkByMonth[month].nifty500 = nifty500;
-  });
+      const nifty50 = Number.parseFloat(row.nifty50);
+      const nifty500 = Number.parseFloat(row.nifty500);
+      if (!Number.isNaN(nifty50)) benchmarkByMonth[month].nifty50 = nifty50;
+      if (!Number.isNaN(nifty500)) benchmarkByMonth[month].nifty500 = nifty500;
+    });
+  } else {
+    Object.assign(benchmarkByMonth, existingRuntime.benchmarkByMonth || {});
+    Object.assign(names, existingRuntime.names || {});
+  }
 
   for (const [universe, file] of Object.entries(UNIVERSE_FILES)) {
+    if (DERIVE_UNIVERSES.size && !DERIVE_UNIVERSES.has(universe)) continue;
     const snapshot = await buildUniverseSnapshot(universe, file, names);
     const chunks = writeSnapshotChunks(snapshot);
 
@@ -138,36 +174,50 @@ async function buildUniverseSnapshot(universe, file, names) {
       Co_Code: code,
       _month: month,
       _ret: sanitized.value,
-      _size: Number.parseFloat(row.mktcap || row.eom_mcap || row.Size || row.lagged_mktcap),
+      _size: Number.parseFloat(
+        firstPresent(row, ["mktcap", "eom_mcap", "Size", "lagged_mktcap", "prev_mcap"]),
+      ),
       prev_Size: null,
       Size_Label:
-        row.Size_Label ||
-        row.Size_Label_Yearly ||
-        row.Size_Label_Monthly ||
-        row.Size_Label_Monthly_Any ||
+        firstPresent(row, [
+          "Size_Label",
+          "Size_Label_Yearly",
+          "Size_Label_annual",
+          "Size_Label_Monthly",
+          "Size_Label_monthly_mom",
+          "Size_Label_Monthly_Any",
+        ]) ||
         "",
-      Size_Label_Yearly: row.Size_Label_Yearly || "",
-      Size_Label_Monthly: row.Size_Label_Monthly || row.Size_Label_Monthly_Any || "",
-      Size_Label_OP: row.Size_Label_OP || "",
-      Size_Label_INV: row.Size_Label_INV || "",
-      Size_Label_AT: row.Size_Label_AT || "",
-      Size_Label_SG: row.Size_Label_SG || "",
-      Size_Label_ACC: row.Size_Label_ACC || "",
-      MOM_Label: row.MOM_Label || row.Momentum_Label || "",
+      Size_Label_Yearly: firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
+      Size_Label_Monthly: firstPresent(row, [
+        "Size_Label_Monthly",
+        "Size_Label_monthly_mom",
+        "Size_Label_monthly_vol",
+        "Size_Label_monthly_str",
+        "Size_Label_Monthly_Any",
+      ]),
+      Size_Label_OP: row.Size_Label_OP || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
+      Size_Label_INV: row.Size_Label_INV || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
+      Size_Label_AT: row.Size_Label_AT || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
+      Size_Label_SG: row.Size_Label_SG || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
+      Size_Label_ACC: row.Size_Label_ACC || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
+      MOM_Label: firstPresent(row, ["MOM_Label", "Momentum_Label", "Mom_Label"]),
       BM_Label: row.BM_Label || "",
       OP_Label: row.OP_Label || row.OpProf_Label || "",
       INV_Label: row.INV_Label || row.Inv_Label || "",
       AT_Label: row.AT_Label || "",
       SG_Label: row.SG_Label || "",
       ACC_Label: row.ACC_Label || "",
-      VOL_Label: row.VOL_Label || row.BAV_Label || "",
-      STR_Label: row.STR_Label || "",
+      VOL_Label: firstPresent(row, ["VOL_Label", "BAV_Label", "Vol_Label"]),
+      STR_Label: firstPresent(row, ["STR_Label", "Str_Label"]),
     };
 
     if (Number.isNaN(normalized._size) || normalized._size <= 0) normalized._size = 0;
 
     if (row.prev_mktcap !== undefined && row.prev_mktcap !== "") {
       normalized.prev_Size = Number.parseFloat(row.prev_mktcap);
+    } else if (row.prev_mcap !== undefined && row.prev_mcap !== "") {
+      normalized.prev_Size = Number.parseFloat(row.prev_mcap);
     } else if (row.lagged_mktcap !== undefined && row.lagged_mktcap !== "") {
       normalized.prev_Size = Number.parseFloat(row.lagged_mktcap);
     } else if (row.prev_Size !== undefined && row.prev_Size !== "") {

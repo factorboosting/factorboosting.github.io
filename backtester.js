@@ -160,6 +160,13 @@ const BT = (() => {
     return rows;
   }
 
+  function firstPresent(row, keys) {
+    for (const key of keys) {
+      if (row[key] !== undefined && row[key] !== "") return row[key];
+    }
+    return "";
+  }
+
   // ── Sanitize a single return: returns { value, action: 'ok'|'capped'|'drop' }
   function sanitizeReturn(raw) {
     const v = parseFloat(raw);
@@ -590,11 +597,16 @@ const BT = (() => {
 
       parsed.forEach((row) => {
         row._month = row.Month ? row.Month.substring(0, 7) : "";
-        row._size = parseFloat(row.mktcap || row.eom_mcap || row.Size || row.lagged_mktcap);
+        row._size = parseFloat(
+          firstPresent(row, ["mktcap", "eom_mcap", "Size", "lagged_mktcap", "prev_mcap"]),
+        );
         if (isNaN(row._size) || row._size <= 0) row._size = 0;
 
         if (row.prev_mktcap !== undefined && row.prev_mktcap !== "") {
           row.prev_Size = parseFloat(row.prev_mktcap);
+          if (isNaN(row.prev_Size) || row.prev_Size <= 0) row.prev_Size = null;
+        } else if (row.prev_mcap !== undefined && row.prev_mcap !== "") {
+          row.prev_Size = parseFloat(row.prev_mcap);
           if (isNaN(row.prev_Size) || row.prev_Size <= 0) row.prev_Size = null;
         } else if (row.lagged_mktcap !== undefined && row.lagged_mktcap !== "") {
           row.prev_Size = parseFloat(row.lagged_mktcap);
@@ -604,8 +616,30 @@ const BT = (() => {
         row.Co_Code = row.co_code || row.Co_Code;
         row.Co_Name = namesMap[row.Co_Code] || `Stock ${row.Co_Code}`;
 
-        if (!row.Size_Label) row.Size_Label = row.Size_Label_Yearly || row.Size_Label_Monthly || row.Size_Label_Monthly_Any;
+        if (!row.Size_Label) {
+          row.Size_Label =
+            row.Size_Label_Yearly ||
+            row.Size_Label_annual ||
+            row.Size_Label_Monthly ||
+            row.Size_Label_monthly_mom ||
+            row.Size_Label_monthly_vol ||
+            row.Size_Label_monthly_str ||
+            row.Size_Label_Monthly_Any;
+        }
+        if (!row.Size_Label_Yearly && row.Size_Label_annual) {
+          row.Size_Label_Yearly = row.Size_Label_annual;
+        }
+        if (!row.Size_Label_Monthly) {
+          row.Size_Label_Monthly =
+            row.Size_Label_monthly_mom ||
+            row.Size_Label_monthly_vol ||
+            row.Size_Label_monthly_str ||
+            row.Size_Label_Monthly_Any;
+        }
+        if (!row.MOM_Label) row.MOM_Label = row.Momentum_Label || row.Mom_Label;
         if (!row.VOL_Label && row.BAV_Label) row.VOL_Label = row.BAV_Label;
+        if (!row.VOL_Label && row.Vol_Label) row.VOL_Label = row.Vol_Label;
+        if (!row.STR_Label && row.Str_Label) row.STR_Label = row.Str_Label;
 
         const sanitized = sanitizeReturn(row[retCol]);
         if (sanitized.action === "drop") {
@@ -1456,29 +1490,34 @@ const BT = (() => {
   }
 
   // ── Core computation ──────────────────────────────────────────────────────
+  function getRowSizeLabel(row, sizeCol) {
+    return (
+      row[sizeCol] ||
+      row.Size_Label_Yearly ||
+      row.Size_Label_Monthly ||
+      row.Size_Label ||
+      ""
+    );
+  }
+
+  function getSizeColumn(longFilters = {}, shortFilters = {}) {
+    const has = (factor) => Boolean(longFilters[factor] || shortFilters[factor]);
+    return has("Momentum") || has("Volatility") || has("Short-Term Reversal")
+      ? "Size_Label_Monthly"
+      : "Size_Label_Yearly";
+  }
+
   function applyFilters(rows, filters) {
     let result = rows;
-    const hasMom = !!filters["Momentum"];
-    const hasOP = !!filters["Op. Profitability"];
-    const hasINV = !!filters["Investment"];
-    const hasAT = !!filters["Asset Turnover"];
-    const hasSG = !!filters["Sales Growth"];
-    const hasACC = !!filters["Accruals"];
+    const sizeCol = getSizeColumn(filters, {});
     
     for (const [factor, labels] of Object.entries(filters)) {
       if (labels && labels.length && FACTORS[factor]) {
-        let col = FACTORS[factor].col;
-        if (factor === "Size") {
-          if (hasMom) col = "Size_Label_Monthly";
-          else if (hasOP) col = "Size_Label_OP";
-          else if (hasINV) col = "Size_Label_INV";
-          else if (hasAT) col = "Size_Label_AT";
-          else if (hasSG) col = "Size_Label_SG";
-          else if (hasACC) col = "Size_Label_ACC";
-          else col = "Size_Label_Yearly";
-        }
+        const col = factor === "Size" ? sizeCol : FACTORS[factor].col;
         const set = new Set(labels);
-        result = result.filter((r) => set.has(r[col]));
+        result = result.filter((r) =>
+          factor === "Size" ? set.has(getRowSizeLabel(r, col)) : set.has(r[col]),
+        );
       }
     }
     return result;
@@ -1637,25 +1676,12 @@ const BT = (() => {
       // 2x3 Double-Sort & 5-Firm Minimum Logic
       const minFirms = 5;
       
-      const hasMom = !!(longFilters["Momentum"] || (shortFilters && shortFilters["Momentum"]));
-      const hasOP = !!(longFilters["Op. Profitability"] || (shortFilters && shortFilters["Op. Profitability"]));
-      const hasINV = !!(longFilters["Investment"] || (shortFilters && shortFilters["Investment"]));
-      const hasAT = !!(longFilters["Asset Turnover"] || (shortFilters && shortFilters["Asset Turnover"]));
-      const hasSG = !!(longFilters["Sales Growth"] || (shortFilters && shortFilters["Sales Growth"]));
-      const hasACC = !!(longFilters["Accruals"] || (shortFilters && shortFilters["Accruals"]));
+      const sizeCol = getSizeColumn(longFilters, shortFilters);
 
-      let sizeCol = "Size_Label_Yearly";
-      if (hasMom) sizeCol = "Size_Label_Monthly";
-      else if (hasOP) sizeCol = "Size_Label_OP";
-      else if (hasINV) sizeCol = "Size_Label_INV";
-      else if (hasAT) sizeCol = "Size_Label_AT";
-      else if (hasSG) sizeCol = "Size_Label_SG";
-      else if (hasACC) sizeCol = "Size_Label_ACC";
-
-      const longS = longDF.filter((r) => r[sizeCol] === "S");
-      const longB = longDF.filter((r) => r[sizeCol] === "B");
-      const shortS = shortDF.filter((r) => r[sizeCol] === "S");
-      const shortB = shortDF.filter((r) => r[sizeCol] === "B");
+      const longS = longDF.filter((r) => getRowSizeLabel(r, sizeCol) === "S");
+      const longB = longDF.filter((r) => getRowSizeLabel(r, sizeCol) === "B");
+      const shortS = shortDF.filter((r) => getRowSizeLabel(r, sizeCol) === "S");
+      const shortB = shortDF.filter((r) => getRowSizeLabel(r, sizeCol) === "B");
 
       // Determine if the user's filters INTEND to include S or B
       const longAllowsS =

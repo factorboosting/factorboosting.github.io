@@ -14,6 +14,7 @@ import { BENCHMARK_OPTIONS, FACTORS } from "../server/factor-config.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
+const BACKTEST_CACHE_VERSION = "size-label-policy-v2";
 
 export function normalizeUniverse(universe) {
   return UNIVERSES.has(universe) ? universe : "all";
@@ -61,11 +62,8 @@ async function selectTable(env, table, query) {
 export function getSizeColumn(longFilters = {}, shortFilters = {}) {
   const has = (k) => Boolean(longFilters[k] || shortFilters[k]);
   if (has("Momentum")) return "Size_Label_Monthly";
-  if (has("Op. Profitability")) return "Size_Label_OP";
-  if (has("Investment")) return "Size_Label_INV";
-  if (has("Asset Turnover")) return "Size_Label_AT";
-  if (has("Sales Growth")) return "Size_Label_SG";
-  if (has("Accruals")) return "Size_Label_ACC";
+  if (has("Volatility")) return "Size_Label_Monthly";
+  if (has("Short-Term Reversal")) return "Size_Label_Monthly";
   return "Size_Label_Yearly";
 }
 
@@ -626,7 +624,9 @@ function stableStringify(value) {
 }
 
 export async function createBacktestCacheKey(input) {
-  const data = new TextEncoder().encode(stableStringify(input));
+  const data = new TextEncoder().encode(
+    stableStringify({ version: BACKTEST_CACHE_VERSION, input }),
+  );
   const buf = await crypto.subtle.digest("SHA-256", data);
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }

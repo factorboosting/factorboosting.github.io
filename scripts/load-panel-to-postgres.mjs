@@ -25,6 +25,33 @@ const RUNTIME_FILE = "Data/Derived/backtest-runtime.json";
 const STORAGE_BUCKET = process.env.PANEL_SOURCE_STORAGE_BUCKET || "factor-data";
 const PANEL_BATCH = Number.parseInt(process.env.PANEL_BATCH || "5000", 10);
 const SMALL_BATCH = 1000;
+const PANEL_UNIVERSES = new Set(
+  (process.env.PANEL_UNIVERSES || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
+const REPLACE_UNIVERSES = new Set(
+  (process.env.PANEL_REPLACE_UNIVERSES || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
+
+function loadEnvFile(filePath) {
+  if (!existsSync(filePath)) return;
+  const lines = readFileSync(filePath, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+    const [key, ...rest] = trimmed.split("=");
+    if (process.env[key]) continue;
+    process.env[key] = rest.join("=").replace(/^["']|["']$/g, "");
+  }
+}
+
+loadEnvFile(path.join(process.cwd(), ".env.local"));
+loadEnvFile(path.join(process.cwd(), ".env"));
 
 // SNAPSHOT_COLUMNS name -> factor_panel column name.
 const COLUMN_MAP = {
@@ -62,7 +89,7 @@ function requireEnv(name) {
 }
 
 const TARGET_URL = requireEnv("SUPABASE_URL").replace(/\/$/, "");
-const TARGET_KEY = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+const TARGET_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || requireEnv("SUPABASE_KEY");
 
 const SOURCE_URL = (process.env.PANEL_SOURCE_SUPABASE_URL || "").replace(/\/$/, "");
 const SOURCE_KEY = process.env.PANEL_SOURCE_SERVICE_ROLE_KEY || "";
@@ -127,6 +154,22 @@ async function upsert(table, rows, onConflict) {
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`Upsert into ${table} failed (${res.status}): ${body.slice(0, 500)}`);
+  }
+}
+
+async function deleteUniverse(universe) {
+  const url = `${TARGET_URL}/rest/v1/factor_panel?universe=eq.${encodeURIComponent(universe)}`;
+  const res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      apikey: TARGET_KEY,
+      Authorization: `Bearer ${TARGET_KEY}`,
+      Prefer: "return=minimal",
+    },
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Delete factor_panel[${universe}] failed (${res.status}): ${body.slice(0, 500)}`);
   }
 }
 
@@ -204,10 +247,15 @@ async function main() {
 
   // 4. factor_panel, per universe, per chunk
   for (const [universe, meta] of Object.entries(runtime.universes || {})) {
+    if (PANEL_UNIVERSES.size && !PANEL_UNIVERSES.has(universe)) continue;
     const chunks = meta.chunks || [];
     console.log(
       `\nLoading factor_panel[${universe}] (${meta.rowCount?.toLocaleString?.() || "?"} rows across ${chunks.length} chunks)`,
     );
+    if (REPLACE_UNIVERSES.has(universe)) {
+      console.log(`  deleting existing factor_panel[${universe}] rows first`);
+      await deleteUniverse(universe);
+    }
     let loaded = 0;
     for (const chunkMeta of chunks) {
       const chunk = await readChunk(chunkMeta.file);
