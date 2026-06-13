@@ -149,31 +149,61 @@ Verify the row counts match the §2 targets (Supabase SQL editor:
 
 ## 6. Cloudflare Pages: deploy
 
-**Recommended: Git integration** (auto-deploys on push; free preview URL per branch).
+You need a Cloudflare account + a Pages project. Do the one-time setup, then pick ONE
+deploy method (this project uses **6a**).
 
-1. Create the KV namespace(s) and paste the ids into `wrangler.toml`
-   (replace the `REPLACE_WITH_*_KV_ID` placeholders):
+### 6.0 One-time project setup (needed by every method)
+1. Create the Pages project (any name; the `*.pages.dev` subdomain follows the name).
+   Set the same name in `wrangler.toml` (`name = "<project-name>"`):
+   ```bash
+   npx wrangler pages project create <project-name> --production-branch=main
+   ```
+2. Create the KV namespace(s) and paste the ids into `wrangler.toml`:
    ```bash
    npx wrangler kv namespace create BACKTEST_KV
    npx wrangler kv namespace create BACKTEST_KV --preview
    ```
-2. In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to Git** →
-   select this repo. Build settings:
-   - **Framework preset**: None
-   - **Build command**: `node scripts/build-site.mjs`
-   - **Build output directory**: `dist`
-3. Set **environment variables / secrets** for **both Production and Preview**:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`  (server-only secret)
-   - `SUPABASE_STORAGE_BUCKET` = `factor-data`
-4. Deploy a **branch first**, validate on its `*.pages.dev` preview URL, then merge to
-   `main` for production.
-5. If this repo previously used **GitHub Pages**, turn it OFF (it can't run the Function
-   and would keep serving the old static-only site).
+3. Set the project **secrets** (Production), injected into the Function at runtime:
+   ```bash
+   printf '%s' "https://<ref>.supabase.co" | npx wrangler pages secret put SUPABASE_URL --project-name=<project-name>
+   printf '%s' "<service-role key>"        | npx wrangler pages secret put SUPABASE_SERVICE_ROLE_KEY --project-name=<project-name>
+   printf '%s' "factor-data"               | npx wrangler pages secret put SUPABASE_STORAGE_BUCKET --project-name=<project-name>
+   ```
+   (Dashboard equivalent: project → Settings → Environment variables, for Production
+   *and* Preview.)
 
-> Alternative (fastest one-off, no Git wiring): `npx wrangler login` then
-> `npm run deploy` (= build + `wrangler pages deploy dist`). You still must set the env
-> vars + KV binding on the project, then redeploy so they apply.
+### 6a. GitHub Actions auto-deploy — **what this project uses** (no org approval needed)
+`.github/workflows/deploy.yml` builds and deploys on every push to `main`. It needs two
+**repo secrets** (repo → Settings → Secrets and variables → Actions → Secrets):
+- `CLOUDFLARE_API_TOKEN` — Cloudflare → My Profile → API Tokens → template
+  **"Edit Cloudflare Workers"**.
+- `CLOUDFLARE_ACCOUNT_ID` — your Cloudflare account id.
+
+Push to `main` → live in ~1–2 min. We chose this over Cloudflare's native Git integration
+because connecting that to an **org** repo requires an org owner to approve the Cloudflare
+GitHub App; the Action sidesteps that entirely (it runs inside the repo using a token you
+control, and the Supabase keys stay on the Pages project — they are not needed at deploy
+time).
+
+### 6b. Cloudflare native Git integration — alternative
+Dashboard → Workers & Pages → your project → Settings → **Builds → Connect to Git** →
+select the repo. Framework preset = None, Build command = `node scripts/build-site.mjs`,
+Output dir = `dist`. The repo must be visible to the Cloudflare GitHub App (for an org
+repo, an org owner approves the app once). If you switch to this, **delete `deploy.yml`**
+so the two don't both deploy.
+
+### 6c. Manual one-off (no CI)
+`npx wrangler login`, then `npm run deploy` (= build + `wrangler pages deploy dist
+--project-name=<project-name> --branch=main`).
+
+### 6d. Turn off legacy deploy integrations
+This repo historically deployed via **Vercel** (leftover from the old Next.js app) and
+**GitHub Pages**. Both still trigger on every push and are now wrong:
+- **Vercel** rebuilds on each push and **fails** (red ✗ under the repo's Deployments) —
+  harmless but noisy. Remove it: Vercel dashboard → project → Settings → Git → Disconnect,
+  *or* GitHub → org/repo Settings → GitHub Apps → Vercel → revoke this repo's access.
+- **GitHub Pages** keeps republishing the old static-only site to `*.github.io` (which
+  can't run the Function). Turn it off: repo → Settings → Pages → Source = **None**.
 
 ---
 
@@ -236,6 +266,44 @@ Action.)
   first good load if you want a fast restore.
 - **Secrets live only in Cloudflare env vars + local `.dev.vars`** (gitignored) — rolling
   back code never risks leaking or losing them.
-- **Moving to another account** = create a new Pages project in the new account, connect
-  the *same* repo, recreate the KV namespace, and copy the env vars (~15 min). The
-  `*.pages.dev` subdomain changes; nothing in the code does.
+
+### 10a. "Do we have to use the original owner's Cloudflare/Supabase?" — No.
+
+**Nothing in the code is tied to any account.** Every account-specific value is a secret
+or a `wrangler.toml` field, not source. A researcher can stand the whole thing up on
+**their own Cloudflare + Supabase + GitHub**, with zero access to the original owner's
+accounts. Two scenarios:
+
+**(A) Own Cloudflare, keep the existing Supabase database** (fastest — share only the DB):
+1. The researcher creates their own Cloudflare account.
+2. Do §6.0 (create Pages project + KV) and §6a (add `CLOUDFLARE_API_TOKEN` +
+   `CLOUDFLARE_ACCOUNT_ID` repo secrets) under *their* account.
+3. For the Pages secrets in §6.0 step 3, reuse the **existing** `SUPABASE_URL` +
+   `SUPABASE_SERVICE_ROLE_KEY` (the DB doesn't move).
+4. Push to `main` → deploys to *their* `<project>.pages.dev`. Done.
+
+**(B) Fully independent — their own Cloudflare AND their own Supabase** (full ownership):
+1. Do the entire runbook §2–§6 under their accounts: new Supabase project (§3), load the
+   data (§4), new Cloudflare project (§6.0/§6a). The data comes from the `Data/Derived/`
+   snapshots or, via `PANEL_SOURCE_*`, straight from the current project's Storage (§2
+   option 2) — so they can clone the DB without any CSVs on disk.
+2. Update the two repo secrets + the three Pages secrets to point at their projects.
+3. Push to `main` → fully self-hosted, no dependency on the original owner.
+
+**What the original owner must hand over (one-time):**
+- **Repo access** so the researcher can push (or transfer the repo to their org).
+- For scenario (A) only: the `SUPABASE_URL` + `service_role` key (or, better, add the
+  researcher to the Supabase project so they get their own keys).
+- *Nothing else.* No Cloudflare access is required — they bring their own.
+
+> The only thing that changes per account is the `*.pages.dev` subdomain (it follows the
+> Pages project name) and the secret values. Code, schema, and CI are identical.
+
+### 10b. Current live deployment (as of this writing)
+
+- **Live URL**: `https://factorboosting.pages.dev/`
+- **Pages project**: `factorboosting` (Cloudflare account of the original owner).
+- **Database**: Supabase `factor_panel` in **Mumbai (`ap-south-1`)**.
+- **Deploy**: GitHub Actions (§6a) on push to `main`; keep-warm Action (§7) armed via the
+  `PAGES_URL` repo variable.
+- **Still on the old owner's accounts** until a researcher follows §10a to move it.
