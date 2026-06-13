@@ -227,9 +227,8 @@ const BT = (() => {
   async function loadBenchmarks() {
     if (benchmarkCache) return benchmarkCache;
     try {
-      const cacheBuster = "?v=" + new Date().getTime();
       try {
-        const rfRes = await fetch("Data/Factor_Data/ff5.csv" + cacheBuster);
+        const rfRes = await fetch("Data/Factor_Data/ff5.csv");
         if (rfRes.ok) {
           const rfText = await rfRes.text();
           const rfParsed = parseCSV(rfText);
@@ -243,7 +242,7 @@ const BT = (() => {
         console.error("Failed to load ff5.csv Rf data", e);
       }
 
-      const res = await fetch("Data/Factor_Data/finalMonthlyLabels_aman.csv?v=" + new Date().getTime());
+      const res = await fetch("Data/Factor_Data/finalMonthlyLabels_aman.csv");
       if (!res.ok) return { b: {}, names: {} };
       const parsed = parseCSV(await res.text());
       const b = {};
@@ -566,9 +565,7 @@ const BT = (() => {
       const benchmarks = cache.b || {};
       const namesMap = cache.names || {};
 
-      // Add cache-busting timestamp so updated CSVs are loaded immediately
-      const fetchUrl = url + "?v=" + new Date().getTime();
-      const res = await fetch(fetchUrl);
+      const res = await fetch(url);
       if (!res.ok) throw new Error(`CSV fetch failed (HTTP ${res.status}).`);
       const parsed = parseCSV(await res.text());
 

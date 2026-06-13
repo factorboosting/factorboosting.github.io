@@ -9,8 +9,6 @@ import {
 } from "../src/server/data-source.js";
 import { UNIVERSE_FILES } from "../src/server/factor-config.js";
 
-const GZIP_THRESHOLD_BYTES = 1024 * 1024;
-
 function loadEnvFile(filePath) {
   if (!existsSync(filePath)) return;
   const lines = readFileSync(filePath, "utf8").split(/\r?\n/);
@@ -81,8 +79,16 @@ async function uploadFile(relativePath) {
   const objectPath = toDataRelativePath(relativePath);
   const absolutePath = path.join(root, relativePath);
   const fileStat = await stat(absolutePath);
+  // Gzip (to a `.gz` object) only when necessary: the per-year panel chunks — the
+  // loader reads them back, trying `.gz` first — and any file over Storage's ~50 MB
+  // free-tier cap (e.g. finalMonthlyLabels_aman.csv, ~61 MB). Everything else is
+  // stored PLAIN, because Supabase strips Content-Encoding: a gzipped object would
+  // download as opaque bytes. /api/download serves plain CSVs directly and falls
+  // back to the `.gz` object (saved as `<file>.gz`) for the oversized ones.
+  const STORAGE_PLAIN_MAX_BYTES = 49 * 1024 * 1024;
   const shouldGzip =
-    objectPath.startsWith("Derived/universe-") || fileStat.size >= GZIP_THRESHOLD_BYTES;
+    objectPath.startsWith("Derived/universe-") ||
+    fileStat.size >= STORAGE_PLAIN_MAX_BYTES;
   const uploadPath = shouldGzip ? `${objectPath}.gz` : objectPath;
   const body = shouldGzip
     ? gzipSync(await readFile(absolutePath), { level: 9 })
@@ -139,6 +145,9 @@ function getUploadFiles() {
     ...chunkFiles,
     RISK_FREE_SOURCE_FILE,
     LEGACY_BENCHMARK_SOURCE_FILE,
+    // Big downloadable CSVs served via /api/download (allowlisted in
+    // functions/api/download.js). Stored plain; the frontend links to signed URLs.
+    "Data/Factor_Data/finalMonthlyLabels_aman.csv",
     ...Object.values(UNIVERSE_FILES),
   ];
 }

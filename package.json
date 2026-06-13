@@ -1,23 +1,18 @@
 {
-  "name": "scdlds-factor-library",
+  "name": "factorboosting",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "node scripts/build-site.mjs",
+    "dev": "npm run build && wrangler pages dev dist",
+    "deploy": "npm run build && wrangler pages deploy dist",
     "backtest:smoke": "node scripts/smoke-backtest.mjs",
     "data:derive": "node scripts/generate-backtest-derived.mjs",
-    "data:upload": "node scripts/upload-data-to-supabase-storage.mjs"
+    "data:upload": "node scripts/upload-data-to-supabase-storage.mjs",
+    "data:load": "node scripts/load-panel-to-postgres.mjs"
   },
-  "dependencies": {
-    "next": "16.2.9",
-    "react": "19.2.7",
-    "react-dom": "19.2.7"
-  },
-  "overrides": {
-    "postcss": "^8.5.10"
-  },
-  "devDependencies": {}
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
 }

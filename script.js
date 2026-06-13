@@ -295,7 +295,6 @@ function initPointerTilt() {
 function downloadFile(filename) {
   const link = document.createElement("a");
   const remoteBacktestFiles = new Set([
-    "Data/Factor_Data/ff5.csv",
     "Data/Factor_Data/finalMonthlyLabels_aman.csv",
     "Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv",
     "Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv",
@@ -431,7 +430,6 @@ function initPointerTilt() {
 function downloadFile(filename) {
   const link = document.createElement("a");
   const remoteBacktestFiles = new Set([
-    "Data/Factor_Data/ff5.csv",
     "Data/Factor_Data/finalMonthlyLabels_aman.csv",
     "Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv",
     "Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv",

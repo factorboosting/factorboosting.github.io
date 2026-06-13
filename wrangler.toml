@@ -1,0 +1,40 @@
+# Cloudflare Pages configuration (static site + Pages Functions in ./functions).
+#
+# This is a *Pages* project, not a standalone Worker:
+#   - `node scripts/build-site.mjs` assembles the static site into ./dist.
+#   - Static assets are served from `pages_build_output_dir` (./dist).
+#   - ./functions is auto-detected; functions/api/backtest.js -> /api/backtest.
+#
+# In the Cloudflare Pages project settings (Git integration), set:
+#   Framework preset = None
+#   Build command    = node scripts/build-site.mjs
+#   Build output dir  = dist
+#
+# Account-portable by design: nothing here is tied to a specific Cloudflare account.
+# Moving accounts = create a new Pages project, connect the same repo, recreate the
+# KV namespace, and copy the two secrets below. The KV `id` values change per account.
+#
+# Secrets are NOT stored here (this file is committed). Set them as Pages environment
+# variables / secrets in the dashboard or via wrangler, for BOTH production and preview:
+#   SUPABASE_URL              = https://<project-ref>.supabase.co
+#   SUPABASE_SERVICE_ROLE_KEY = <service-role key>   (server-only; never a public var)
+#
+# After `wrangler kv namespace create BACKTEST_KV` (and `... --preview`), paste the
+# returned ids into the placeholders below.
+
+name = "factorboosting"
+compatibility_date = "2025-05-01"
+pages_build_output_dir = "dist"
+
+# Result cache: identical backtest requests return from the edge instead of re-querying
+# Postgres. The Pages Function tolerates this binding being absent (caching just no-ops),
+# so the site still works before the namespace is wired up.
+[[kv_namespaces]]
+binding = "BACKTEST_KV"
+id = "4432bac75d994c14a36b0b722f2d40a2"
+
+# Preview deployments (every branch/PR) get their own binding. Re-use the same namespace
+# or create a separate preview one with `wrangler kv namespace create BACKTEST_KV --preview`.
+[[env.preview.kv_namespaces]]
+binding = "BACKTEST_KV"
+id = "42cca858e7734b62ae63d9133098354a"
