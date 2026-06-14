@@ -505,11 +505,23 @@ const BT = (() => {
 
       const smEl = document.getElementById("bt-start-month");
       const emEl = document.getElementById("bt-end-month");
+      const oldStart = smEl.value;
+      const oldEnd = emEl.value;
       smEl.min = emEl.min = meta.firstMonth || allMonths[0];
       smEl.max = emEl.max = meta.lastMonth || allMonths[allMonths.length - 1];
       const defaultStartIdx = Math.max(0, allMonths.length - 120);
-      smEl.value = allMonths[defaultStartIdx];
-      emEl.value = allMonths[allMonths.length - 1];
+      
+      if (oldStart && oldStart >= smEl.min && oldStart <= smEl.max) {
+        smEl.value = oldStart;
+      } else {
+        smEl.value = allMonths[defaultStartIdx];
+      }
+      
+      if (oldEnd && oldEnd >= emEl.min && oldEnd <= emEl.max) {
+        emEl.value = oldEnd;
+      } else {
+        emEl.value = allMonths[allMonths.length - 1];
+      }
 
       buildFactorPicker();
       buildFactorPills("bt-long-factors", "long");
@@ -693,11 +705,23 @@ const BT = (() => {
 
       const smEl = document.getElementById("bt-start-month");
       const emEl = document.getElementById("bt-end-month");
+      const oldStart = smEl.value;
+      const oldEnd = emEl.value;
       smEl.min = emEl.min = allMonths[0];
       smEl.max = emEl.max = allMonths[allMonths.length - 1];
       const defaultStartIdx = Math.max(0, allMonths.length - 120);
-      smEl.value = allMonths[defaultStartIdx];
-      emEl.value = allMonths[allMonths.length - 1];
+      
+      if (oldStart && oldStart >= smEl.min && oldStart <= smEl.max) {
+        smEl.value = oldStart;
+      } else {
+        smEl.value = allMonths[defaultStartIdx];
+      }
+      
+      if (oldEnd && oldEnd >= emEl.min && oldEnd <= emEl.max) {
+        emEl.value = oldEnd;
+      } else {
+        emEl.value = allMonths[allMonths.length - 1];
+      }
 
       buildFactorPicker();
       buildFactorPills("bt-long-factors", "long");

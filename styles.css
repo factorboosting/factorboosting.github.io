@@ -1746,7 +1746,7 @@ table {
   display: block;
   width: 22px;
   height: 2px;
-  background: var(--text-primary);
+  background-color: #1a2528 !important;
   margin: 5px 0;
   border-radius: 2px;
   transition: all 0.3s ease;
