@@ -14,7 +14,7 @@ import { BENCHMARK_OPTIONS, FACTORS } from "../server/factor-config.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "size-label-policy-v2";
+const BACKTEST_CACHE_VERSION = "rpc-pagination-top500-v1";
 const RPC_PAGE_SIZE = 1000;
 
 export function normalizeUniverse(universe) {

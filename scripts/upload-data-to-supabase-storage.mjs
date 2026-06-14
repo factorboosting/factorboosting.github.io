@@ -27,6 +27,12 @@ loadEnvFile(path.join(process.cwd(), ".env"));
 const bucket = process.env.SUPABASE_STORAGE_BUCKET || "factor-data";
 const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+const UPLOAD_UNIVERSES = new Set(
+  (process.env.UPLOAD_UNIVERSES || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
 
 if (!supabaseUrl || !serviceKey) {
   console.error(
@@ -136,9 +142,19 @@ function getUploadFiles() {
   const runtime = JSON.parse(
     readFileSync(path.join(process.cwd(), BACKTEST_RUNTIME_FILE), "utf8"),
   );
-  const chunkFiles = Object.values(runtime.universes || {}).flatMap((universe) =>
+  const selectedUniverses = Object.entries(runtime.universes || {}).filter(
+    ([universe]) => !UPLOAD_UNIVERSES.size || UPLOAD_UNIVERSES.has(universe),
+  );
+  const chunkFiles = selectedUniverses.flatMap(([, universe]) =>
     (universe.chunks || []).map((chunk) => chunk.file),
   );
+  const universeFiles = Object.entries(UNIVERSE_FILES)
+    .filter(([universe]) => !UPLOAD_UNIVERSES.size || UPLOAD_UNIVERSES.has(universe))
+    .map(([, file]) => file);
+
+  if (UPLOAD_UNIVERSES.size) {
+    return [BACKTEST_RUNTIME_FILE, ...chunkFiles, ...universeFiles];
+  }
 
   return [
     BACKTEST_RUNTIME_FILE,
@@ -148,7 +164,7 @@ function getUploadFiles() {
     // Big downloadable CSVs served via /api/download (allowlisted in
     // functions/api/download.js). Stored plain; the frontend links to signed URLs.
     "Data/Factor_Data/finalMonthlyLabels_aman.csv",
-    ...Object.values(UNIVERSE_FILES),
+    ...universeFiles,
   ];
 }
 
