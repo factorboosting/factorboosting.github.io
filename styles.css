@@ -1736,10 +1736,12 @@ table {
 .nav-toggle {
   display: none;
   background: none;
-  border: none;
+  border: 1px solid red !important; /* DEBUG: See if button container renders */
+  background-color: rgba(255, 0, 0, 0.1) !important; /* DEBUG */
   cursor: pointer;
   padding: 6px;
   flex-shrink: 0;
+  z-index: 9999 !important;
 }
 
 .nav-toggle span {
