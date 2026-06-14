@@ -1736,8 +1736,7 @@ table {
 .nav-toggle {
   display: none;
   background: none;
-  border: 1px solid red !important; /* DEBUG: See if button container renders */
-  background-color: rgba(255, 0, 0, 0.1) !important; /* DEBUG */
+  border: none;
   cursor: pointer;
   padding: 6px;
   flex-shrink: 0;
@@ -3575,10 +3574,8 @@ canvas {
   .nav-toggle {
     width: 42px;
     height: 42px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
+    display: block;
+    padding-top: 10px; /* manually center the spans vertically */
   }
 
   .nav-menu {
