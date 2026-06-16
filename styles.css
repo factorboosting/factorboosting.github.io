@@ -1874,15 +1874,25 @@ table {
   }
 
   .factor-family-toggle {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     border-radius: 8px;
+    padding: 0.25rem;
+    background: #e9f2f2;
   }
 
   .factor-family-toggle .tab-btn {
     width: 100%;
     white-space: normal;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+  }
+
+  .factor-family-toggle .tab-btn:not(.active) {
+    background: transparent;
+    color: #52646b;
   }
 
   .factor-tabs {
