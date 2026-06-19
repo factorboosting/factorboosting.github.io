@@ -44,7 +44,7 @@ const BT = (() => {
         col: "BM_Label",
         labels: { G: "Growth", N: "Neutral", V: "Value" },
       },
-      "Op. Profitability": {
+      "Profitability": {
         col: "OP_Label",
         labels: { R: "Robust", N: "Neutral", W: "Weak" },
       },
@@ -87,8 +87,8 @@ const BT = (() => {
   }
 
   const BENCHMARK_OPTIONS = {
-    nifty50: { col: "nifty50", label: "NIFTY" },
-    nifty500: { col: "nifty500", label: "NIFTY 500" },
+    nifty50: { col: "nifty50", label: "NIFTY500" },
+    nifty500: { col: "nifty500", label: "Market" },
   };
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -305,7 +305,7 @@ const BT = (() => {
       },
       RMW: {
         targetFactors: [
-          { name: "Op. Profitability", long: ["R"], short: ["W"] },
+          { name: "Profitability", long: ["R"], short: ["W"] },
         ],
         isLongShort: true,
       },
@@ -356,7 +356,7 @@ const BT = (() => {
       },
       {
         prefix: "OP_",
-        name: "Op. Profitability",
+        name: "Profitability",
         labels: { N: "N" },
       },
       {
@@ -393,8 +393,8 @@ const BT = (() => {
     const direct = {
       V: { name: "Book-to-Market", label: "V" },
       G: { name: "Book-to-Market", label: "G" },
-      R: { name: "Op. Profitability", label: "R" },
-      W: { name: "Op. Profitability", label: "W" },
+      R: { name: "Profitability", label: "R" },
+      W: { name: "Profitability", label: "W" },
       C: { name: "Investment", label: "C" },
       A: { name: "Investment", label: "A" },
     };
@@ -775,7 +775,7 @@ const BT = (() => {
             break;
           case "RMW":
             targetFactors = [
-              { name: "Op. Profitability", long: ["R"], short: ["W"] },
+              { name: "Profitability", long: ["R"], short: ["W"] },
             ];
             isLongShort = true;
             break;
@@ -842,37 +842,37 @@ const BT = (() => {
           case "SR":
             targetFactors = [
               { name: "Size", long: ["S"] },
-              { name: "Op. Profitability", long: ["R"] },
+              { name: "Profitability", long: ["R"] },
             ];
             break;
           case "SOP_N":
             targetFactors = [
               { name: "Size", long: ["S"] },
-              { name: "Op. Profitability", long: ["N"] },
+              { name: "Profitability", long: ["N"] },
             ];
             break;
           case "SW":
             targetFactors = [
               { name: "Size", long: ["S"] },
-              { name: "Op. Profitability", long: ["W"] },
+              { name: "Profitability", long: ["W"] },
             ];
             break;
           case "BR":
             targetFactors = [
               { name: "Size", long: ["B"] },
-              { name: "Op. Profitability", long: ["R"] },
+              { name: "Profitability", long: ["R"] },
             ];
             break;
           case "BOP_N":
             targetFactors = [
               { name: "Size", long: ["B"] },
-              { name: "Op. Profitability", long: ["N"] },
+              { name: "Profitability", long: ["N"] },
             ];
             break;
           case "BW":
             targetFactors = [
               { name: "Size", long: ["B"] },
-              { name: "Op. Profitability", long: ["W"] },
+              { name: "Profitability", long: ["W"] },
             ];
             break;
 
@@ -1425,7 +1425,7 @@ const BT = (() => {
     if (currentStrategy === "long_short") {
       const isSize = longFilters["Size"]?.includes("S") && shortFilters["Size"]?.includes("B");
       const isValue = longFilters["Book-to-Market"]?.includes("V") && shortFilters["Book-to-Market"]?.includes("G");
-      const isProf = longFilters["Op. Profitability"]?.includes("R") && shortFilters["Op. Profitability"]?.includes("W");
+      const isProf = longFilters["Profitability"]?.includes("R") && shortFilters["Profitability"]?.includes("W");
       const isInv = longFilters["Investment"]?.includes("C") && shortFilters["Investment"]?.includes("A");
       const isMom = longFilters["Momentum"]?.includes("W") && shortFilters["Momentum"]?.includes("L");
 

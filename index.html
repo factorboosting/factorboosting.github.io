@@ -171,6 +171,7 @@
                                 <thead>
                                     <tr>
                                         <th></th>
+                                        <th></th>
                                         <th>
                                             May 2026<br /><span style="
                             font-size: 0.8em;
@@ -199,10 +200,11 @@
                                     <tr>
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
-                                                data-tooltip="Rm-Rf = Market Risk Premium.">
-                                                Rm-Rf (Using Nifty 500)
+                                                data-tooltip="MKT = Market Risk Premium.">
+                                                MKT
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Market</td>
                                         <td class="negative">-0.12%</td>
                                         <td class="negative">-2.20%</td>
                                         <td class="negative">-4.07%</td>
@@ -218,6 +220,7 @@
                                                 SMB
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Size</td>
                                         <td class="positive">+2.71%</td>
                                         <td class="positive">+14.90%</td>
                                         <td class="negative">-4.90%</td>
@@ -233,6 +236,7 @@
                                                 HML
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Value</td>
                                         <td class="negative">-2.07%</td>
                                         <td class="negative">-5.28%</td>
                                         <td class="positive">+11.52%</td>
@@ -248,6 +252,7 @@
                                                 WML
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Momentum</td>
                                         <td class="positive">+1.09%</td>
                                         <td class="positive">+3.77%</td>
                                         <td class="positive">+21.29%</td>
@@ -263,6 +268,7 @@
                                                 RMW
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Profitability</td>
                                         <td class="negative">-2.51%</td>
                                         <td class="negative">-3.87%</td>
                                         <td class="negative">-5.31%</td>
@@ -278,6 +284,7 @@
                                                 CMA
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Investment</td>
                                         <td class="negative">-0.55%</td>
                                         <td class="negative">-4.86%</td>
                                         <td class="negative">-5.51%</td>
@@ -292,9 +299,10 @@
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
                                                 data-tooltip="AT = Asset Turnover.">
-                                                AT (Asset Turnover)
+                                                AT
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Asset Turnover</td>
                                         <td class="negative">-1.21%</td>
                                         <td class="negative">-5.37%</td>
                                         <td class="negative">-5.99%</td>
@@ -307,9 +315,10 @@
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
                                                 data-tooltip="SG = Sales Growth.">
-                                                SG (Sales Growth)
+                                                SG
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Sales Growth</td>
                                         <td class="negative">-0.48%</td>
                                         <td class="negative">-0.30%</td>
                                         <td class="positive">+3.29%</td>
@@ -322,9 +331,10 @@
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
                                                 data-tooltip="ACC = Accruals.">
-                                                ACC (Accruals)
+                                                ACC
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Accruals</td>
                                         <td class="negative">-2.91%</td>
                                         <td class="negative">-7.70%</td>
                                         <td class="negative">-6.50%</td>
@@ -337,9 +347,10 @@
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
                                                 data-tooltip="VOL = Volatility.">
-                                                VOL (Volatility)
+                                                VOL
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Volatility</td>
                                         <td class="negative">-8.73%</td>
                                         <td class="negative">-16.69%</td>
                                         <td class="negative">-9.88%</td>
@@ -352,9 +363,10 @@
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
                                                 data-tooltip="STR = Short-Term Reversal.">
-                                                STR (Short-Term Reversal)
+                                                STR
                                             </span>
                                         </td>
+                                        <td style="font-weight: 500; color: #475569;">Short-Term Reversal</td>
                                         <td class="negative">-6.54%</td>
                                         <td class="negative">-0.03%</td>
                                         <td class="negative">-5.03%</td>
@@ -388,7 +400,6 @@
 
                 <div class="factor-tabs-shell">
                     <div class="factor-tab-group active" data-factor-tab-group="core">
-                        <p class="factor-tab-label">Core Factors</p>
                         <div class="tabs factor-tabs">
                             <button class="tab-btn active" data-factor-tab="bookmarket" type="button">
                                 Size &amp; Book-to-Market
@@ -406,7 +417,6 @@
                     </div>
 
                     <div class="factor-tab-group" data-factor-tab-group="extended">
-                        <p class="factor-tab-label">Other Factors</p>
                         <div class="tabs factor-tabs">
                             <button class="tab-btn active" data-factor-tab="asset_turnover" type="button">
                                 Size &amp; Asset Turnover
@@ -1137,7 +1147,7 @@
                 <button class="tab-btn" data-tab="portfolios">
                     Individual Portfolios
                 </button>
-                <button class="tab-btn" data-tab="labelling">Stock Label</button>
+                <button class="tab-btn" data-tab="labelling">Stock Labels</button>
             </div>
 
             <!-- Returns Data Tab -->
@@ -1276,14 +1286,7 @@
             <div class="tab-content" data-content="labelling">
                 <div class="downloads-intro">
                     <p>
-                        Stock-level assignment data showing which stocks belong to which portfolios
-                        is available upon request. This data is useful for replicating portfolio
-                        construction and conducting firm-level analysis.
-                    </p>
-                    <p style="margin-top: 1rem;">
-                        Please reach out to us at
-                        <a href="mailto:factor.scdlds@gmail.com" class="link">factor.scdlds@gmail.com</a>
-                        if you would like access to this dataset.
+                        We have a stock labels dataset that assigns monthly portfolio labels to stocks. The data can be used for reconstructing the factor portfolios or generating new ones. Please email us at <a href="mailto:factor.scdlds@gmail.com" class="link">factor.scdlds@gmail.com</a> to request access to the data.
                     </p>
                 </div>
             </div>
@@ -1291,7 +1294,7 @@
             <div class="download-notes">
                 <h3>Data Notes</h3>
                 <ul>
-                    <li>All returns are in percentage form</li>
+                    <li>Returns are in percentages</li>
                     <li>Missing values appear as blank cells</li>
                     <li>
                         For detailed variable definitions, see our
@@ -1309,10 +1312,10 @@
                   font-size: 0.9rem;
                   color: var(--text-primary);
                 ">
-                            <strong>Foujdar, A., Juneja, S., Kumar, A., & Prabhala, N. 2026.</strong>
+                            <strong>Foujdar, A., Juneja, S., Kumar, A., & Prabhala, N.</strong>
                             "Risk Factors For the Indian Equity Market: Statistics,
                             Visualization, and an Interactive Tool."
-                            <em>Ashoka University Working Paper</em>.
+                            <em>Ashoka University Working Paper, 2026</em>.
                         </div>
 
                     </li>
