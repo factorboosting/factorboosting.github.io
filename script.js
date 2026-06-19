@@ -481,3 +481,25 @@ function scrollTabs(direction) {
     tabs.scrollBy({ left: direction * 300, behavior: "smooth" });
   }
 }
+
+// Toggle for Research Factors table (Core vs Other)
+function toggleResearchFactors(type) {
+  const coreBody = document.getElementById("tbody-core-research");
+  const otherBody = document.getElementById("tbody-other-research");
+  const btnCore = document.getElementById("btn-core-research");
+  const btnOther = document.getElementById("btn-other-research");
+
+  if (!coreBody || !otherBody) return;
+
+  if (type === 'core') {
+    coreBody.style.display = "";
+    otherBody.style.display = "none";
+    btnCore.classList.add("active");
+    btnOther.classList.remove("active");
+  } else {
+    coreBody.style.display = "none";
+    otherBody.style.display = "";
+    btnCore.classList.remove("active");
+    btnOther.classList.add("active");
+  }
+}

@@ -159,7 +159,13 @@
                 <div class="factor-tables">
                     <!-- 5 Research Factors + Momentum -->
                     <div class="factor-group">
-                        <h3 class="factor-title">11 Research Factors</h3>
+                        <div class="factor-browser-header">
+                            <h3 class="factor-title" style="margin: 0;">Research Factors</h3>
+                            <div class="factor-family-toggle" aria-label="Research Factor family">
+                                <button class="tab-btn active" onclick="toggleResearchFactors('core')" id="btn-core-research" type="button">Core Factors</button>
+                                <button class="tab-btn" onclick="toggleResearchFactors('other')" id="btn-other-research" type="button">Other Factors</button>
+                            </div>
+                        </div>
                         <div class="table-container">
                             <table class="data-table factor-table">
                                 <thead>
@@ -189,7 +195,7 @@
                                         <th style="text-align: center; font-size: 0.8rem; font-weight: 600; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase;">Visualize</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="tbody-core-research">
                                     <tr>
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
@@ -280,15 +286,8 @@
                                             <a href="backtester.html?factor=CMA" class="analyze-link" title="Visualize factor in Backtester">&rarr;</a>
                                         </td>
                                     </tr>
-                                    <tr class="factor-separator">
-                                        <td colspan="5">
-                                            <div class="factor-separator-content">
-                                                <span class="factor-separator-line"></span>
-                                                <span class="factor-separator-text">Other Factors</span>
-                                                <span class="factor-separator-line"></span>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                </tbody>
+                                <tbody id="tbody-other-research" style="display: none;">
                                     <tr>
                                         <td class="factor-name">
                                             <span class="factor-tooltip-trigger" tabindex="0"
