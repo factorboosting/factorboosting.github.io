@@ -398,6 +398,20 @@ body {
 .factor-table th:first-child,
 .factor-table td:first-child {
   text-align: left;
+}
+
+.research-factor-summary .factor-table th:nth-child(2),
+.research-factor-summary .factor-table td:nth-child(2) {
+  text-align: left;
+}
+
+.factor-table th:first-child,
+.factor-table td:first-child {
+  width: 15%;
+}
+
+.research-factor-summary .factor-table th:nth-child(2),
+.research-factor-summary .factor-table td:nth-child(2) {
   width: 25%;
 }
 
