@@ -156,22 +156,22 @@
 
             <!-- Research Factors Summary -->
             <div class="research-factor-summary">
+                <div class="factor-browser-header">
+                    <h3 class="factor-browser-title" style="margin: 0;">Research Factors</h3>
+                    <div class="factor-family-toggle" aria-label="Research Factor family">
+                        <button class="tab-btn active" onclick="toggleResearchFactors('core')" id="btn-core-research" type="button">Core Factors</button>
+                        <button class="tab-btn" onclick="toggleResearchFactors('other')" id="btn-other-research" type="button">Other Factors</button>
+                    </div>
+                </div>
                 <div class="factor-tables">
                     <!-- 5 Research Factors + Momentum -->
                     <div class="factor-group">
-                        <div class="factor-browser-header">
-                            <h3 class="factor-title" style="margin: 0;">Research Factors</h3>
-                            <div class="factor-family-toggle" aria-label="Research Factor family">
-                                <button class="tab-btn active" onclick="toggleResearchFactors('core')" id="btn-core-research" type="button">Core Factors</button>
-                                <button class="tab-btn" onclick="toggleResearchFactors('other')" id="btn-other-research" type="button">Other Factors</button>
-                            </div>
-                        </div>
                         <div class="table-container">
                             <table class="data-table factor-table">
                                 <thead>
                                     <tr>
                                         <th></th>
-                                        <th></th>
+                                        <th style="text-align: left; font-size: 0.8rem; font-weight: 600; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase;">Factor</th>
                                         <th>
                                             May 2026<br /><span style="
                             font-size: 0.8em;
@@ -204,7 +204,7 @@
                                                 MKT
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Market</td>
+                                        <td style="font-weight: 600;">Market</td>
                                         <td class="negative">-0.12%</td>
                                         <td class="negative">-2.20%</td>
                                         <td class="negative">-4.07%</td>
@@ -220,7 +220,7 @@
                                                 SMB
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Size</td>
+                                        <td style="font-weight: 600;">Size</td>
                                         <td class="positive">+2.71%</td>
                                         <td class="positive">+14.90%</td>
                                         <td class="negative">-4.90%</td>
@@ -236,7 +236,7 @@
                                                 HML
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Value</td>
+                                        <td style="font-weight: 600;">Value</td>
                                         <td class="negative">-2.07%</td>
                                         <td class="negative">-5.28%</td>
                                         <td class="positive">+11.52%</td>
@@ -252,7 +252,7 @@
                                                 WML
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Momentum</td>
+                                        <td style="font-weight: 600;">Momentum</td>
                                         <td class="positive">+1.09%</td>
                                         <td class="positive">+3.77%</td>
                                         <td class="positive">+21.29%</td>
@@ -268,7 +268,7 @@
                                                 RMW
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Profitability</td>
+                                        <td style="font-weight: 600;">Profitability</td>
                                         <td class="negative">-2.51%</td>
                                         <td class="negative">-3.87%</td>
                                         <td class="negative">-5.31%</td>
@@ -284,7 +284,7 @@
                                                 CMA
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Investment</td>
+                                        <td style="font-weight: 600;">Investment</td>
                                         <td class="negative">-0.55%</td>
                                         <td class="negative">-4.86%</td>
                                         <td class="negative">-5.51%</td>
@@ -302,7 +302,7 @@
                                                 AT
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Asset Turnover</td>
+                                        <td style="font-weight: 600;">Asset Turnover</td>
                                         <td class="negative">-1.21%</td>
                                         <td class="negative">-5.37%</td>
                                         <td class="negative">-5.99%</td>
@@ -318,7 +318,7 @@
                                                 SG
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Sales Growth</td>
+                                        <td style="font-weight: 600;">Sales Growth</td>
                                         <td class="negative">-0.48%</td>
                                         <td class="negative">-0.30%</td>
                                         <td class="positive">+3.29%</td>
@@ -334,7 +334,7 @@
                                                 ACC
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Accruals</td>
+                                        <td style="font-weight: 600;">Accruals</td>
                                         <td class="negative">-2.91%</td>
                                         <td class="negative">-7.70%</td>
                                         <td class="negative">-6.50%</td>
@@ -350,7 +350,7 @@
                                                 VOL
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Volatility</td>
+                                        <td style="font-weight: 600;">Volatility</td>
                                         <td class="negative">-8.73%</td>
                                         <td class="negative">-16.69%</td>
                                         <td class="negative">-9.88%</td>
@@ -366,7 +366,7 @@
                                                 STR
                                             </span>
                                         </td>
-                                        <td style="font-weight: 500; color: #475569;">Short-Term Reversal</td>
+                                        <td style="font-weight: 600;">Short-Term Reversal</td>
                                         <td class="negative">-6.54%</td>
                                         <td class="negative">-0.03%</td>
                                         <td class="negative">-5.03%</td>
