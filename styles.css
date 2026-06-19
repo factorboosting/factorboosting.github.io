@@ -405,21 +405,6 @@ body {
   text-align: left;
 }
 
-.factor-table th:first-child,
-.factor-table td:first-child {
-  width: 15%;
-}
-
-.research-factor-summary .factor-table th:nth-child(2),
-.research-factor-summary .factor-table td:nth-child(2) {
-  width: 25%;
-}
-
-.factor-table th:last-child,
-.factor-table td:last-child {
-  width: 12%;
-  text-align: center;
-}
 
 /* Factor Separator Row */
 .factor-separator:hover {
