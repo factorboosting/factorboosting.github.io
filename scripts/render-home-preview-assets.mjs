@@ -239,11 +239,11 @@ function svg(content) {
 
 function longOnlyContent() {
   const rows = [
-    { name: "Small", factor: "Size", growth: "4.49x", annual: "+16.21%", vol: "19.89%", sharpe: "0.582", drawdown: "-41.61%", vs: "+1.53x", color: COLORS.blue },
-    { name: "Value", factor: "Book-to-Market", growth: "6.53x", annual: "+20.64%", vol: "22.58%", sharpe: "0.703", drawdown: "-44.71%", vs: "+2.22x", color: COLORS.green },
-    { name: "Robust", factor: "Profitability", growth: "3.53x", annual: "+13.45%", vol: "15.94%", sharpe: "0.527", drawdown: "-21.10%", vs: "+1.20x", color: COLORS.orange },
-    { name: "Conservative", factor: "Investment", growth: "4.58x", annual: "+16.43%", vol: "17.27%", sharpe: "0.651", drawdown: "-38.07%", vs: "+1.56x", color: COLORS.purple },
-    { name: "Winner", factor: "Momentum", growth: "5.45x", annual: "+18.48%", vol: "19.27%", sharpe: "0.696", drawdown: "-27.22%", vs: "+1.85x", color: COLORS.pink },
+    { name: "Small", factor: "Size", growth: "4.63x", annual: "+16.56%", vol: "24.57%", sharpe: "0.528", drawdown: "-57.11%", vs: "+1.58x", color: COLORS.blue },
+    { name: "Value", factor: "Book-to-Market", growth: "6.42x", annual: "+20.44%", vol: "28.96%", sharpe: "0.599", drawdown: "-67.01%", vs: "+2.18x", color: COLORS.green },
+    { name: "Robust", factor: "Profitability", growth: "2.93x", annual: "+11.35%", vol: "18.34%", sharpe: "0.379", drawdown: "-36.61%", vs: "+1.00x", color: COLORS.orange },
+    { name: "Conservative", factor: "Investment", growth: "3.70x", annual: "+13.98%", vol: "21.63%", sharpe: "0.462", drawdown: "-55.34%", vs: "+1.26x", color: COLORS.purple },
+    { name: "Winner", factor: "Momentum", growth: "7.39x", annual: "+22.15%", vol: "21.19%", sharpe: "0.797", drawdown: "-29.95%", vs: "+2.51x", color: COLORS.pink },
     { name: "NIFTY", factor: "Benchmark", growth: "2.94x", annual: "+11.38%", vol: "16.15%", sharpe: "0.409", drawdown: "-29.35%", vs: "+1.00x", color: COLORS.red },
   ];
   const n = 120;
@@ -267,11 +267,11 @@ function longOnlyContent() {
 
 function longShortContent() {
   const rows = [
-    { name: "SMB", factor: "Size", growth: "1.16x", annual: "+1.47%", vol: "9.65%", sharpe: "-0.376", drawdown: "-36.17%", color: COLORS.blue },
-    { name: "HML", factor: "Book-to-Market", growth: "2.17x", annual: "+8.06%", vol: "14.51%", sharpe: "0.224", drawdown: "-39.63%", color: COLORS.green },
-    { name: "RMW", factor: "Profitability", growth: "0.86x", annual: "-1.47%", vol: "11.33%", sharpe: "-0.564", drawdown: "-39.51%", color: COLORS.orange },
-    { name: "CMA", factor: "Investment", growth: "1.23x", annual: "+2.06%", vol: "10.09%", sharpe: "-0.299", drawdown: "-21.37%", color: COLORS.purple },
-    { name: "WML", factor: "Momentum", growth: "2.50x", annual: "+9.58%", vol: "14.14%", sharpe: "0.327", drawdown: "-27.58%", color: COLORS.pink },
+    { name: "SMB", factor: "Size", growth: "1.07x", annual: "+0.65%", vol: "12.54%", sharpe: "-0.330", drawdown: "-35.09%", color: COLORS.blue },
+    { name: "HML", factor: "Book-to-Market", growth: "1.99x", annual: "+7.14%", vol: "17.02%", sharpe: "0.163", drawdown: "-51.76%", color: COLORS.green },
+    { name: "RMW", factor: "Profitability", growth: "1.03x", annual: "+0.25%", vol: "9.49%", sharpe: "-0.512", drawdown: "-36.22%", color: COLORS.orange },
+    { name: "CMA", factor: "Investment", growth: "1.58x", annual: "+4.71%", vol: "7.77%", sharpe: "-0.083", drawdown: "-15.60%", color: COLORS.purple },
+    { name: "WML", factor: "Momentum", growth: "4.22x", annual: "+15.49%", vol: "15.63%", sharpe: "0.649", drawdown: "-26.89%", color: COLORS.pink },
   ];
   const n = 120;
   const series = [
