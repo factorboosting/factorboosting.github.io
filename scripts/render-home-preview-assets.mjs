@@ -248,11 +248,11 @@ function longOnlyContent() {
   ];
   const n = 120;
   const series = [
-    { label: "Small", color: COLORS.blue, values: interpolateSeries([[0, 100], [20, 170], [43, 88], [58, 220], [77, 250], [96, 540], [107, 465], [119, 449]], n, 11, 0.2) },
-    { label: "Value", color: COLORS.green, values: interpolateSeries([[0, 100], [18, 175], [43, 78], [59, 205], [79, 225], [95, 640], [105, 540], [119, 653]], n, 13, 1.3) },
-    { label: "Robust", color: COLORS.orange, values: interpolateSeries([[0, 100], [20, 150], [43, 120], [61, 220], [82, 220], [96, 350], [108, 305], [119, 353]], n, 8, 2.1) },
-    { label: "Conservative", color: COLORS.purple, values: interpolateSeries([[0, 100], [18, 150], [42, 95], [61, 210], [80, 240], [96, 430], [108, 370], [119, 458]], n, 10, 3.0) },
-    { label: "Winner", color: COLORS.pink, values: interpolateSeries([[0, 100], [22, 175], [42, 140], [60, 340], [80, 370], [96, 780], [108, 705], [119, 545]], n, 16, 4.2) },
+    { label: "Small", color: COLORS.blue, values: interpolateSeries([[0, 100], [20, 170], [43, 88], [58, 220], [77, 250], [96, 540], [107, 465], [119, 463]], n, 11, 0.2) },
+    { label: "Value", color: COLORS.green, values: interpolateSeries([[0, 100], [18, 175], [43, 78], [59, 205], [79, 225], [95, 640], [105, 540], [119, 642]], n, 13, 1.3) },
+    { label: "Robust", color: COLORS.orange, values: interpolateSeries([[0, 100], [20, 150], [43, 120], [61, 220], [82, 220], [96, 350], [108, 305], [119, 293]], n, 8, 2.1) },
+    { label: "Conservative", color: COLORS.purple, values: interpolateSeries([[0, 100], [18, 150], [42, 95], [61, 210], [80, 240], [96, 430], [108, 370], [119, 370]], n, 10, 3.0) },
+    { label: "Winner", color: COLORS.pink, values: interpolateSeries([[0, 100], [22, 175], [42, 140], [60, 340], [80, 370], [96, 780], [108, 705], [119, 739]], n, 16, 4.2) },
     { label: "NIFTY", color: COLORS.red, dashed: true, stroke: 2.2, values: interpolateSeries([[0, 100], [22, 135], [42, 105], [60, 210], [82, 225], [96, 300], [108, 295], [119, 294]], n, 5, 5.1) },
   ];
   return `${drawLongOnlyTable(rows)}${drawChart({
@@ -275,11 +275,11 @@ function longShortContent() {
   ];
   const n = 120;
   const series = [
-    { label: "SMB", color: COLORS.blue, values: interpolateSeries([[0, 100], [18, 118], [38, 92], [58, 96], [77, 90], [92, 112], [108, 118], [119, 116]], n, 5, 0.4) },
-    { label: "HML", color: COLORS.green, values: interpolateSeries([[0, 100], [17, 130], [38, 65], [60, 92], [77, 120], [93, 185], [108, 176], [119, 217]], n, 6, 1.1) },
-    { label: "RMW", color: COLORS.orange, values: interpolateSeries([[0, 100], [20, 112], [39, 158], [62, 150], [80, 136], [96, 112], [108, 108], [119, 86]], n, 5, 2.2) },
-    { label: "CMA", color: COLORS.purple, values: interpolateSeries([[0, 100], [20, 108], [40, 92], [58, 118], [80, 145], [96, 168], [109, 164], [119, 123]], n, 4, 3.4) },
-    { label: "WML", color: COLORS.pink, values: interpolateSeries([[0, 100], [20, 140], [39, 250], [52, 210], [66, 285], [82, 270], [95, 378], [108, 355], [119, 250]], n, 10, 4.5) },
+    { label: "SMB", color: COLORS.blue, values: interpolateSeries([[0, 100], [18, 118], [38, 92], [58, 96], [77, 90], [92, 112], [108, 118], [119, 107]], n, 5, 0.4) },
+    { label: "HML", color: COLORS.green, values: interpolateSeries([[0, 100], [17, 130], [38, 65], [60, 92], [77, 120], [93, 185], [108, 176], [119, 199]], n, 6, 1.1) },
+    { label: "RMW", color: COLORS.orange, values: interpolateSeries([[0, 100], [20, 112], [39, 158], [62, 150], [80, 136], [96, 112], [108, 108], [119, 103]], n, 5, 2.2) },
+    { label: "CMA", color: COLORS.purple, values: interpolateSeries([[0, 100], [20, 108], [40, 92], [58, 118], [80, 145], [96, 168], [109, 164], [119, 158]], n, 4, 3.4) },
+    { label: "WML", color: COLORS.pink, values: interpolateSeries([[0, 100], [20, 140], [39, 250], [52, 210], [66, 285], [82, 270], [95, 378], [108, 355], [119, 422]], n, 10, 4.5) },
   ];
   return `${drawLongShortTable(rows)}${drawChart({
     title: "10-Year Portfolio Returns",
