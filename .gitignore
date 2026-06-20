@@ -1,21 +1,18 @@
 node_modules/
 .DS_Store
 .venv/
-.DS_Store
+.env
+.env.*
+
+# Next.js build output
 .next/
 out/
-dist/
-.env
-.env.local
-.env.*.local
-!.env.example
-.dev.vars
-.wrangler/
+build/
+.vercel/
+
+# Heavy stock-level data now lives in Supabase.
 Data/Factor_Data/finalMonthlyLabels_aman.csv
-Data/Derived/universe-*.json
+Data/Updated_Factor_Data/5_all_labels.csv
 Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv
 Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv
 Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv
-# Large pipeline artifact + downloadable bundles: kept on disk, served from Storage.
-Data/Updated_Factor_Data/5_all_labels.csv
-Data/Downloads/
