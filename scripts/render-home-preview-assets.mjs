@@ -163,19 +163,18 @@ function drawChart({ title, subtitle, series, yTicks, labels = MONTH_LABELS, cha
 }
 
 function drawLongOnlyTable(rows) {
-  const y = 0;
   const h = 290;
   const rowH = 33.5;
-  const parts = [card(12, y, 832, h, 10)];
-  parts.push(text(34, 46, "Portfolio", { size: 12.5, weight: 850 }));
-  parts.push(text(164, 46, "Factor", { size: 12.5, weight: 850 }));
-  parts.push(text(326, 46, "Growth", { size: 12.5, weight: 850, anchor: "middle" }));
-  parts.push(text(490, 24, "10-Year", { size: 12.5, weight: 850, anchor: "middle" }));
-  parts.push(multiline(420, 55, ["Annual Return"], { size: 11.3 }));
-  parts.push(multiline(510, 55, ["Annual", "Volatility"], { size: 11.3, lineHeight: 11 }));
-  parts.push(text(600, 55, "Sharpe Ratio", { size: 11.3, weight: 850, anchor: "middle" }));
-  parts.push(multiline(692, 46, ["Maximum", "Drawdown"], { size: 11.3, lineHeight: 11 }));
-  parts.push(multiline(788, 46, ["Growth", "vs NIFTY"], { size: 11.3, lineHeight: 11 }));
+  const parts = [card(12, 0, 832, h, 10)];
+  parts.push(text(40, 46, "Portfolio", { size: 12.5, weight: 850 }));
+  parts.push(text(144, 46, "Factor", { size: 12.5, weight: 850 }));
+  parts.push(text(272, 46, "Growth", { size: 12.5, weight: 850, anchor: "middle" }));
+  parts.push(text(428, 24, "10-Year", { size: 12.5, weight: 850, anchor: "middle" }));
+  parts.push(multiline(376, 55, ["Annual Return"], { size: 11.3 }));
+  parts.push(multiline(480, 55, ["Annual", "Volatility"], { size: 11.3, lineHeight: 11 }));
+  parts.push(text(584, 55, "Sharpe Ratio", { size: 11.3, weight: 850, anchor: "middle" }));
+  parts.push(multiline(688, 46, ["Maximum", "Drawdown"], { size: 11.3, lineHeight: 11 }));
+  parts.push(multiline(792, 46, ["Growth", "vs NIFTY"], { size: 11.3, lineHeight: 11 }));
   parts.push(`<line x1="24" y1="78" x2="832" y2="78" stroke="${COLORS.border}" stroke-width="1"/>`);
 
   rows.forEach((row, index) => {
@@ -183,15 +182,15 @@ function drawLongOnlyTable(rows) {
     if (index > 0) {
       parts.push(`<line x1="24" y1="${cy - rowH / 2}" x2="832" y2="${cy - rowH / 2}" stroke="#eef2f7" stroke-width="1"/>`);
     }
-    parts.push(`<circle cx="36" cy="${cy}" r="4" fill="${row.color}"/>`);
-    parts.push(text(48, cy, row.name, { size: 12.8, weight: 850 }));
-    parts.push(text(164, cy, row.factor, { size: 12.5, weight: 820 }));
-    parts.push(text(326, cy, row.growth, { size: 13.2, weight: 700, anchor: "middle" }));
-    parts.push(text(420, cy, row.annual, { size: 13.2, weight: 750, fill: numberFill(row.annual), anchor: "middle" }));
-    parts.push(text(510, cy, row.vol, { size: 13.2, weight: 700, anchor: "middle" }));
-    parts.push(text(600, cy, row.sharpe, { size: 13.2, weight: 750, fill: numberFill(row.sharpe), anchor: "middle" }));
-    parts.push(text(692, cy, row.drawdown, { size: 13.2, weight: 750, fill: COLORS.negative, anchor: "middle" }));
-    parts.push(text(788, cy, row.vs, { size: 13.2, weight: 750, fill: numberFill(row.vs), anchor: "middle" }));
+    parts.push(`<circle cx="28" cy="${cy}" r="4" fill="${row.color}"/>`);
+    parts.push(text(40, cy, row.name, { size: 12.8, weight: 850 }));
+    parts.push(text(144, cy, row.factor, { size: 12.5, weight: 820 }));
+    parts.push(text(272, cy, row.growth, { size: 13.2, weight: 700, anchor: "middle" }));
+    parts.push(text(376, cy, row.annual, { size: 13.2, weight: 750, fill: numberFill(row.annual), anchor: "middle" }));
+    parts.push(text(480, cy, row.vol, { size: 13.2, weight: 700, anchor: "middle" }));
+    parts.push(text(584, cy, row.sharpe, { size: 13.2, weight: 750, fill: numberFill(row.sharpe), anchor: "middle" }));
+    parts.push(text(688, cy, row.drawdown, { size: 13.2, weight: 750, fill: COLORS.negative, anchor: "middle" }));
+    parts.push(text(792, cy, row.vs, { size: 13.2, weight: 750, fill: numberFill(row.vs), anchor: "middle" }));
   });
   return parts.join("");
 }
@@ -200,14 +199,14 @@ function drawLongShortTable(rows) {
   const h = 246;
   const rowH = 33.5;
   const parts = [card(12, 0, 832, h, 10)];
-  parts.push(text(34, 44, "Portfolio", { size: 12.5, weight: 850 }));
-  parts.push(text(178, 44, "Factor", { size: 12.5, weight: 850 }));
-  parts.push(text(366, 44, "Growth", { size: 12.5, weight: 850, anchor: "middle" }));
-  parts.push(text(522, 24, "10-Year", { size: 12.5, weight: 850, anchor: "middle" }));
-  parts.push(text(450, 55, "Annual Return", { size: 11.3, weight: 850, anchor: "middle" }));
-  parts.push(text(552, 55, "Annual Volatility", { size: 11.3, weight: 850, anchor: "middle" }));
-  parts.push(text(654, 55, "Sharpe Ratio", { size: 11.3, weight: 850, anchor: "middle" }));
-  parts.push(multiline(760, 44, ["Maximum", "Drawdown"], { size: 11.3, lineHeight: 11 }));
+  parts.push(text(40, 44, "Portfolio", { size: 12.5, weight: 850 }));
+  parts.push(text(150, 44, "Factor", { size: 12.5, weight: 850 }));
+  parts.push(text(309, 44, "Growth", { size: 12.5, weight: 850, anchor: "middle" }));
+  parts.push(text(547, 24, "10-Year", { size: 12.5, weight: 850, anchor: "middle" }));
+  parts.push(text(428, 55, "Annual Return", { size: 11.3, weight: 850, anchor: "middle" }));
+  parts.push(text(547, 55, "Annual Volatility", { size: 11.3, weight: 850, anchor: "middle" }));
+  parts.push(text(666, 55, "Sharpe Ratio", { size: 11.3, weight: 850, anchor: "middle" }));
+  parts.push(multiline(785, 44, ["Maximum", "Drawdown"], { size: 11.3, lineHeight: 11 }));
   parts.push(`<line x1="24" y1="76" x2="832" y2="76" stroke="${COLORS.border}" stroke-width="1"/>`);
 
   rows.forEach((row, index) => {
@@ -215,14 +214,14 @@ function drawLongShortTable(rows) {
     if (index > 0) {
       parts.push(`<line x1="24" y1="${cy - rowH / 2}" x2="832" y2="${cy - rowH / 2}" stroke="#eef2f7" stroke-width="1"/>`);
     }
-    parts.push(`<circle cx="36" cy="${cy}" r="4" fill="${row.color}"/>`);
-    parts.push(text(48, cy, row.name, { size: 12.8, weight: 850 }));
-    parts.push(text(178, cy, row.factor, { size: 12.5, weight: 820 }));
-    parts.push(text(366, cy, row.growth, { size: 13.2, weight: 700, anchor: "middle" }));
-    parts.push(text(450, cy, row.annual, { size: 13.2, weight: 750, fill: numberFill(row.annual), anchor: "middle" }));
-    parts.push(text(552, cy, row.vol, { size: 13.2, weight: 700, anchor: "middle" }));
-    parts.push(text(654, cy, row.sharpe, { size: 13.2, weight: 750, fill: numberFill(row.sharpe), anchor: "middle" }));
-    parts.push(text(760, cy, row.drawdown, { size: 13.2, weight: 750, fill: COLORS.negative, anchor: "middle" }));
+    parts.push(`<circle cx="28" cy="${cy}" r="4" fill="${row.color}"/>`);
+    parts.push(text(40, cy, row.name, { size: 12.8, weight: 850 }));
+    parts.push(text(150, cy, row.factor, { size: 12.5, weight: 820 }));
+    parts.push(text(309, cy, row.growth, { size: 13.2, weight: 700, anchor: "middle" }));
+    parts.push(text(428, cy, row.annual, { size: 13.2, weight: 750, fill: numberFill(row.annual), anchor: "middle" }));
+    parts.push(text(547, cy, row.vol, { size: 13.2, weight: 700, anchor: "middle" }));
+    parts.push(text(666, cy, row.sharpe, { size: 13.2, weight: 750, fill: numberFill(row.sharpe), anchor: "middle" }));
+    parts.push(text(785, cy, row.drawdown, { size: 13.2, weight: 750, fill: COLORS.negative, anchor: "middle" }));
   });
   return parts.join("");
 }
@@ -240,20 +239,20 @@ function svg(content) {
 
 function longOnlyContent() {
   const rows = [
-    { name: "Small", factor: "Size", growth: "4.83x", annual: "+17.05%", vol: "24.6%", sharpe: "0.545", drawdown: "-57.22%", vs: "+1.64x", color: COLORS.blue },
-    { name: "Value", factor: "Book-to-Market", growth: "6.42x", annual: "+20.44%", vol: "28.96%", sharpe: "0.599", drawdown: "-67.01%", vs: "+2.18x", color: COLORS.green },
-    { name: "Robust", factor: "Op. Profitability", growth: "2.93x", annual: "+11.35%", vol: "18.34%", sharpe: "0.379", drawdown: "-36.61%", vs: "+1x", color: COLORS.orange },
-    { name: "Conservative", factor: "Investment", growth: "3.7x", annual: "+13.98%", vol: "21.63%", sharpe: "0.462", drawdown: "-55.34%", vs: "+1.26x", color: COLORS.purple },
-    { name: "Winner", factor: "Momentum", growth: "7.39x", annual: "+22.15%", vol: "21.19%", sharpe: "0.797", drawdown: "-29.95%", vs: "+2.51x", color: COLORS.pink },
+    { name: "Small", factor: "Size", growth: "4.49x", annual: "+16.21%", vol: "19.89%", sharpe: "0.582", drawdown: "-41.61%", vs: "+1.53x", color: COLORS.blue },
+    { name: "Value", factor: "Book-to-Market", growth: "6.53x", annual: "+20.64%", vol: "22.58%", sharpe: "0.703", drawdown: "-44.71%", vs: "+2.22x", color: COLORS.green },
+    { name: "Robust", factor: "Profitability", growth: "3.53x", annual: "+13.45%", vol: "15.94%", sharpe: "0.527", drawdown: "-21.10%", vs: "+1.20x", color: COLORS.orange },
+    { name: "Conservative", factor: "Investment", growth: "4.58x", annual: "+16.43%", vol: "17.27%", sharpe: "0.651", drawdown: "-38.07%", vs: "+1.56x", color: COLORS.purple },
+    { name: "Winner", factor: "Momentum", growth: "5.45x", annual: "+18.48%", vol: "19.27%", sharpe: "0.696", drawdown: "-27.22%", vs: "+1.85x", color: COLORS.pink },
     { name: "NIFTY", factor: "Benchmark", growth: "2.94x", annual: "+11.38%", vol: "16.15%", sharpe: "0.409", drawdown: "-29.35%", vs: "+1.00x", color: COLORS.red },
   ];
   const n = 120;
   const series = [
-    { label: "Small", color: COLORS.blue, values: interpolateSeries([[0, 100], [20, 170], [43, 88], [58, 220], [77, 250], [96, 540], [107, 465], [119, 483]], n, 11, 0.2) },
-    { label: "Value", color: COLORS.green, values: interpolateSeries([[0, 100], [18, 175], [43, 78], [59, 205], [79, 225], [95, 640], [105, 540], [119, 642]], n, 13, 1.3) },
-    { label: "Robust", color: COLORS.orange, values: interpolateSeries([[0, 100], [20, 150], [43, 120], [61, 220], [82, 220], [96, 350], [108, 305], [119, 293]], n, 8, 2.1) },
-    { label: "Conservative", color: COLORS.purple, values: interpolateSeries([[0, 100], [18, 150], [42, 95], [61, 210], [80, 240], [96, 430], [108, 370], [119, 370]], n, 10, 3.0) },
-    { label: "Winner", color: COLORS.pink, values: interpolateSeries([[0, 100], [22, 175], [42, 140], [60, 340], [80, 370], [96, 780], [108, 705], [119, 739]], n, 16, 4.2) },
+    { label: "Small", color: COLORS.blue, values: interpolateSeries([[0, 100], [20, 170], [43, 88], [58, 220], [77, 250], [96, 540], [107, 465], [119, 449]], n, 11, 0.2) },
+    { label: "Value", color: COLORS.green, values: interpolateSeries([[0, 100], [18, 175], [43, 78], [59, 205], [79, 225], [95, 640], [105, 540], [119, 653]], n, 13, 1.3) },
+    { label: "Robust", color: COLORS.orange, values: interpolateSeries([[0, 100], [20, 150], [43, 120], [61, 220], [82, 220], [96, 350], [108, 305], [119, 353]], n, 8, 2.1) },
+    { label: "Conservative", color: COLORS.purple, values: interpolateSeries([[0, 100], [18, 150], [42, 95], [61, 210], [80, 240], [96, 430], [108, 370], [119, 458]], n, 10, 3.0) },
+    { label: "Winner", color: COLORS.pink, values: interpolateSeries([[0, 100], [22, 175], [42, 140], [60, 340], [80, 370], [96, 780], [108, 705], [119, 545]], n, 16, 4.2) },
     { label: "NIFTY", color: COLORS.red, dashed: true, stroke: 2.2, values: interpolateSeries([[0, 100], [22, 135], [42, 105], [60, 210], [82, 225], [96, 300], [108, 295], [119, 294]], n, 5, 5.1) },
   ];
   return `${drawLongOnlyTable(rows)}${drawChart({
@@ -268,19 +267,19 @@ function longOnlyContent() {
 
 function longShortContent() {
   const rows = [
-    { name: "SMB", factor: "Size", growth: "1.07x", annual: "+0.65%", vol: "12.54%", sharpe: "-0.33", drawdown: "-35.09%", color: COLORS.blue },
-    { name: "HML", factor: "Book-to-Market", growth: "1.99x", annual: "+7.14%", vol: "17.02%", sharpe: "0.163", drawdown: "-51.76%", color: COLORS.green },
-    { name: "RMW", factor: "Op. Profitability", growth: "1.03x", annual: "+0.25%", vol: "9.49%", sharpe: "-0.512", drawdown: "-36.22%", color: COLORS.orange },
-    { name: "CMA", factor: "Investment", growth: "1.58x", annual: "+4.71%", vol: "7.77%", sharpe: "-0.083", drawdown: "-15.6%", color: COLORS.purple },
-    { name: "WML", factor: "Momentum", growth: "4.22x", annual: "+15.49%", vol: "15.63%", sharpe: "0.649", drawdown: "-26.89%", color: COLORS.pink },
+    { name: "SMB", factor: "Size", growth: "1.16x", annual: "+1.47%", vol: "9.65%", sharpe: "-0.376", drawdown: "-36.17%", color: COLORS.blue },
+    { name: "HML", factor: "Book-to-Market", growth: "2.17x", annual: "+8.06%", vol: "14.51%", sharpe: "0.224", drawdown: "-39.63%", color: COLORS.green },
+    { name: "RMW", factor: "Profitability", growth: "0.86x", annual: "-1.47%", vol: "11.33%", sharpe: "-0.564", drawdown: "-39.51%", color: COLORS.orange },
+    { name: "CMA", factor: "Investment", growth: "1.23x", annual: "+2.06%", vol: "10.09%", sharpe: "-0.299", drawdown: "-21.37%", color: COLORS.purple },
+    { name: "WML", factor: "Momentum", growth: "2.50x", annual: "+9.58%", vol: "14.14%", sharpe: "0.327", drawdown: "-27.58%", color: COLORS.pink },
   ];
   const n = 120;
   const series = [
-    { label: "SMB", color: COLORS.blue, values: interpolateSeries([[0, 100], [18, 118], [38, 92], [58, 96], [77, 90], [92, 112], [108, 118], [119, 107]], n, 5, 0.4) },
-    { label: "HML", color: COLORS.green, values: interpolateSeries([[0, 100], [17, 130], [38, 65], [60, 92], [77, 120], [93, 185], [108, 176], [119, 199]], n, 6, 1.1) },
-    { label: "RMW", color: COLORS.orange, values: interpolateSeries([[0, 100], [20, 112], [39, 158], [62, 150], [80, 136], [96, 112], [108, 108], [119, 103]], n, 5, 2.2) },
-    { label: "CMA", color: COLORS.purple, values: interpolateSeries([[0, 100], [20, 108], [40, 92], [58, 118], [80, 145], [96, 168], [109, 164], [119, 158]], n, 4, 3.4) },
-    { label: "WML", color: COLORS.pink, values: interpolateSeries([[0, 100], [20, 140], [39, 250], [52, 210], [66, 285], [82, 270], [95, 378], [108, 355], [119, 422]], n, 10, 4.5) },
+    { label: "SMB", color: COLORS.blue, values: interpolateSeries([[0, 100], [18, 118], [38, 92], [58, 96], [77, 90], [92, 112], [108, 118], [119, 116]], n, 5, 0.4) },
+    { label: "HML", color: COLORS.green, values: interpolateSeries([[0, 100], [17, 130], [38, 65], [60, 92], [77, 120], [93, 185], [108, 176], [119, 217]], n, 6, 1.1) },
+    { label: "RMW", color: COLORS.orange, values: interpolateSeries([[0, 100], [20, 112], [39, 158], [62, 150], [80, 136], [96, 112], [108, 108], [119, 86]], n, 5, 2.2) },
+    { label: "CMA", color: COLORS.purple, values: interpolateSeries([[0, 100], [20, 108], [40, 92], [58, 118], [80, 145], [96, 168], [109, 164], [119, 123]], n, 4, 3.4) },
+    { label: "WML", color: COLORS.pink, values: interpolateSeries([[0, 100], [20, 140], [39, 250], [52, 210], [66, 285], [82, 270], [95, 378], [108, 355], [119, 250]], n, 10, 4.5) },
   ];
   return `${drawLongShortTable(rows)}${drawChart({
     title: "10-Year Portfolio Returns",
