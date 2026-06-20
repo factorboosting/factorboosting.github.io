@@ -10,7 +10,7 @@ export const FACTOR_GROUPS = {
       col: "BM_Label",
       labels: { G: "Growth", N: "Neutral", V: "Value" },
     },
-    "Op. Profitability": {
+    "Profitability": {
       col: "OP_Label",
       labels: { R: "Robust", N: "Neutral", W: "Weak" },
     },
@@ -52,8 +52,8 @@ export const FACTORS = Object.fromEntries(
 );
 
 export const BENCHMARK_OPTIONS = {
-  nifty50: { col: "nifty50", label: "NIFTY" },
-  nifty500: { col: "nifty500", label: "NIFTY 500" },
+  nifty50: { col: "nifty50", label: "NIFTY500" },
+  nifty500: { col: "nifty500", label: "Market" },
 };
 
 export const UNIVERSE_FILES = {
