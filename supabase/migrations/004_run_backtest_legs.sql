@@ -51,6 +51,11 @@ as $$
         nullif(
           case p_size_col
             when 'Size_Label_Monthly' then p.size_label_monthly
+            when 'Size_Label_OP'      then p.size_label_op
+            when 'Size_Label_INV'     then p.size_label_inv
+            when 'Size_Label_AT'      then p.size_label_at
+            when 'Size_Label_SG'      then p.size_label_sg
+            when 'Size_Label_ACC'     then p.size_label_acc
             else p.size_label_yearly
           end, ''),
         nullif(p.size_label_yearly, ''),
@@ -120,6 +125,11 @@ as $$
         nullif(
           case p_size_col
             when 'Size_Label_Monthly' then p.size_label_monthly
+            when 'Size_Label_OP'      then p.size_label_op
+            when 'Size_Label_INV'     then p.size_label_inv
+            when 'Size_Label_AT'      then p.size_label_at
+            when 'Size_Label_SG'      then p.size_label_sg
+            when 'Size_Label_ACC'     then p.size_label_acc
             else p.size_label_yearly
           end, ''),
         nullif(p.size_label_yearly, ''),

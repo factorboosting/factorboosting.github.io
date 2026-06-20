@@ -1526,9 +1526,13 @@ const BT = (() => {
 
   function getSizeColumn(longFilters = {}, shortFilters = {}) {
     const has = (factor) => Boolean(longFilters[factor] || shortFilters[factor]);
-    return has("Momentum") || has("Volatility") || has("Short-Term Reversal")
-      ? "Size_Label_Monthly"
-      : "Size_Label_Yearly";
+    if (has("Momentum") || has("Volatility") || has("Short-Term Reversal")) return "Size_Label_Monthly";
+    if (has("Profitability") || has("Op. Profitability")) return "Size_Label_OP";
+    if (has("Investment")) return "Size_Label_INV";
+    if (has("Asset Turnover")) return "Size_Label_AT";
+    if (has("Sales Growth")) return "Size_Label_SG";
+    if (has("Accruals")) return "Size_Label_ACC";
+    return "Size_Label_Yearly";
   }
 
   function applyFilters(rows, filters) {
