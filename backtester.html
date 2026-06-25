@@ -123,6 +123,31 @@
         margin-bottom: 12px;
       }
 
+      .bt-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .bt-table th {
+        text-align: right;
+        padding: 10px 12px;
+        font-weight: 600;
+        color: #1e293b;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+      }
+      .bt-table td {
+        padding: 12px;
+        text-align: right;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: nowrap;
+      }
+      .bt-table th:first-child,
+      .bt-table td:first-child {
+        text-align: left;
+      }
+
       .bt-compare-table {
         width: 100%;
         table-layout: fixed;
@@ -349,9 +374,10 @@
 
       .bt-tc-row {
         display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 8px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-top: 12px;
       }
 
       .bt-tc-input {
@@ -892,15 +918,21 @@
                 </button>
               </div>
               <div class="bt-tc-row" id="bt-tc-row" style="display: none">
-                <input
-                  class="bt-tc-input"
-                  type="number"
-                  id="bt-tc-value"
-                  value="10"
-                  min="0"
-                  step="1"
-                />
-                <span class="bt-tc-unit" id="bt-tc-unit">bps per trade</span>
+                <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                  <input
+                    class="bt-tc-input"
+                    type="number"
+                    id="bt-tc-value"
+                    value="10"
+                    min="0"
+                    step="1"
+                  />
+                  <span class="bt-tc-unit" id="bt-tc-unit" style="line-height: 1.2; color: #f8fafc;">bps on traded portfolio value</span>
+                </div>
+                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: #cbd5e1; cursor: pointer; line-height: 1.4;">
+                  <input type="checkbox" id="bt-tc-formation" style="cursor: pointer; margin-top: 2px;" />
+                  <span>Include initial formation cost</span>
+                </label>
               </div>
             </div>
           </div>

@@ -425,27 +425,7 @@ function calcVW(rows) {
   return totalWeight <= 0 ? calcEW(rows) : weighted / totalWeight;
 }
 
-function calcTurnover(prevStocks, currStocks) {
-  if (!prevStocks || prevStocks.size === 0) {
-    return { entered: 0, exited: 0, ratio: 0 };
-  }
-
-  let entered = 0;
-  let exited = 0;
-  currStocks.forEach((stock) => {
-    if (!prevStocks.has(stock)) entered++;
-  });
-  prevStocks.forEach((stock) => {
-    if (!currStocks.has(stock)) exited++;
-  });
-
-  const avgSize = (prevStocks.size + currStocks.size) / 2;
-  return {
-    entered,
-    exited,
-    ratio: avgSize > 0 ? (entered + exited) / avgSize : 0,
-  };
-}
+// Old calcTurnover removed in favor of weight-based turnover
 
 function computeIR(portRets, benchRets) {
   if (!portRets || !benchRets || portRets.length === 0) return null;
@@ -531,9 +511,13 @@ function computeDrawdown(rets) {
 }
 
 function normalizeTransactionCost(input = {}) {
-  if (input.mode !== "bps") return { mode: "none", cost: 0 };
+  if (input.mode !== "bps") return { mode: "none", cost: 0, includeFormation: false };
   const bps = Number.parseFloat(input.bps ?? input.costBps ?? 0);
-  return { mode: "bps", cost: Number.isFinite(bps) ? bps / 10000 : 0 };
+  return { 
+    mode: "bps", 
+    cost: Number.isFinite(bps) ? bps / 10000 : 0, 
+    includeFormation: Boolean(input.includeFormation)
+  };
 }
 
 function toFirms(rows) {
@@ -565,9 +549,10 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
     ? new Set(options.holdingsMonths)
     : null;
   const minFirms = 5;
-  let prevLongCodes = null;
-  let prevShortCodes = null;
-  let totalTurnover = 0;
+  let prevEwWeights = new Map();
+  let prevVwWeights = new Map();
+  let totalEwTurnover = 0;
+  let totalVwTurnover = 0;
   let turnoverCount = 0;
 
   for (let monthIndex = 0; monthIndex < months.length; monthIndex++) {
@@ -617,29 +602,37 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
       if (validShortB) finalShortDF = finalShortDF.concat(shortB);
     }
 
-    const currLongCodes = new Set(finalLongDF.map((row) => row.Co_Code));
-    const currShortCodes = new Set(finalShortDF.map((row) => row.Co_Code));
-    let monthTurnoverRatio = 0;
-
-    if (prevLongCodes) {
-      const longTurnover = calcTurnover(prevLongCodes, currLongCodes);
-      if (strategy === "long_short" && prevShortCodes) {
-        const shortTurnover = calcTurnover(prevShortCodes, currShortCodes);
-        monthTurnoverRatio = longTurnover.ratio + shortTurnover.ratio;
-      } else {
-        monthTurnoverRatio = longTurnover.ratio;
-      }
-      totalTurnover += monthTurnoverRatio;
-      turnoverCount++;
-    }
-
-    prevLongCodes = currLongCodes;
-    prevShortCodes = currShortCodes;
-
     let longEW = null;
     let longVW = null;
     let shortEW = null;
     let shortVW = null;
+
+    const currWeights = new Map();
+    function addWeights(cellRows, macroEwWeight, macroVwWeight) {
+      if (!cellRows || cellRows.length === 0) return;
+      
+      const validRows = cellRows.filter(r => r._ret != null && Number.isFinite(r._ret));
+      if (validRows.length === 0) return;
+      
+      const ewMicro = macroEwWeight / validRows.length;
+      let sum_mcap = 0;
+      for (const row of validRows) {
+        const weight = Number.parseFloat(row.prev_Size);
+        if (!Number.isNaN(weight) && weight > 0) sum_mcap += weight;
+      }
+      
+      for (const row of validRows) {
+        if (!currWeights.has(row.Co_Code)) currWeights.set(row.Co_Code, { ew: 0, vw: 0, r: row._ret });
+        const w = currWeights.get(row.Co_Code);
+        w.ew += ewMicro;
+        const weight = Number.parseFloat(row.prev_Size);
+        if (sum_mcap > 0 && !Number.isNaN(weight) && weight > 0) {
+          w.vw += macroVwWeight * (weight / sum_mcap);
+        } else {
+          w.vw += ewMicro;
+        }
+      }
+    }
 
     const isPureSize =
       Object.keys(longFilters).length === 1 &&
@@ -673,6 +666,7 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
         const longVws = [];
         const shortEws = [];
         const shortVws = [];
+        const macro = 1.0 / validBuckets.length;
 
         for (const bucket of validBuckets) {
           const subLong = longLeg.filter((row) => row.BM_Label === bucket);
@@ -681,6 +675,11 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
           longVws.push(calcVW(subLong));
           shortEws.push(calcEW(subShort));
           shortVws.push(calcVW(subShort));
+          
+          addWeights(subLong, macro, macro);
+          if (strategy === "long_short") {
+            addWeights(subShort, -macro, -macro);
+          }
         }
 
         longEW = longEws.reduce((sum, value) => sum + value, 0) / validBuckets.length;
@@ -694,35 +693,71 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
       if (validLongS && validLongB) {
         longEW = (calcEW(longS) + calcEW(longB)) / 2;
         longVW = (calcVW(longS) + calcVW(longB)) / 2;
+        addWeights(longS, 0.5, 0.5);
+        addWeights(longB, 0.5, 0.5);
       } else if (validLongS) {
         longEW = calcEW(longS);
         longVW = calcVW(longS);
+        addWeights(longS, 1.0, 1.0);
       } else if (validLongB) {
         longEW = calcEW(longB);
         longVW = calcVW(longB);
+        addWeights(longB, 1.0, 1.0);
       }
 
       if (strategy === "long_short") {
         if (validShortS && validShortB) {
           shortEW = (calcEW(shortS) + calcEW(shortB)) / 2;
           shortVW = (calcVW(shortS) + calcVW(shortB)) / 2;
+          addWeights(shortS, -0.5, -0.5);
+          addWeights(shortB, -0.5, -0.5);
         } else if (validShortS) {
           shortEW = calcEW(shortS);
           shortVW = calcVW(shortS);
+          addWeights(shortS, -1.0, -1.0);
         } else if (validShortB) {
           shortEW = calcEW(shortB);
           shortVW = calcVW(shortB);
+          addWeights(shortB, -1.0, -1.0);
         }
       }
     }
 
-    let ewNet = strategy === "long_short" ? longEW - shortEW : longEW;
-    let vwNet = strategy === "long_short" ? longVW - shortVW : longVW;
+    const ewGross = strategy === "long_short" ? longEW - shortEW : longEW;
+    const vwGross = strategy === "long_short" ? longVW - shortVW : longVW;
+    let ewNet = ewGross;
+    let vwNet = vwGross;
 
-    if (transactionCost.mode !== "none" && monthIndex > 0) {
-      const drag = monthTurnoverRatio * transactionCost.cost;
-      ewNet -= drag;
-      vwNet -= drag;
+    let monthEwTurnover = 0;
+    let monthVwTurnover = 0;
+    const allCodes = new Set([...prevEwWeights.keys(), ...currWeights.keys()]);
+
+    for (const c of allCodes) {
+      const pEw = prevEwWeights.get(c) || 0;
+      const pVw = prevVwWeights.get(c) || 0;
+      const curr = currWeights.get(c) || { ew: 0, vw: 0, r: 0 };
+      monthEwTurnover += Math.abs(curr.ew - pEw);
+      monthVwTurnover += Math.abs(curr.vw - pVw);
+    }
+
+    if (monthIndex > 0 || transactionCost.includeFormation) {
+      totalEwTurnover += monthEwTurnover;
+      totalVwTurnover += monthVwTurnover;
+      turnoverCount++;
+      if (transactionCost.mode !== "none") {
+        ewNet -= monthEwTurnover * transactionCost.cost;
+        vwNet -= monthVwTurnover * transactionCost.cost;
+      }
+    }
+
+    prevEwWeights = new Map();
+    prevVwWeights = new Map();
+    const ewDenom = 1 + (ewGross || 0);
+    const vwDenom = 1 + (vwGross || 0);
+
+    for (const [c, w] of currWeights.entries()) {
+      if (ewDenom > 0) prevEwWeights.set(c, (w.ew * (1 + w.r)) / ewDenom);
+      if (vwDenom > 0) prevVwWeights.set(c, (w.vw * (1 + w.r)) / vwDenom);
     }
 
     if (!Number.isFinite(ewNet)) ewNet = 0;
@@ -764,7 +799,7 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
     holdings,
     isLongShort: strategy === "long_short",
     avgTurnover:
-      turnoverCount > 0 ? +((totalTurnover / turnoverCount) * 100).toFixed(1) : 0,
+      turnoverCount > 0 ? +(((totalEwTurnover + totalVwTurnover) / 2 / turnoverCount) * 100).toFixed(1) : 0,
   };
 }
 

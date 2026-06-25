@@ -1372,9 +1372,10 @@ const BT = (() => {
   // ── Transaction cost ──────────────────────────────────────────────────────
   function getTCConfig() {
     const mode = getToggleVal("bt-tc-toggle");
-    if (mode === "none") return { mode: "none", cost: 0 };
+    const includeFormation = document.getElementById("bt-tc-formation")?.checked || false;
+    if (mode === "none") return { mode: "none", cost: 0, includeFormation };
     const val = parseFloat(document.getElementById("bt-tc-value").value) || 0;
-    return { mode: "bps", cost: val / 10000 };
+    return { mode: "bps", cost: val / 10000, includeFormation };
   }
 
   function calcTurnover(prevStocks, currStocks) {
@@ -2005,6 +2006,7 @@ const BT = (() => {
           transactionCost: {
             mode: tc.mode,
             bps: tc.mode === "bps" ? tc.cost * 10000 : 0,
+            includeFormation: tc.includeFormation,
           },
           portfolios: portfolios.map((portfolio) => ({
             id: portfolio.id,
@@ -2586,6 +2588,7 @@ const BT = (() => {
         transactionCost: {
           mode: tc.mode,
           bps: tc.mode === "bps" ? tc.cost * 10000 : 0,
+          includeFormation: tc.includeFormation,
         },
         portfolios: [
           {

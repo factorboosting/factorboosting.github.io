@@ -14,7 +14,7 @@ import { BENCHMARK_OPTIONS, FACTORS } from "../server/factor-config.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-pagination-top500-v2";
+const BACKTEST_CACHE_VERSION = "rpc-pagination-top500-v3";
 const RPC_PAGE_SIZE = 1000;
 
 export function normalizeUniverse(universe) {
@@ -109,7 +109,7 @@ function buildLegParams(filters = {}) {
 
 // ── Aggregate index + EW/VW ──────────────────────────────────────────────────
 function emptyCell() {
-  return { n: 0, sum_ret: 0, sum_ret_w: 0, sum_w: 0, codes: new Set(), byBm: {} };
+  return { n: 0, sum_ret: 0, sum_ret_w: 0, sum_w: 0, codes: new Set(), members: [], byBm: {} };
 }
 
 function rpcRowsToIndex(rows) {
@@ -125,10 +125,29 @@ function rpcRowsToIndex(rows) {
     cell.sum_ret += r.sum_ret;
     cell.sum_ret_w += r.sum_ret_w;
     cell.sum_w += r.sum_w;
-    if (Array.isArray(r.co_codes)) {
-      for (const c of r.co_codes) cell.codes.add(c);
+    
+    if (!cell.byBm[bm]) {
+      cell.byBm[bm] = { n: 0, sum_ret: 0, sum_ret_w: 0, sum_w: 0, members: [] };
     }
-    cell.byBm[bm] = { n: r.n, sum_ret: r.sum_ret, sum_ret_w: r.sum_ret_w, sum_w: r.sum_w };
+    const bmCell = cell.byBm[bm];
+    bmCell.n += r.n;
+    bmCell.sum_ret += r.sum_ret;
+    bmCell.sum_ret_w += r.sum_ret_w;
+    bmCell.sum_w += r.sum_w;
+
+    if (Array.isArray(r.co_codes)) {
+      for (let i = 0; i < r.co_codes.length; i++) {
+        const c = r.co_codes[i];
+        cell.codes.add(c);
+        const member = {
+          c: c,
+          r: (r.rets && r.rets[i]) || 0,
+          m: (r.mcaps && r.mcaps[i]) || 0
+        };
+        cell.members.push(member);
+        bmCell.members.push(member);
+      }
+    }
   }
   return index;
 }
@@ -143,19 +162,7 @@ function aggVW(a) {
 }
 
 // ── Pure metric math (verbatim from backtest-engine.js) ───────────────────────
-function calcTurnover(prevStocks, currStocks) {
-  if (!prevStocks || prevStocks.size === 0) return { entered: 0, exited: 0, ratio: 0 };
-  let entered = 0;
-  let exited = 0;
-  currStocks.forEach((stock) => {
-    if (!prevStocks.has(stock)) entered++;
-  });
-  prevStocks.forEach((stock) => {
-    if (!currStocks.has(stock)) exited++;
-  });
-  const avgSize = (prevStocks.size + currStocks.size) / 2;
-  return { entered, exited, ratio: avgSize > 0 ? (entered + exited) / avgSize : 0 };
-}
+// Old count-based calcTurnover removed in favor of weight-based turnover
 
 function computeIR(portRets, benchRets) {
   if (!portRets || !benchRets || portRets.length === 0) return null;
@@ -227,9 +234,13 @@ function computeDrawdown(rets) {
 }
 
 function normalizeTransactionCost(input = {}) {
-  if (input.mode !== "bps") return { mode: "none", cost: 0 };
+  if (input.mode !== "bps") return { mode: "none", cost: 0, includeFormation: false };
   const bps = Number.parseFloat(input.bps ?? input.costBps ?? 0);
-  return { mode: "bps", cost: Number.isFinite(bps) ? bps / 10000 : 0 };
+  return { 
+    mode: "bps", 
+    cost: Number.isFinite(bps) ? bps / 10000 : 0, 
+    includeFormation: Boolean(input.includeFormation)
+  };
 }
 
 function toFirms(rows) {
@@ -250,9 +261,10 @@ function computePortfolioFromLegs(longIndex, shortIndex, config, months, transac
   const ewRets = [];
   const vwRets = [];
   const netByMonth = {};
-  let prevLongCodes = null;
-  let prevShortCodes = null;
-  let totalTurnover = 0;
+  let prevEwWeights = new Map();
+  let prevVwWeights = new Map();
+  let totalEwTurnover = 0;
+  let totalVwTurnover = 0;
   let turnoverCount = 0;
 
   for (let monthIndex = 0; monthIndex < months.length; monthIndex++) {
@@ -287,34 +299,27 @@ function computePortfolioFromLegs(longIndex, shortIndex, config, months, transac
       }
     }
 
-    const currLongCodes = new Set();
-    if (validLongS) for (const c of longS.codes) currLongCodes.add(c);
-    if (validLongB) for (const c of longB.codes) currLongCodes.add(c);
-    const currShortCodes = new Set();
-    if (strategy === "long_short") {
-      if (validShortS) for (const c of shortS.codes) currShortCodes.add(c);
-      if (validShortB) for (const c of shortB.codes) currShortCodes.add(c);
-    }
-
-    let monthTurnoverRatio = 0;
-    if (prevLongCodes) {
-      const longTurnover = calcTurnover(prevLongCodes, currLongCodes);
-      if (strategy === "long_short" && prevShortCodes) {
-        const shortTurnover = calcTurnover(prevShortCodes, currShortCodes);
-        monthTurnoverRatio = longTurnover.ratio + shortTurnover.ratio;
-      } else {
-        monthTurnoverRatio = longTurnover.ratio;
-      }
-      totalTurnover += monthTurnoverRatio;
-      turnoverCount++;
-    }
-    prevLongCodes = currLongCodes;
-    prevShortCodes = currShortCodes;
-
     let longEW = null;
     let longVW = null;
     let shortEW = null;
     let shortVW = null;
+
+    const currWeights = new Map();
+    function addWeights(cell, macroEwWeight, macroVwWeight) {
+      if (!cell || cell.n === 0) return;
+      const ewMicro = macroEwWeight / cell.n;
+      const sum_mcap = cell.sum_w;
+      for (const m of cell.members) {
+        if (!currWeights.has(m.c)) currWeights.set(m.c, { ew: 0, vw: 0, r: m.r });
+        const w = currWeights.get(m.c);
+        w.ew += ewMicro;
+        if (sum_mcap > 0 && m.m > 0) {
+          w.vw += macroVwWeight * (m.m / sum_mcap);
+        } else {
+          w.vw += ewMicro;
+        }
+      }
+    }
 
     const isPureSize =
       Object.keys(longFilters).length === 1 &&
@@ -348,11 +353,17 @@ function computePortfolioFromLegs(longIndex, shortIndex, config, months, transac
         const lV = [];
         const sE = [];
         const sV = [];
+        const macro = 1.0 / validBuckets.length;
         for (const bucket of validBuckets) {
           lE.push(aggEW(longLeg.byBm[bucket]));
           lV.push(aggVW(longLeg.byBm[bucket]));
           sE.push(aggEW(shortLeg.byBm[bucket]));
           sV.push(aggVW(shortLeg.byBm[bucket]));
+          
+          addWeights(longLeg.byBm[bucket], macro, macro);
+          if (strategy === "long_short") {
+            addWeights(shortLeg.byBm[bucket], -macro, -macro);
+          }
         }
         longEW = lE.reduce((s, v) => s + v, 0) / validBuckets.length;
         longVW = lV.reduce((s, v) => s + v, 0) / validBuckets.length;
@@ -363,35 +374,72 @@ function computePortfolioFromLegs(longIndex, shortIndex, config, months, transac
       if (validLongS && validLongB) {
         longEW = (aggEW(longS) + aggEW(longB)) / 2;
         longVW = (aggVW(longS) + aggVW(longB)) / 2;
+        addWeights(longS, 0.5, 0.5);
+        addWeights(longB, 0.5, 0.5);
       } else if (validLongS) {
         longEW = aggEW(longS);
         longVW = aggVW(longS);
+        addWeights(longS, 1.0, 1.0);
       } else if (validLongB) {
         longEW = aggEW(longB);
         longVW = aggVW(longB);
+        addWeights(longB, 1.0, 1.0);
       }
 
       if (strategy === "long_short") {
         if (validShortS && validShortB) {
           shortEW = (aggEW(shortS) + aggEW(shortB)) / 2;
           shortVW = (aggVW(shortS) + aggVW(shortB)) / 2;
+          addWeights(shortS, -0.5, -0.5);
+          addWeights(shortB, -0.5, -0.5);
         } else if (validShortS) {
           shortEW = aggEW(shortS);
           shortVW = aggVW(shortS);
+          addWeights(shortS, -1.0, -1.0);
         } else if (validShortB) {
           shortEW = aggEW(shortB);
           shortVW = aggVW(shortB);
+          addWeights(shortB, -1.0, -1.0);
         }
       }
     }
 
-    let ewNet = strategy === "long_short" ? longEW - shortEW : longEW;
-    let vwNet = strategy === "long_short" ? longVW - shortVW : longVW;
+    const ewGross = strategy === "long_short" ? longEW - shortEW : longEW;
+    const vwGross = strategy === "long_short" ? longVW - shortVW : longVW;
+    let ewNet = ewGross;
+    let vwNet = vwGross;
 
-    if (transactionCost.mode !== "none" && monthIndex > 0) {
-      const drag = monthTurnoverRatio * transactionCost.cost;
-      ewNet -= drag;
-      vwNet -= drag;
+    let monthEwTurnover = 0;
+    let monthVwTurnover = 0;
+    const allCodes = new Set([...prevEwWeights.keys(), ...currWeights.keys()]);
+    
+    for (const c of allCodes) {
+      const pEw = prevEwWeights.get(c) || 0;
+      const pVw = prevVwWeights.get(c) || 0;
+      const curr = currWeights.get(c) || { ew: 0, vw: 0, r: 0 };
+      monthEwTurnover += Math.abs(curr.ew - pEw);
+      monthVwTurnover += Math.abs(curr.vw - pVw);
+    }
+
+    if (monthIndex > 0 || transactionCost.includeFormation) {
+      totalEwTurnover += monthEwTurnover;
+      totalVwTurnover += monthVwTurnover;
+      turnoverCount++;
+      if (transactionCost.mode !== "none") {
+        ewNet -= monthEwTurnover * transactionCost.cost;
+        vwNet -= monthVwTurnover * transactionCost.cost;
+      }
+    }
+
+    // Prepare drift for next month based on gross return
+    prevEwWeights = new Map();
+    prevVwWeights = new Map();
+    const ewDenom = 1 + (ewGross || 0);
+    const vwDenom = 1 + (vwGross || 0);
+    
+    for (const [c, w] of currWeights.entries()) {
+      if (ewDenom > 0) prevEwWeights.set(c, (w.ew * (1 + w.r)) / ewDenom);
+      if (vwDenom > 0) prevVwWeights.set(c, (w.vw * (1 + w.r)) / vwDenom);
     }
 
     if (!Number.isFinite(ewNet)) ewNet = 0;
@@ -425,7 +473,7 @@ function computePortfolioFromLegs(longIndex, shortIndex, config, months, transac
     holdings: {},
     isLongShort: strategy === "long_short",
     avgTurnover:
-      turnoverCount > 0 ? +((totalTurnover / turnoverCount) * 100).toFixed(1) : 0,
+      turnoverCount > 0 ? +(((totalEwTurnover + totalVwTurnover) / 2 / turnoverCount) * 100).toFixed(1) : 0,
   };
   return { results, netByMonth };
 }

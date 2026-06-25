@@ -24,7 +24,7 @@ const result = await computeBacktest({
   startMonth: "2016-06",
   endMonth: "2026-05",
   activeBenchmarkId: "nifty500",
-  transactionCost: { mode: "none", bps: 0 },
+  transactionCost: { mode: "bps", bps: 100 },
   portfolios: [
     {
       id: 1,
