@@ -1994,38 +1994,61 @@ const BT = (() => {
 
     try {
       const tc = getTCConfig();
-      const res = await fetch("/api/backtest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          universe: getToggleVal("bt-universe-toggle") || "all",
-          startMonth: months[0],
-          endMonth: months[months.length - 1],
-          holdingsMonths: [months[months.length - 1]],
-          activeBenchmarkId,
-          transactionCost: {
-            mode: tc.mode,
-            bps: tc.mode === "bps" ? tc.cost * 10000 : 0,
-            includeFormation: tc.includeFormation,
-          },
-          portfolios: portfolios.map((portfolio) => ({
-            id: portfolio.id,
-            name: portfolio.name,
-            factorLabel: portfolio.factorLabel,
-            colorIdx: portfolio.colorIdx,
-            config: portfolio.config,
-          })),
-        }),
-      });
-      let payload = null;
-      try {
-        payload = await res.json();
-      } catch {
-        payload = null;
+      const basePayload = {
+        universe: getToggleVal("bt-universe-toggle") || "all",
+        startMonth: months[0],
+        endMonth: months[months.length - 1],
+        holdingsMonths: [months[months.length - 1]],
+        activeBenchmarkId,
+        transactionCost: {
+          mode: tc.mode,
+          bps: tc.mode === "bps" ? tc.cost * 10000 : 0,
+          includeFormation: tc.includeFormation,
+        }
+      };
+
+      let finalPayload = null;
+      let allBuiltPortfolios = [];
+
+      for (let i = 0; i < portfolios.length; i++) {
+        const portfolio = portfolios[i];
+        if (portfolios.length > 1) {
+          btn.textContent = `Running ${i + 1}/${portfolios.length}…`;
+        }
+
+        const res = await fetch("/api/backtest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...basePayload,
+            portfolios: [{
+              id: portfolio.id,
+              name: portfolio.name,
+              factorLabel: portfolio.factorLabel,
+              colorIdx: portfolio.colorIdx,
+              config: portfolio.config,
+            }]
+          }),
+        });
+
+        let payload = null;
+        try {
+          payload = await res.json();
+        } catch {
+          payload = null;
+        }
+        if (!res.ok || !payload?.ok) {
+          throw new Error(getApiError(payload, `Backtest failed (${res.status})`));
+        }
+
+        if (!finalPayload) {
+          finalPayload = payload;
+        }
+        allBuiltPortfolios.push(payload.portfolios[0]);
       }
-      if (!res.ok || !payload?.ok) {
-        throw new Error(getApiError(payload, `Backtest failed (${res.status})`));
-      }
+
+      finalPayload.portfolios = allBuiltPortfolios;
+      let payload = finalPayload;
 
       runMonths = payload.months || months;
       benchmarkSeries = payload.benchmarkSeries || {};
