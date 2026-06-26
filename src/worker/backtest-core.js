@@ -608,6 +608,8 @@ export async function runBacktest(env, input) {
     const strategy = config.strategy === "long_short" ? "long_short" : "long_only";
     const sizeCol = getSizeColumn(longFilters, shortFilters);
 
+    const includeTurnover = transactionCost.mode !== "none";
+
     const longParams = buildLegParams(longFilters);
     const longRows = await callRpc(
       env,
@@ -619,6 +621,7 @@ export async function runBacktest(env, input) {
         p_size_col: sizeCol,
         p_size_labels: longParams.sizeLabels,
         p_filters: longParams.pFilters,
+        p_include_turnover: includeTurnover,
       },
       { paginate: true },
     );
@@ -636,6 +639,7 @@ export async function runBacktest(env, input) {
           p_size_col: sizeCol,
           p_size_labels: shortParams.sizeLabels,
           p_filters: shortParams.pFilters,
+          p_include_turnover: includeTurnover,
         },
         { paginate: true },
       );

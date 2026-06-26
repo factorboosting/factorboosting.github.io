@@ -123,7 +123,26 @@ async function readChunk(file) {
       .split("/")
       .map((s) => encodeURIComponent(s))
       .join("/")}`;
-    let res;
+    const res = await fetch(url, {
+      headers: { apikey: SOURCE_KEY, Authorization: `Bearer ${SOURCE_KEY}` },
+    });
+    if (!res.ok) {
+      failures.push(`${candidate}: ${res.status}`);
+      continue;
+    }
+    const text = candidate.endsWith(".gz")
+      ? gunzipSync(Buffer.from(await res.arrayBuffer())).toString("utf8")
+      : await res.text();
+    return JSON.parse(text);
+  }
+  throw new Error(`Failed to download ${objectPath} from source Storage (${failures.join(", ")}).`);
+}
+
+async function upsert(table, rows, onConflict) {
+  if (rows.length === 0) return;
+  const url = `${TARGET_URL}/rest/v1/${table}?on_conflict=${onConflict}`;
+  let res;
+  let lastErr;
   for (let attempt = 1; attempt <= 10; attempt++) {
     try {
       res = await fetch(url, {
@@ -138,6 +157,7 @@ async function readChunk(file) {
       });
       break;
     } catch (e) {
+      lastErr = e;
       if (attempt === 10) throw e;
       console.log(`  Retry ${attempt} for ${table}...`);
       await new Promise(r => setTimeout(r, 2000 * attempt));
