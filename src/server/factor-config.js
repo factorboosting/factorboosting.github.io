@@ -57,7 +57,7 @@ export const BENCHMARK_OPTIONS = {
 };
 
 export const UNIVERSE_FILES = {
-  all: "file_6_all_labels (1).csv",
+  all: "Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv",
   top500: "Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv",
   top300: "Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv",
 };
