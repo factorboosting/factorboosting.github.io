@@ -56,11 +56,16 @@ loadEnvFile(path.join(process.cwd(), ".env"));
 // SNAPSHOT_COLUMNS name -> factor_panel column name.
 const COLUMN_MAP = {
   Co_Code: "co_code",
+  co_code: "co_code",
   _ret: "monthly_ret",
+  monthly_ret: "monthly_ret",
   _size: "mktcap",
+  mktcap: "mktcap",
   prev_Size: "prev_mktcap",
+  prev_mktcap: "prev_mktcap",
   Size_Label: "size_label",
   Size_Label_Yearly: "size_label_yearly",
+  Size_Label_Annual: "size_label_yearly",
   Size_Label_Monthly: "size_label_monthly",
   Size_Label_OP: "size_label_op",
   Size_Label_INV: "size_label_inv",
