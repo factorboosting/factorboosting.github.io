@@ -2,8 +2,8 @@ import csv
 from collections import defaultdict
 
 input_file = 'Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv'
-out_500 = 'Data/Updated_Factor_Data/Top_500/21_stock_level_monthly_top500.csv'
-out_300 = 'Data/Updated_Factor_Data/Top_300/21_stock_level_monthly_top300.csv'
+out_500 = 'Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv'
+out_300 = 'Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv'
 
 # Read all rows
 rows_by_month = defaultdict(list)
@@ -12,9 +12,7 @@ with open(input_file, 'r') as infile:
     fieldnames = reader.fieldnames
     for row in reader:
         try:
-            # Use 'mktcap' since 'eom_mcap' might not exist in the new file
-            val = row.get('mktcap') or row.get('eom_mcap') or 0.0
-            mcap = float(val)
+            mcap = float(row['eom_mcap']) if row['eom_mcap'] else 0.0
         except:
             mcap = 0.0
         row['_mcap'] = mcap
