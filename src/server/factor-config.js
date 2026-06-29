@@ -57,7 +57,7 @@ export const BENCHMARK_OPTIONS = {
 };
 
 export const UNIVERSE_FILES = {
-  all: "factor_labels_4_june 3.csv",
-  top500: "firm_labels_top500 (1).csv",
-  top300: "firm_labels_top300 (1).csv",
+  all: "factor_label_may_26.csv",
+  top500: "firm_labels_top500_may_26.csv",
+  top300: "firm_labels_top300_may_26.csv",
 };

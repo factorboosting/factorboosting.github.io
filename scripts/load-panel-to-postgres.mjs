@@ -155,10 +155,11 @@ async function upsert(table, rows, onConflict) {
         },
         body: JSON.stringify(rows),
       });
+      await new Promise(r => setTimeout(r, 500)); // Cool down
       break;
     } catch (e) {
       lastErr = e;
-      if (attempt === 10) throw e;
+      if (attempt === 20) throw e;
       console.log(`  Retry ${attempt} for ${table}...`);
       await new Promise(r => setTimeout(r, 2000 * attempt));
     }
@@ -269,11 +270,15 @@ async function main() {
       await deleteUniverse(universe);
     }
     let loaded = 0;
+    let chunkIndex = 0;
+    const delay = ms => new Promise(res => setTimeout(res, ms));
     for (const chunkMeta of chunks) {
       const chunk = await readChunk(chunkMeta.file);
       const rows = chunkToRows(universe, chunk);
       await upsertBatched("factor_panel", rows, "universe,month,co_code", PANEL_BATCH);
+      await delay(1000); // Wait 1 second between chunks to cool down Supabase
       loaded += rows.length;
+      chunkIndex++;
     }
     console.log(`  -> ${universe}: ${loaded.toLocaleString()} rows`);
   }

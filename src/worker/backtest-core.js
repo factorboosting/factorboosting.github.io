@@ -14,7 +14,7 @@ import { BENCHMARK_OPTIONS, FACTORS } from "../server/factor-config.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-pagination-top500-v4";
+const BACKTEST_CACHE_VERSION = "rpc-pagination-top500-v5";
 const RPC_PAGE_SIZE = 1000;
 
 export function normalizeUniverse(universe) {
@@ -527,9 +527,9 @@ export async function getUniverseMeta(env, universeInput = "all") {
   const data = await selectTable(env, "rf_monthly", "select=month&order=month.asc");
   const months = data.map(d => d.month);
   
-  let rowCount = 563736;
-  if (universe === "top500") rowCount = 146378;
-  if (universe === "top300") rowCount = 87973;
+  let rowCount = 553959;
+  if (universe === "top500") rowCount = 136000;
+  if (universe === "top300") rowCount = 81600;
 
   return {
     universe,
