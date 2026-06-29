@@ -1283,7 +1283,7 @@ const BT = (() => {
           .querySelectorAll("#bt-benchmark-selector .bt-toggle-btn")
           .forEach((b) => b.classList.toggle("active", b.dataset.val === id));
         if (portfolios.some((p) => p.results)) {
-          computeAllBenchmarks(runMonths);
+          if (!serverMode) computeAllBenchmarks(runMonths);
           refreshAll();
         }
       };
