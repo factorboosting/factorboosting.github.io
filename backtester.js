@@ -509,7 +509,7 @@ const BT = (() => {
       const oldEnd = emEl.value;
       smEl.min = emEl.min = meta.firstMonth || allMonths[0];
       smEl.max = emEl.max = meta.lastMonth || allMonths[allMonths.length - 1];
-      const defaultStartIdx = Math.max(0, allMonths.length - 120);
+      const defaultStartIdx = 0;
       
       if (oldStart && oldStart >= smEl.min && oldStart <= smEl.max) {
         smEl.value = oldStart;
@@ -709,7 +709,7 @@ const BT = (() => {
       const oldEnd = emEl.value;
       smEl.min = emEl.min = allMonths[0];
       smEl.max = emEl.max = allMonths[allMonths.length - 1];
-      const defaultStartIdx = Math.max(0, allMonths.length - 120);
+      const defaultStartIdx = 0;
       
       if (oldStart && oldStart >= smEl.min && oldStart <= smEl.max) {
         smEl.value = oldStart;
