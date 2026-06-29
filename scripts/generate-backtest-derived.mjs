@@ -227,8 +227,36 @@ async function buildUniverseSnapshot(universe, file, names) {
       normalized.prev_Size = null;
     }
 
+    // Populate missing Size_Labels with the base Size_Label
+    const baseSize = normalized.Size_Label;
+    if (baseSize) {
+      if (!normalized.Size_Label_Yearly) normalized.Size_Label_Yearly = baseSize;
+      if (!normalized.Size_Label_Monthly) normalized.Size_Label_Monthly = baseSize;
+      if (!normalized.Size_Label_OP) normalized.Size_Label_OP = baseSize;
+      if (!normalized.Size_Label_INV) normalized.Size_Label_INV = baseSize;
+      if (!normalized.Size_Label_AT) normalized.Size_Label_AT = baseSize;
+      if (!normalized.Size_Label_SG) normalized.Size_Label_SG = baseSize;
+      if (!normalized.Size_Label_ACC) normalized.Size_Label_ACC = baseSize;
+    }
+
     rows.push(normalized);
   });
+
+  // Calculate prev_Size by sorting by Co_Code then _month
+  rows.sort((a, b) => {
+    if (a.Co_Code !== b.Co_Code) return a.Co_Code - b.Co_Code;
+    return a._month.localeCompare(b._month);
+  });
+
+  let lastCoCode = null;
+  let lastSize = null;
+  for (const row of rows) {
+    if (row.Co_Code === lastCoCode) {
+      if (row.prev_Size === null) row.prev_Size = lastSize;
+    }
+    lastCoCode = row.Co_Code;
+    lastSize = row._size;
+  }
 
   const stockMap = new Map();
   for (const row of rows) {

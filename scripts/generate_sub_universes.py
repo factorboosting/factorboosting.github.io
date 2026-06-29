@@ -1,7 +1,7 @@
 import csv
 from collections import defaultdict
 
-input_file = 'Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv'
+input_file = 'Data/Updated_Factor_Data/total_universe/21_stock_level_monthly (1).csv'
 out_500 = 'Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv'
 out_300 = 'Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv'
 
