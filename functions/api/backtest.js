@@ -38,9 +38,9 @@ export async function onRequestGet(context) {
     // getUniverseMeta hits Postgres, which doubles as the keep-warm touch for ?warm=1.
     const meta = await getUniverseMeta(env, universe);
     if (searchParams.get("warm") === "1") {
-      return json({ ok: true, warmed: true, ...meta });
+      return json({ ok: true, warmed: true, ...meta }, { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } });
     }
-    return json({ ok: true, ...meta });
+    return json({ ok: true, ...meta }, { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } });
   } catch (error) {
     return json(
       { ok: false, error: error instanceof Error ? error.message : "Metadata failed" },
