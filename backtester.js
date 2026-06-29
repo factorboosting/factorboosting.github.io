@@ -570,11 +570,14 @@ const BT = (() => {
       notice.textContent = "Loading universe data...";
     }
 
-    let url = "file_6_all_labels (1).csv";
+    let url =
+      "Data/Updated_Factor_Data/total_universe/21_stock_level_monthly.csv";
     if (universe === "top500")
-      url = "file_6_all_labels (1).csv";
+      url =
+        "Data/Updated_Factor_Data/stock_files/21_500stock_level_monthly.csv";
     else if (universe === "top300")
-      url = "file_6_all_labels (1).csv";
+      url =
+        "Data/Updated_Factor_Data/stock_files/21_300stock_level_monthly.csv";
 
     try {
       const cache = await loadBenchmarks();
