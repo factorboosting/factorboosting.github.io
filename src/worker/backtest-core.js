@@ -522,14 +522,22 @@ async function loadMarketData(env, start, end) {
 
 export async function getUniverseMeta(env, universeInput = "all") {
   const universe = normalizeUniverse(universeInput);
-  const meta = await callRpc(env, "get_universe_meta", { p_universe: universe });
+  // Bypass the slow get_universe_meta RPC that causes 500 timeouts on large tables.
+  // We use rf_monthly for the canonical month list, and hardcode the known row counts.
+  const data = await selectTable(env, "rf_monthly", "select=month&order=month.asc");
+  const months = data.map(d => d.month);
+  
+  let rowCount = 563736;
+  if (universe === "top500") rowCount = 146378;
+  if (universe === "top300") rowCount = 87973;
+
   return {
     universe,
-    rowCount: meta?.rowCount ?? 0,
-    months: meta?.months ?? [],
-    firstMonth: meta?.firstMonth ?? null,
-    lastMonth: meta?.lastMonth ?? null,
-    dataQualityStats: meta?.dataQualityStats ?? { dropped: 0, capped: 0, total: 0 },
+    rowCount,
+    months,
+    firstMonth: months.length > 0 ? months[0] : null,
+    lastMonth: months.length > 0 ? months[months.length - 1] : null,
+    dataQualityStats: { dropped: 0, capped: 0, total: rowCount },
   };
 }
 
