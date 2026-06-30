@@ -495,7 +495,9 @@ const BT = (() => {
       dataLoaded = true;
       rawData = [];
       monthGroups = {};
-      allMonths = meta.months || [];
+      allMonths = (meta.months || []).filter(m => m >= "2003-10");
+      if (allMonths.length === 0) allMonths = meta.months || [];
+      
       currentUniverse = universe;
       dataQualityStats = meta.dataQualityStats || {
         dropped: 0,
@@ -507,8 +509,8 @@ const BT = (() => {
       const emEl = document.getElementById("bt-end-month");
       const oldStart = smEl.value;
       const oldEnd = emEl.value;
-      smEl.min = emEl.min = meta.firstMonth || allMonths[0];
-      smEl.max = emEl.max = meta.lastMonth || allMonths[allMonths.length - 1];
+      smEl.min = emEl.min = allMonths[0];
+      smEl.max = emEl.max = allMonths[allMonths.length - 1];
       const defaultStartIdx = 0;
       
       if (oldStart && oldStart >= smEl.min && oldStart <= smEl.max) {
@@ -693,7 +695,7 @@ const BT = (() => {
 
       monthGroups = {};
       rawData.forEach((row) => {
-        if (!row._month) return;
+        if (!row._month || row._month < "2003-10") return;
         if (!monthGroups[row._month]) monthGroups[row._month] = [];
         monthGroups[row._month].push(row);
       });
