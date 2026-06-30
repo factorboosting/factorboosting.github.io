@@ -52,14 +52,12 @@ export async function onRequestGet(context) {
   // Storage object path drops the leading "Data/" (objects are stored bucket-relative).
   const objectPath = file.replace(/^Data\//, "");
   const baseName = objectPath.split("/").pop();
+  const encodeStoragePath = (path) => path.split("/").map(encodeURIComponent).join("/");
 
   // Sign a Storage object and return a redirectable URL that forces an attachment
   // download with the given filename, or null if the object doesn't exist.
   async function signedDownload(objPath, downloadName) {
-    const endpoint = `${url}/storage/v1/object/sign/${bucket}/${objPath
-      .split("/")
-      .map(encodeURIComponent)
-      .join("/")}`;
+    const endpoint = `${url}/storage/v1/object/sign/${bucket}/${encodeStoragePath(objPath)}`;
     let res;
     try {
       res = await fetch(endpoint, {
@@ -81,12 +79,76 @@ export async function onRequestGet(context) {
     return `${url}/storage/v1${signedURL}${sep}download=${encodeURIComponent(downloadName)}`;
   }
 
+  async function fetchStorageObject(objPath) {
+    const endpoint = `${url}/storage/v1/object/${bucket}/${encodeStoragePath(objPath)}`;
+    const res = await fetch(endpoint, {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+      },
+    });
+    if (res.status === 400 || res.status === 404) return null;
+    if (!res.ok) throw new Error(`Storage fetch failed for ${objPath}: ${res.status}`);
+    return res;
+  }
+
+  async function pipeResponseBody(res, controller) {
+    const reader = res.body?.getReader();
+    if (!reader) return;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        controller.enqueue(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+
+  function partPath(basePath, index) {
+    return `${basePath}.part${String(index).padStart(3, "0")}`;
+  }
+
+  async function partitionedDownload(basePath, downloadName) {
+    const firstPart = await fetchStorageObject(partPath(basePath, 0));
+    if (!firstPart) return null;
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          let part = firstPart;
+          for (let index = 0; part; index++) {
+            await pipeResponseBody(part, controller);
+            part = await fetchStorageObject(partPath(basePath, index + 1));
+          }
+          controller.close();
+        } catch (err) {
+          controller.error(err);
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Disposition": `attachment; filename="${downloadName.replaceAll('"', "")}"`,
+        "Content-Type": "application/gzip",
+      },
+    });
+  }
+
   // Files over Storage's ~50 MB free-tier cap are kept gzipped with a `.gz` suffix
-  // (Supabase strips Content-Encoding, so the browser saves them as `<file>.gz`).
-  // Try the plain object first, then fall back to `.gz`.
-  const target =
-    (await signedDownload(objectPath, baseName)) ||
-    (await signedDownload(`${objectPath}.gz`, `${baseName}.gz`));
-  if (!target) return new Response("Not found", { status: 404 });
-  return Response.redirect(target, 302);
+  // or split across `.gz.partNNN` objects when a single object exceeds the bucket's
+  // limit. Supabase strips Content-Encoding, so the browser saves gzipped files as
+  // `<file>.gz`.
+  const plainTarget = await signedDownload(objectPath, baseName);
+  if (plainTarget) return Response.redirect(plainTarget, 302);
+
+  const partitionedTarget = await partitionedDownload(`${objectPath}.gz`, `${baseName}.gz`);
+  if (partitionedTarget) return partitionedTarget;
+
+  const gzTarget = await signedDownload(`${objectPath}.gz`, `${baseName}.gz`);
+  if (gzTarget) return Response.redirect(gzTarget, 302);
+
+  return new Response("Not found", { status: 404 });
 }

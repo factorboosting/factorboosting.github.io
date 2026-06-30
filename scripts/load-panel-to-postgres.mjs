@@ -170,8 +170,13 @@ async function upsert(table, rows, onConflict) {
   }
 }
 
-async function deleteUniverse(universe) {
-  const url = `${TARGET_URL}/rest/v1/factor_panel?universe=eq.${encodeURIComponent(universe)}`;
+async function deleteUniverseRange(universe, firstMonth, lastMonth) {
+  const params = [
+    `universe=eq.${encodeURIComponent(universe)}`,
+    `month=gte.${encodeURIComponent(firstMonth)}`,
+    `month=lte.${encodeURIComponent(lastMonth)}`,
+  ].join("&");
+  const url = `${TARGET_URL}/rest/v1/factor_panel?${params}`;
   const res = await fetch(url, {
     method: "DELETE",
     headers: {
@@ -182,8 +187,22 @@ async function deleteUniverse(universe) {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`Delete factor_panel[${universe}] failed (${res.status}): ${body.slice(0, 500)}`);
+    throw new Error(
+      `Delete factor_panel[${universe} ${firstMonth}..${lastMonth}] failed (${res.status}): ${body.slice(0, 500)}`,
+    );
   }
+}
+
+async function deleteUniverse(universe, chunks) {
+  if (!chunks?.length) {
+    await deleteUniverseRange(universe, "0000-00", "9999-99");
+    return;
+  }
+  for (const chunk of chunks) {
+    await deleteUniverseRange(universe, chunk.firstMonth, chunk.lastMonth);
+    process.stdout.write(`\r  deleted ${universe}: through ${chunk.lastMonth}   `);
+  }
+  process.stdout.write("\n");
 }
 
 async function upsertBatched(table, rows, onConflict, batchSize) {
@@ -267,7 +286,7 @@ async function main() {
     );
     if (REPLACE_UNIVERSES.has(universe)) {
       console.log(`  deleting existing factor_panel[${universe}] rows first`);
-      await deleteUniverse(universe);
+      await deleteUniverse(universe, chunks);
     }
     let loaded = 0;
     let chunkIndex = 0;
