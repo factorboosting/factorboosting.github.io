@@ -8,7 +8,7 @@ const remoteFileCache = new Map();
 
 export const BACKTEST_RUNTIME_FILE = "Data/Derived/backtest-runtime.json";
 export const LEGACY_BENCHMARK_SOURCE_FILE =
-  "Data/Factor_Data/finalMonthlyLabels_aman.csv";
+  "Data/Factor_Data/company_month_ALL_FACTOR_LABELS_FINAL_COMPACT.csv";
 export const RISK_FREE_SOURCE_FILE = "Data/Factor_Data/ff5.csv";
 
 export function getBacktestUniverseSnapshotFile(universe) {
