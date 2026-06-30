@@ -522,13 +522,29 @@ async function loadMarketData(env, start, end) {
 
 export async function getUniverseMeta(env, universeInput = "all") {
   const universe = normalizeUniverse(universeInput);
-  // Bypass the slow get_universe_meta RPC that causes 500 timeouts on large tables.
-  // We use rf_monthly for the canonical month list, and hardcode the known row counts.
-  const data = await selectTable(env, "rf_monthly", "select=month&order=month.asc");
-  const allMonths = data.map(d => d.month);
-  
-  // Factor data is strictly from 2003-10 to 2026-05
-  const months = allMonths.filter(m => m >= "2003-10" && m <= "2026-05");
+  // Fetch the first and last month for the universe directly from factor_panel
+  // This avoids slow RPC timeouts and doesn't rely on rf_monthly as a date reference.
+  const [minRes, maxRes] = await Promise.all([
+    selectTable(env, "factor_panel", `select=month&order=month.asc&limit=1&universe=eq.${universe}`),
+    selectTable(env, "factor_panel", `select=month&order=month.desc&limit=1&universe=eq.${universe}`)
+  ]);
+
+  let months = [];
+  if (minRes[0] && maxRes[0]) {
+    const start = minRes[0].month;
+    const end = maxRes[0].month;
+    let [y, m] = start.split("-").map(Number);
+    const [ey, em] = end.split("-").map(Number);
+    
+    while (y < ey || (y === ey && m <= em)) {
+      months.push(`${y}-${m.toString().padStart(2, "0")}`);
+      m++;
+      if (m > 12) {
+        m = 1;
+        y++;
+      }
+    }
+  }
   
   let rowCount = 553959;
   if (universe === "top500") rowCount = 136000;
