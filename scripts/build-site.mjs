@@ -18,14 +18,13 @@ import path from "node:path";
 const ROOT = process.cwd();
 const DIST = path.join(ROOT, "dist");
 
-// Root-level site files.
 const SITE_FILES = [
-  "index.html",
-  "backtester.html",
-  "team.html",
-  "styles.css",
-  "script.js",
-  "backtester.js",
+  "public/index.html",
+  "public/backtester.html",
+  "public/team.html",
+  "public/styles.css",
+  "public/script.js",
+  "public/backtester.js",
 ];
 
 // Web assets under Data/ that the pages reference (images, papers, small CSV
@@ -48,24 +47,26 @@ const DATA_ASSETS = [
   "Data/Factor_Data/co_code_co_name_mapping.csv",
 ];
 
-function copyInto(rel) {
+function copyInto(rel, isSiteFile = false) {
   const src = path.join(ROOT, rel);
   if (!existsSync(src)) {
     console.warn(`  skip (missing): ${rel}`);
     return;
   }
-  const dest = path.join(DIST, rel);
+  // Strip "public/" prefix for the final destination
+  const destRel = isSiteFile ? rel.replace(/^public\//, "") : rel;
+  const dest = path.join(DIST, destRel);
   mkdirSync(path.dirname(dest), { recursive: true });
   cpSync(src, dest, { recursive: true });
-  console.log(`  + ${rel}`);
+  console.log(`  + ${rel} -> ${destRel}`);
 }
 
 function main() {
   console.log(`Building site into ${path.relative(ROOT, DIST)}/`);
   rmSync(DIST, { recursive: true, force: true });
   mkdirSync(DIST, { recursive: true });
-  for (const rel of SITE_FILES) copyInto(rel);
-  for (const rel of DATA_ASSETS) copyInto(rel);
+  for (const rel of SITE_FILES) copyInto(rel, true);
+  for (const rel of DATA_ASSETS) copyInto(rel, false);
   console.log("Done.");
 }
 
