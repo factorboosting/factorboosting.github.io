@@ -525,7 +525,10 @@ export async function getUniverseMeta(env, universeInput = "all") {
   // Bypass the slow get_universe_meta RPC that causes 500 timeouts on large tables.
   // We use rf_monthly for the canonical month list, and hardcode the known row counts.
   const data = await selectTable(env, "rf_monthly", "select=month&order=month.asc");
-  const months = data.map(d => d.month);
+  const allMonths = data.map(d => d.month);
+  
+  // Factor data is strictly from 2003-10 to 2026-05
+  const months = allMonths.filter(m => m >= "2003-10" && m <= "2026-05");
   
   let rowCount = 553959;
   if (universe === "top500") rowCount = 136000;
