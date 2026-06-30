@@ -9,12 +9,17 @@
 // Once verified against the oracle (scripts/smoke-backtest.mjs), the legacy
 // server + client engines become dead code and should be removed.
 
-import { BENCHMARK_OPTIONS, FACTORS } from "../server/factor-config.js";
+import {
+  BENCHMARK_OPTIONS,
+  FACTORS,
+  getPortfolioFilter,
+  getPortfolioSizeColumn,
+} from "../server/factor-config.js";
 
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-pagination-all-data-20260630-v7";
+const BACKTEST_CACHE_VERSION = "rpc-factor-portfolios-20260630-v8";
 const RPC_PAGE_SIZE = 1000;
 
 export function normalizeUniverse(universe) {
@@ -75,7 +80,11 @@ async function selectTable(env, table, query) {
 }
 
 // ── Filter / size-column translation (mirrors the engine) ────────────────────
-export function getSizeColumn(longFilters = {}, shortFilters = {}) {
+export function getSizeColumn(longFilters = {}, shortFilters = {}, options = {}) {
+  if (options.usePortfolioCodes) {
+    const portfolioCol = getPortfolioSizeColumn(longFilters, shortFilters);
+    if (portfolioCol) return portfolioCol;
+  }
   const has = (k) => Boolean(longFilters[k] || shortFilters[k]);
   if (has("Momentum")) return "Size_Label_Monthly";
   if (has("Volatility")) return "Size_Label_Monthly";
@@ -91,7 +100,17 @@ export function getSizeColumn(longFilters = {}, shortFilters = {}) {
 // Translate the frontend's factor-name filters into RPC params: a jsonb object
 // of {db_label_column: labels} for non-size factors, plus the size labels.
 // Empty label lists and unknown factors are skipped (matches engine applyFilters).
-function buildLegParams(filters = {}) {
+function buildLegParams(filters = {}, options = {}) {
+  if (options.usePortfolioCodes) {
+    const portfolioFilter = getPortfolioFilter(filters);
+    if (portfolioFilter) {
+      return {
+        pFilters: { [portfolioFilter.col]: portfolioFilter.labels },
+        sizeLabels: null,
+      };
+    }
+  }
+
   const pFilters = {};
   let sizeLabels = null;
   for (const [factor, labels] of Object.entries(filters)) {
@@ -565,8 +584,9 @@ async function attachHoldings(env, universe, portfolio, sizeCol, monthsList, net
   const longFilters = config.longFilters || {};
   const shortFilters = config.shortFilters || {};
   const strategy = config.strategy === "long_short" ? "long_short" : "long_only";
-  const longParams = buildLegParams(longFilters);
-  const shortParams = buildLegParams(shortFilters);
+  const usePortfolioCodes = universe === "all";
+  const longParams = buildLegParams(longFilters, { usePortfolioCodes });
+  const shortParams = buildLegParams(shortFilters, { usePortfolioCodes });
 
   for (const month of monthsList) {
     const longRows = await callRpc(env, "get_holdings", {
@@ -633,11 +653,12 @@ export async function runBacktest(env, input) {
     const longFilters = config.longFilters || {};
     const shortFilters = config.shortFilters || {};
     const strategy = config.strategy === "long_short" ? "long_short" : "long_only";
-    const sizeCol = getSizeColumn(longFilters, shortFilters);
+    const usePortfolioCodes = universe === "all";
+    const sizeCol = getSizeColumn(longFilters, shortFilters, { usePortfolioCodes });
 
     const includeTurnover = transactionCost.mode !== "none";
 
-    const longParams = buildLegParams(longFilters);
+    const longParams = buildLegParams(longFilters, { usePortfolioCodes });
     const longRows = await callRpc(
       env,
       "run_backtest_legs",
@@ -655,7 +676,7 @@ export async function runBacktest(env, input) {
 
     let shortRows = [];
     if (strategy === "long_short") {
-      const shortParams = buildLegParams(shortFilters);
+      const shortParams = buildLegParams(shortFilters, { usePortfolioCodes });
       shortRows = await callRpc(
         env,
         "run_backtest_legs",

@@ -71,6 +71,8 @@ const COLUMN_MAP = {
   BM_Label: "bm_label",
   OP_Label: "op_label",
   INV_Label: "inv_label",
+  RMW_Portfolio: "rmw_portfolio",
+  CMA_Portfolio: "cma_portfolio",
   AT_Label: "at_label",
   SG_Label: "sg_label",
   ACC_Label: "acc_label",

@@ -41,6 +41,8 @@ const SNAPSHOT_COLUMNS = [
   "BM_Label",
   "OP_Label",
   "INV_Label",
+  "RMW_Portfolio",
+  "CMA_Portfolio",
   "AT_Label",
   "SG_Label",
   "ACC_Label",
@@ -196,8 +198,14 @@ async function buildUniverseSnapshot(universe, file, names) {
         "Size_Label_monthly_str",
         "Size_Label_Monthly_Any",
       ]),
-      Size_Label_OP: row.Size_Label_OP || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
-      Size_Label_INV: row.Size_Label_INV || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
+      Size_Label_OP:
+        row.Size_Label_OP ||
+        (row.RMW_Portfolio ? row.RMW_Portfolio[0] : "") ||
+        firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
+      Size_Label_INV:
+        row.Size_Label_INV ||
+        (row.CMA_Portfolio ? row.CMA_Portfolio[0] : "") ||
+        firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
       Size_Label_AT: row.Size_Label_AT || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
       Size_Label_SG: row.Size_Label_SG || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
       Size_Label_ACC: row.Size_Label_ACC || firstPresent(row, ["Size_Label_Yearly", "Size_Label_annual"]),
@@ -205,6 +213,8 @@ async function buildUniverseSnapshot(universe, file, names) {
       BM_Label: row.BM_Label || "",
       OP_Label: row.OP_Label || row.OpProf_Label || "",
       INV_Label: row.INV_Label || row.Inv_Label || "",
+      RMW_Portfolio: row.RMW_Portfolio || "",
+      CMA_Portfolio: row.CMA_Portfolio || "",
       AT_Label: row.AT_Label || "",
       SG_Label: row.SG_Label || "",
       ACC_Label: row.ACC_Label || "",

@@ -29,6 +29,8 @@ create table if not exists public.factor_panel (
   bm_label          text,
   op_label          text,
   inv_label         text,
+  rmw_portfolio     text,
+  cma_portfolio     text,
   at_label          text,
   sg_label          text,
   acc_label         text,

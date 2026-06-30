@@ -12,10 +12,22 @@ export const FACTOR_GROUPS = {
     },
     "Profitability": {
       col: "OP_Label",
+      portfolioCol: "RMW_Portfolio",
+      portfolioLabels: {
+        R: ["SR", "BR"],
+        N: ["SN", "BN"],
+        W: ["SW", "BW"],
+      },
       labels: { R: "Robust", N: "Neutral", W: "Weak" },
     },
     Investment: {
       col: "INV_Label",
+      portfolioCol: "CMA_Portfolio",
+      portfolioLabels: {
+        A: ["SA", "BA"],
+        N: ["SN", "BN"],
+        C: ["SC", "BC"],
+      },
       labels: { A: "Aggressive", N: "Neutral", C: "Conservative" },
     },
     Momentum: {
@@ -61,3 +73,49 @@ export const UNIVERSE_FILES = {
   top500: "firm_labels_top500_may_26.csv",
   top300: "firm_labels_top300_may_26.csv",
 };
+
+function activeNonSizeFactors(filters = {}) {
+  return Object.entries(filters).filter(
+    ([factor, labels]) =>
+      factor !== "Size" && Array.isArray(labels) && labels.length > 0 && FACTORS[factor],
+  );
+}
+
+export function getPortfolioFilter(filters = {}) {
+  const active = activeNonSizeFactors(filters);
+  if (active.length !== 1) return null;
+
+  const [factor, labels] = active[0];
+  const def = FACTORS[factor];
+  if (!def?.portfolioCol || !def?.portfolioLabels) return null;
+
+  const sizeSet =
+    Array.isArray(filters.Size) && filters.Size.length > 0 ? new Set(filters.Size) : null;
+  const portfolioLabels = [];
+  for (const label of labels) {
+    for (const portfolioLabel of def.portfolioLabels[label] || []) {
+      if (!sizeSet || sizeSet.has(portfolioLabel[0])) {
+        portfolioLabels.push(portfolioLabel);
+      }
+    }
+  }
+
+  return portfolioLabels.length
+    ? { col: def.portfolioCol, labels: [...new Set(portfolioLabels)] }
+    : null;
+}
+
+export function getPortfolioSizeColumn(longFilters = {}, shortFilters = {}) {
+  const active = new Set();
+  for (const filters of [longFilters, shortFilters]) {
+    for (const [factor, labels] of activeNonSizeFactors(filters)) {
+      const def = FACTORS[factor];
+      if (!def?.portfolioCol || !def?.portfolioLabels) return null;
+      active.add(factor);
+    }
+  }
+
+  if (active.size !== 1) return null;
+  const [factor] = active;
+  return FACTORS[factor]?.portfolioCol || null;
+}

@@ -8,6 +8,8 @@ import { parseCSV } from "./csv.js";
 import {
   BENCHMARK_OPTIONS,
   FACTORS,
+  getPortfolioFilter,
+  getPortfolioSizeColumn,
   RET_CAP_HI,
   RET_CAP_LO,
   RET_DROP_HI,
@@ -357,7 +359,11 @@ export async function preloadUniverseRange(
   return loadUniverseRange(universeInput, startMonth, endMonth);
 }
 
-function getSizeColumn(longFilters = {}, shortFilters = {}) {
+function getSizeColumn(longFilters = {}, shortFilters = {}, options = {}) {
+  if (options.usePortfolioCodes) {
+    const portfolioCol = getPortfolioSizeColumn(longFilters, shortFilters);
+    if (portfolioCol) return portfolioCol;
+  }
   const has = (k) => Boolean(longFilters[k] || shortFilters[k]);
   const needsMonthly =
     has("Momentum") || has("Volatility") || has("Short-Term Reversal");
@@ -370,9 +376,15 @@ function getSizeColumn(longFilters = {}, shortFilters = {}) {
   return "Size_Label_Yearly";
 }
 
-function applyFilters(rows, filters) {
+function applyFilters(rows, filters, options = {}) {
   let result = rows;
-  const sizeCol = getSizeColumn(filters, {});
+  const portfolioFilter = options.usePortfolioCodes ? getPortfolioFilter(filters) : null;
+  if (portfolioFilter && rows.some((row) => row[portfolioFilter.col])) {
+    const set = new Set(portfolioFilter.labels);
+    return result.filter((row) => set.has(row[portfolioFilter.col]));
+  }
+
+  const sizeCol = getSizeColumn(filters, {}, options);
 
   for (const [factor, labels] of Object.entries(filters || {})) {
     if (!labels?.length || !FACTORS[factor]) continue;
@@ -389,6 +401,9 @@ function applyFilters(rows, filters) {
 }
 
 function getRowSizeLabel(row, sizeCol) {
+  if (sizeCol === "RMW_Portfolio" || sizeCol === "CMA_Portfolio") {
+    return row[sizeCol]?.[0] || "";
+  }
   return (
     row[sizeCol] ||
     row.Size_Label_Yearly ||
@@ -540,6 +555,7 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
   const longFilters = config.longFilters || {};
   const shortFilters = config.shortFilters || {};
   const strategy = config.strategy === "long_short" ? "long_short" : "long_only";
+  const filterOptions = { usePortfolioCodes: data.universe === "all" };
   const ewPort = [100];
   const vwPort = [100];
   const ewRets = [];
@@ -558,11 +574,11 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
   for (let monthIndex = 0; monthIndex < months.length; monthIndex++) {
     const month = months[monthIndex];
     const monthRows = data.monthGroups[month] || [];
-    const longDF = applyFilters(monthRows, longFilters);
+    const longDF = applyFilters(monthRows, longFilters, filterOptions);
     const shortDF =
-      strategy === "long_short" ? applyFilters(monthRows, shortFilters) : [];
+      strategy === "long_short" ? applyFilters(monthRows, shortFilters, filterOptions) : [];
 
-    const sizeCol = getSizeColumn(longFilters, shortFilters);
+    const sizeCol = getSizeColumn(longFilters, shortFilters, filterOptions);
     const longS = longDF.filter((row) => getRowSizeLabel(row, sizeCol) === "S");
     const longB = longDF.filter((row) => getRowSizeLabel(row, sizeCol) === "B");
     const shortS = shortDF.filter((row) => getRowSizeLabel(row, sizeCol) === "S");

@@ -46,10 +46,22 @@ const BT = (() => {
       },
       "Profitability": {
         col: "OP_Label",
+        portfolioCol: "RMW_Portfolio",
+        portfolioLabels: {
+          R: ["SR", "BR"],
+          N: ["SN", "BN"],
+          W: ["SW", "BW"],
+        },
         labels: { R: "Robust", N: "Neutral", W: "Weak" },
       },
       Investment: {
         col: "INV_Label",
+        portfolioCol: "CMA_Portfolio",
+        portfolioLabels: {
+          A: ["SA", "BA"],
+          N: ["SN", "BN"],
+          C: ["SC", "BC"],
+        },
         labels: { A: "Aggressive", N: "Neutral", C: "Conservative" },
       },
       Momentum: {
@@ -1517,7 +1529,56 @@ const BT = (() => {
   }
 
   // ── Core computation ──────────────────────────────────────────────────────
+  function activeNonSizeFactors(filters = {}) {
+    return Object.entries(filters).filter(
+      ([factor, labels]) =>
+        factor !== "Size" && Array.isArray(labels) && labels.length > 0 && FACTORS[factor],
+    );
+  }
+
+  function getPortfolioFilter(filters = {}) {
+    const active = activeNonSizeFactors(filters);
+    if (active.length !== 1) return null;
+
+    const [factor, labels] = active[0];
+    const def = FACTORS[factor];
+    if (!def?.portfolioCol || !def?.portfolioLabels) return null;
+
+    const sizeSet =
+      Array.isArray(filters.Size) && filters.Size.length > 0 ? new Set(filters.Size) : null;
+    const portfolioLabels = [];
+    for (const label of labels) {
+      for (const portfolioLabel of def.portfolioLabels[label] || []) {
+        if (!sizeSet || sizeSet.has(portfolioLabel[0])) {
+          portfolioLabels.push(portfolioLabel);
+        }
+      }
+    }
+
+    return portfolioLabels.length
+      ? { col: def.portfolioCol, labels: [...new Set(portfolioLabels)] }
+      : null;
+  }
+
+  function getPortfolioSizeColumn(longFilters = {}, shortFilters = {}) {
+    const active = new Set();
+    for (const filters of [longFilters, shortFilters]) {
+      for (const [factor] of activeNonSizeFactors(filters)) {
+        const def = FACTORS[factor];
+        if (!def?.portfolioCol || !def?.portfolioLabels) return null;
+        active.add(factor);
+      }
+    }
+
+    if (active.size !== 1) return null;
+    const [factor] = active;
+    return FACTORS[factor]?.portfolioCol || null;
+  }
+
   function getRowSizeLabel(row, sizeCol) {
+    if (sizeCol === "RMW_Portfolio" || sizeCol === "CMA_Portfolio") {
+      return row[sizeCol]?.[0] || "";
+    }
     return (
       row[sizeCol] ||
       row.Size_Label_Yearly ||
@@ -1527,7 +1588,11 @@ const BT = (() => {
     );
   }
 
-  function getSizeColumn(longFilters = {}, shortFilters = {}) {
+  function getSizeColumn(longFilters = {}, shortFilters = {}, options = {}) {
+    if (options.usePortfolioCodes) {
+      const portfolioCol = getPortfolioSizeColumn(longFilters, shortFilters);
+      if (portfolioCol) return portfolioCol;
+    }
     const has = (factor) => Boolean(longFilters[factor] || shortFilters[factor]);
     if (has("Momentum") || has("Volatility") || has("Short-Term Reversal")) return "Size_Label_Monthly";
     if (has("Profitability") || has("Op. Profitability")) return "Size_Label_OP";
@@ -1538,9 +1603,15 @@ const BT = (() => {
     return "Size_Label_Yearly";
   }
 
-  function applyFilters(rows, filters) {
+  function applyFilters(rows, filters, options = {}) {
     let result = rows;
-    const sizeCol = getSizeColumn(filters, {});
+    const portfolioFilter = options.usePortfolioCodes ? getPortfolioFilter(filters) : null;
+    if (portfolioFilter && rows.some((row) => row[portfolioFilter.col])) {
+      const set = new Set(portfolioFilter.labels);
+      return result.filter((row) => set.has(row[portfolioFilter.col]));
+    }
+
+    const sizeCol = getSizeColumn(filters, {}, options);
     
     for (const [factor, labels] of Object.entries(filters)) {
       if (labels && labels.length && FACTORS[factor]) {
@@ -1687,6 +1758,7 @@ const BT = (() => {
     const { longFilters, shortFilters, strategy } = config;
     const universe = getToggleVal("bt-universe-toggle");
     const tc = getTCConfig();
+    const filterOptions = { usePortfolioCodes: universe === "all" };
     const ewPort = [100],
       vwPort = [100],
       ewRets = [],
@@ -1700,14 +1772,14 @@ const BT = (() => {
     for (let mi = 0; mi < months.length; mi++) {
       const month = months[mi];
       let mdf = monthGroups[month] || [];
-      const longDF = applyFilters(mdf, longFilters);
+      const longDF = applyFilters(mdf, longFilters, filterOptions);
       const shortDF =
-        strategy === "long_short" ? applyFilters(mdf, shortFilters) : [];
+        strategy === "long_short" ? applyFilters(mdf, shortFilters, filterOptions) : [];
 
       // 2x3 Double-Sort & 5-Firm Minimum Logic
       const minFirms = 5;
       
-      const sizeCol = getSizeColumn(longFilters, shortFilters);
+      const sizeCol = getSizeColumn(longFilters, shortFilters, filterOptions);
 
       const longS = longDF.filter((r) => getRowSizeLabel(r, sizeCol) === "S");
       const longB = longDF.filter((r) => getRowSizeLabel(r, sizeCol) === "B");
