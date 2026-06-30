@@ -1620,7 +1620,7 @@ const BT = (() => {
     };
   }
 
-  function computeMetrics(rets, rfs = []) {
+  function computeMetrics(rets, rfs = [], isLongShort = false) {
     const n = rets.length;
     if (n === 0)
       return {
@@ -1646,7 +1646,7 @@ const BT = (() => {
     const annVol = Math.sqrt(variance * 12);
 
     // Compute Sharpe using Excess Returns
-    const excessRets = rets.map((r, i) => r - (rfs[i] || 0));
+    const excessRets = rets.map((r, i) => r - (isLongShort ? 0 : (rfs[i] || 0)));
     const meanExcess = excessRets.reduce((s, r) => s + r, 0) / n;
     const annMeanExcess = meanExcess * 12;
     
@@ -1920,8 +1920,8 @@ const BT = (() => {
       vw_portfolio: vwPort.slice(1).map((v) => +v.toFixed(4)),
       ew_rets: ewRets,
       vw_rets: vwRets,
-      ew_metrics: computeMetrics(ewRets, months.map(m => rfData[m] || 0)),
-      vw_metrics: computeMetrics(vwRets, months.map(m => rfData[m] || 0)),
+      ew_metrics: computeMetrics(ewRets, months.map(m => rfData[m] || 0), strategy === "long_short"),
+      vw_metrics: computeMetrics(vwRets, months.map(m => rfData[m] || 0), strategy === "long_short"),
       ew_drawdown: computeDrawdown(ewRets),
       vw_drawdown: computeDrawdown(vwRets),
       holdings,

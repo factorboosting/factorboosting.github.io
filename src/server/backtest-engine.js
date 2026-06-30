@@ -446,7 +446,7 @@ function computeIR(portRets, benchRets) {
   return trackingError > 0 ? +((mean * 12) / trackingError).toFixed(3) : null;
 }
 
-function computeMetrics(rets, rfs = []) {
+function computeMetrics(rets, rfs = [], isLongShort = false) {
   const count = rets.length;
   if (count === 0) {
     return {
@@ -472,7 +472,7 @@ function computeMetrics(rets, rfs = []) {
     rets.reduce((sum, ret) => sum + (ret - mean) ** 2, 0) /
     Math.max(count - 1, 1);
   const annualizedVolatility = Math.sqrt(variance * 12);
-  const excessRets = rets.map((ret, index) => ret - (rfs[index] || 0));
+  const excessRets = rets.map((ret, index) => ret - (isLongShort ? 0 : (rfs[index] || 0)));
   const meanExcess = excessRets.reduce((sum, ret) => sum + ret, 0) / count;
   const sharpe =
     annualizedVolatility > 0 ? (meanExcess * 12) / annualizedVolatility : 0;
@@ -792,8 +792,8 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
     vw_portfolio: vwPort.slice(1).map((value) => +value.toFixed(4)),
     ew_rets: ewRets,
     vw_rets: vwRets,
-    ew_metrics: computeMetrics(ewRets, rfSeries),
-    vw_metrics: computeMetrics(vwRets, rfSeries),
+    ew_metrics: computeMetrics(ewRets, rfSeries, strategy === "long_short"),
+    vw_metrics: computeMetrics(vwRets, rfSeries, strategy === "long_short"),
     ew_drawdown: computeDrawdown(ewRets),
     vw_drawdown: computeDrawdown(vwRets),
     holdings,
