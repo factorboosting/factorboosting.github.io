@@ -36,6 +36,12 @@ const UPLOAD_UNIVERSES = new Set(
     .map((value) => value.trim())
     .filter(Boolean),
 );
+const SKIP_DERIVE = ["1", "true", "yes"].includes(
+  String(process.env.SKIP_DERIVE || "").toLowerCase(),
+);
+const UPLOAD_DERIVED_ONLY = ["1", "true", "yes"].includes(
+  String(process.env.UPLOAD_DERIVED_ONLY || "").toLowerCase(),
+);
 
 if (!supabaseUrl || !serviceKey) {
   console.error(
@@ -294,7 +300,9 @@ async function uploadFile(relativePath) {
   );
 }
 
-await import("./generate-backtest-derived.mjs");
+if (!SKIP_DERIVE) {
+  await import("./generate-backtest-derived.mjs");
+}
 
 await ensureBucket();
 
@@ -311,6 +319,10 @@ function getUploadFiles() {
   const universeFiles = Object.entries(UNIVERSE_FILES)
     .filter(([universe]) => !UPLOAD_UNIVERSES.size || UPLOAD_UNIVERSES.has(universe))
     .map(([, file]) => file);
+
+  if (UPLOAD_DERIVED_ONLY) {
+    return [BACKTEST_RUNTIME_FILE, ...chunkFiles];
+  }
 
   if (UPLOAD_UNIVERSES.size) {
     return [BACKTEST_RUNTIME_FILE, ...chunkFiles, ...universeFiles];

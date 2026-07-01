@@ -195,14 +195,36 @@ async function deleteUniverseRange(universe, firstMonth, lastMonth) {
   }
 }
 
+function shiftMonth(month, delta) {
+  const [yearRaw, monthRaw] = month.split("-").map(Number);
+  if (!Number.isInteger(yearRaw) || !Number.isInteger(monthRaw)) return null;
+  const zeroBased = yearRaw * 12 + (monthRaw - 1) + delta;
+  if (zeroBased < 0) return null;
+  const year = Math.floor(zeroBased / 12);
+  const nextMonth = (zeroBased % 12) + 1;
+  return `${year}-${String(nextMonth).padStart(2, "0")}`;
+}
+
 async function deleteUniverse(universe, chunks) {
   if (!chunks?.length) {
     await deleteUniverseRange(universe, "0000-00", "9999-99");
     return;
   }
+  const firstMonth = chunks[0]?.firstMonth;
+  const lastMonth = chunks[chunks.length - 1]?.lastMonth;
+  const monthBeforeFirst = firstMonth ? shiftMonth(firstMonth, -1) : null;
+  if (monthBeforeFirst) {
+    await deleteUniverseRange(universe, "0000-00", monthBeforeFirst);
+    process.stdout.write(`\r  deleted ${universe}: before ${firstMonth}   `);
+  }
   for (const chunk of chunks) {
     await deleteUniverseRange(universe, chunk.firstMonth, chunk.lastMonth);
     process.stdout.write(`\r  deleted ${universe}: through ${chunk.lastMonth}   `);
+  }
+  const monthAfterLast = lastMonth ? shiftMonth(lastMonth, 1) : null;
+  if (monthAfterLast) {
+    await deleteUniverseRange(universe, monthAfterLast, "9999-99");
+    process.stdout.write(`\r  deleted ${universe}: after ${lastMonth}   `);
   }
   process.stdout.write("\n");
 }
