@@ -871,7 +871,7 @@ export async function computeBacktest(input) {
     : null;
   const activeBenchmarkId = BENCHMARK_OPTIONS[input.activeBenchmarkId]
     ? input.activeBenchmarkId
-    : "nifty50";
+    : "nifty500";
   const benchmarkSeries = computeAllBenchmarks(data, months);
 
   const portfolios = input.portfolios.slice(0, 5).map((portfolio, index) => ({

@@ -99,8 +99,8 @@ const BT = (() => {
   }
 
   const BENCHMARK_OPTIONS = {
-    nifty50: { col: "nifty50", label: "NIFTY500" },
-    nifty500: { col: "nifty500", label: "Market" },
+    nifty500: { col: "nifty500", label: "NIFTY500" },
+    nifty50: { col: "nifty50", label: "NIFTY50" },
   };
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -120,12 +120,13 @@ const BT = (() => {
     currentMonthIdx = 0,
     runMonths = [];
   let benchmarkSeries = {};
-  let activeBenchmarkId = "nifty50";
+  let activeBenchmarkId = "nifty500";
   let showBenchmark = true;
   let heatmapOpen = false,
     heatmapPortfolioId = null;
   let holdingsFetchTimer = null,
     holdingsRenderToken = 0;
+  let runRequestToken = 0;
   const holdingsFetches = new Map();
   let activeFactors = new Set(["Momentum"]);
   let dataQualityStats = { dropped: 0, capped: 0, total: 0 };
@@ -1343,6 +1344,9 @@ const BT = (() => {
       .querySelectorAll(`#${groupId} .bt-toggle-btn`)
       .forEach((b) => b.classList.toggle("active", b === btn));
     if (groupId === "bt-universe-toggle") {
+      runRequestToken++;
+      holdingsFetches.clear();
+      holdingsRenderToken++;
       await loadData();
       if (portfolios.some((p) => p.results)) {
         runAll();
@@ -1995,10 +1999,10 @@ const BT = (() => {
           }))
           .sort((a, b) => b.ret - a.ret);
       holdings[month] = {
-        long_firms: toFirms(longDF),
-        short_firms: toFirms(shortDF),
-        long_total: longDF.length,
-        short_total: shortDF.length,
+        long_firms: toFirms(finalLongDF),
+        short_firms: toFirms(finalShortDF),
+        long_total: finalLongDF.length,
+        short_total: finalShortDF.length,
         ew_ret: +(ewNet * 100).toFixed(3),
         vw_ret: +(vwNet * 100).toFixed(3),
       };
@@ -2075,6 +2079,11 @@ const BT = (() => {
   }
 
   async function runAllServer(months) {
+    const requestToken = ++runRequestToken;
+    const runUniverse = getToggleVal("bt-universe-toggle") || "all";
+    const isCurrentRun = () =>
+      requestToken === runRequestToken &&
+      runUniverse === (getToggleVal("bt-universe-toggle") || "all");
     const btn = document.getElementById("bt-run-btn");
     btn.disabled = true;
     btn.textContent = "Running…";
@@ -2085,7 +2094,7 @@ const BT = (() => {
     try {
       const tc = getTCConfig();
       const basePayload = {
-        universe: getToggleVal("bt-universe-toggle") || "all",
+        universe: runUniverse,
         startMonth: months[0],
         endMonth: months[months.length - 1],
         holdingsMonths: [months[months.length - 1]],
@@ -2130,12 +2139,14 @@ const BT = (() => {
         if (!res.ok || !payload?.ok) {
           throw new Error(getApiError(payload, `Backtest failed (${res.status})`));
         }
+        if (!isCurrentRun()) return;
 
         if (!finalPayload) {
           finalPayload = payload;
         }
         allBuiltPortfolios.push(payload.portfolios[0]);
       }
+      if (!isCurrentRun()) return;
 
       finalPayload.portfolios = allBuiltPortfolios;
       let payload = finalPayload;
@@ -2156,13 +2167,17 @@ const BT = (() => {
       document.getElementById("bt-dd-card").style.display = "block";
       document.getElementById("bt-heatmap-card").style.display = "block";
     } catch (error) {
-      showError("Error: " + error.message);
-      console.error(error);
+      if (isCurrentRun()) {
+        showError("Error: " + error.message);
+        console.error(error);
+      }
     } finally {
-      btn.disabled = false;
-      btn.textContent =
-        portfolios.length > 1 ? "Run Comparison" : "Run Analysis";
-      document.getElementById("bt-chart-loading").style.display = "none";
+      if (isCurrentRun()) {
+        btn.disabled = false;
+        btn.textContent =
+          portfolios.length > 1 ? "Run Comparison" : "Run Analysis";
+        document.getElementById("bt-chart-loading").style.display = "none";
+      }
     }
   }
 
@@ -2685,7 +2700,8 @@ const BT = (() => {
 
   async function fetchServerHoldingsForMonth(portfolio, month) {
     if (!serverMode || !portfolio?.config || !month) return null;
-    const key = `${portfolio.id}:${month}`;
+    const universe = getToggleVal("bt-universe-toggle") || "all";
+    const key = `${universe}:${activeBenchmarkId}:${portfolio.id}:${month}`;
     if (holdingsFetches.has(key)) return holdingsFetches.get(key);
 
     const tc = getTCConfig();
@@ -2693,7 +2709,7 @@ const BT = (() => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        universe: getToggleVal("bt-universe-toggle") || "all",
+        universe,
         startMonth: month,
         endMonth: month,
         holdingsMonths: [month],
@@ -2726,7 +2742,13 @@ const BT = (() => {
         }
         const returned = payload.portfolios?.[0];
         const holdings = returned?.results?.holdings?.[month] || null;
-        if (holdings) portfolio.results.holdings[month] = holdings;
+        if (
+          holdings &&
+          universe === (getToggleVal("bt-universe-toggle") || "all") &&
+          portfolio.results
+        ) {
+          portfolio.results.holdings[month] = holdings;
+        }
         return holdings;
       })
       .finally(() => {

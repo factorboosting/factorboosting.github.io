@@ -64,8 +64,8 @@ export const FACTORS = Object.fromEntries(
 );
 
 export const BENCHMARK_OPTIONS = {
-  nifty50: { col: "nifty50", label: "NIFTY500" },
-  nifty500: { col: "nifty500", label: "Market" },
+  nifty500: { col: "nifty500", label: "NIFTY500" },
+  nifty50: { col: "nifty50", label: "NIFTY50" },
 };
 
 export const UNIVERSE_FILES = {

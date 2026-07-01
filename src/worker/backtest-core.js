@@ -20,7 +20,7 @@ import runtimeData from "./backtest-runtime-data.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260701-v13-universe-reload";
+const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260701-v14-benchmark-universe-ui";
 const RPC_PAGE_SIZE = 1000;
 const UNIVERSE_META = {
   all: { rowCount: 553959, firstMonth: "2003-10", lastMonth: "2026-05" },
@@ -640,7 +640,7 @@ export async function runBacktest(env, input) {
     : null;
   const activeBenchmarkId = BENCHMARK_OPTIONS[input.activeBenchmarkId]
     ? input.activeBenchmarkId
-    : "nifty50";
+    : "nifty500";
 
   const data = await loadMarketData(env, startMonth, endMonth);
   const benchmarkSeries = computeAllBenchmarks(data, months);
