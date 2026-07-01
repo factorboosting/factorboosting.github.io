@@ -20,7 +20,7 @@ import runtimeData from "./backtest-runtime-data.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260701-v14-benchmark-universe-ui";
+const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260701-v15-universe-cache-guard";
 const RPC_PAGE_SIZE = 1000;
 const UNIVERSE_META = {
   all: { rowCount: 553959, firstMonth: "2003-10", lastMonth: "2026-05" },
@@ -752,8 +752,13 @@ function stableStringify(value) {
 }
 
 export async function createBacktestCacheKey(input) {
+  const universe = normalizeUniverse(input?.universe);
   const data = new TextEncoder().encode(
-    stableStringify({ version: BACKTEST_CACHE_VERSION, input }),
+    stableStringify({
+      version: BACKTEST_CACHE_VERSION,
+      universe,
+      input: { ...input, universe },
+    }),
   );
   const buf = await crypto.subtle.digest("SHA-256", data);
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");

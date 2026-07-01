@@ -61,7 +61,7 @@ export async function onRequestPost(context) {
 
     if (kv) {
       const cached = await kv.get(cacheKey, "json");
-      if (cached) {
+      if (cached?.meta?.universe === input.universe) {
         return json({ ok: true, cache: "kv", cacheKey, ...cached });
       }
     }

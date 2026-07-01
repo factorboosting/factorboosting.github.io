@@ -1340,15 +1340,30 @@ const BT = (() => {
     if (portfolios.some((p) => p.results)) refreshAll();
   }
   async function setToggle(groupId, btn) {
+    const selectedUniverse = btn.dataset.val;
+    const requestToken = groupId === "bt-universe-toggle" ? ++runRequestToken : runRequestToken;
+    const hadResults = portfolios.some((p) => p.results);
     document
       .querySelectorAll(`#${groupId} .bt-toggle-btn`)
       .forEach((b) => b.classList.toggle("active", b === btn));
     if (groupId === "bt-universe-toggle") {
-      runRequestToken++;
       holdingsFetches.clear();
       holdingsRenderToken++;
+      if (hadResults) {
+        portfolios = portfolios.map((portfolio) => ({ ...portfolio, results: null }));
+        benchmarkSeries = {};
+        runMonths = [];
+        currentMonthIdx = 0;
+        activeHoldingsId = portfolios[0]?.id || null;
+        heatmapPortfolioId = portfolios[0]?.id || null;
+        resetResults();
+        renderShelf();
+      }
       await loadData();
-      if (portfolios.some((p) => p.results)) {
+      const stillCurrent =
+        requestToken === runRequestToken &&
+        selectedUniverse === (getToggleVal("bt-universe-toggle") || "all");
+      if (stillCurrent && hadResults && dataLoaded) {
         runAll();
       }
     }
@@ -2138,6 +2153,11 @@ const BT = (() => {
         }
         if (!res.ok || !payload?.ok) {
           throw new Error(getApiError(payload, `Backtest failed (${res.status})`));
+        }
+        if (payload.meta?.universe && payload.meta.universe !== runUniverse) {
+          throw new Error(
+            `Backtest returned ${payload.meta.universe} data while ${runUniverse} is selected.`,
+          );
         }
         if (!isCurrentRun()) return;
 
