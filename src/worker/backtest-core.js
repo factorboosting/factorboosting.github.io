@@ -20,12 +20,12 @@ import runtimeData from "./backtest-runtime-data.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260701-v15-universe-cache-guard";
+const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260701-v16-top-universe-data";
 const RPC_PAGE_SIZE = 1000;
 const UNIVERSE_META = {
   all: { rowCount: 553959, firstMonth: "2003-10", lastMonth: "2026-05" },
-  top500: { rowCount: 136000, firstMonth: "2003-10", lastMonth: "2026-05" },
-  top300: { rowCount: 81600, firstMonth: "2003-10", lastMonth: "2026-05" },
+  top500: { rowCount: 135050, firstMonth: "2003-10", lastMonth: "2026-05" },
+  top300: { rowCount: 81114, firstMonth: "2003-10", lastMonth: "2026-05" },
 };
 
 export function normalizeUniverse(universe) {

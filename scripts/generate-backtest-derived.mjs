@@ -53,6 +53,7 @@ const SNAPSHOT_COLUMNS = [
   "STR_Label",
 ];
 const CHUNK_YEAR_SPAN = 1;
+const BACKTEST_START_MONTH = "2003-10";
 const WORKER_RUNTIME_MODULE_FILE = "src/worker/backtest-runtime-data.js";
 
 function sanitizeReturn(raw) {
@@ -204,6 +205,7 @@ async function buildUniverseSnapshot(universe, file, names) {
 
     const code = row.co_code || row.Co_Code;
     const month = row.Month ? row.Month.substring(0, 7) : "";
+    if (!month || month < BACKTEST_START_MONTH) return;
     const normalized = {
       Co_Code: code,
       _month: month,
