@@ -15,7 +15,7 @@ import {
   getPortfolioFilter,
   getPortfolioSizeColumn,
 } from "../server/factor-config.js";
-import runtimeData from "../../Data/Derived/backtest-runtime.json" with { type: "json" };
+import runtimeData from "./backtest-runtime-data.js";
 
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
