@@ -261,6 +261,22 @@ const BT = (() => {
         console.error("Failed to load ff5.csv Rf data", e);
       }
 
+      const runtimeRes = await fetch("Data/Derived/backtest-runtime.json");
+      if (runtimeRes.ok) {
+        const runtime = await runtimeRes.json();
+        const runtimeBenchmarks = runtime.benchmarkByMonth || {};
+        const hasBenchmarkData = Object.values(runtimeBenchmarks).some(
+          (row) => Number.isFinite(row?.nifty50) || Number.isFinite(row?.nifty500),
+        );
+        if (hasBenchmarkData) {
+          benchmarkCache = {
+            b: runtimeBenchmarks,
+            names: runtime.names || {},
+          };
+          return benchmarkCache;
+        }
+      }
+
       const res = await fetch("Data/Factor_Data/finalMonthlyLabels_aman.csv");
       if (!res.ok) return { b: {}, names: {} };
       const parsed = parseCSV(await res.text());

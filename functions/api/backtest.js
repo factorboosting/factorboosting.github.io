@@ -15,6 +15,7 @@ import {
   getUniverseMeta,
   normalizeUniverse,
   runBacktest,
+  warmUniverse,
 } from "../../src/worker/backtest-core.js";
 
 const CACHE_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -35,9 +36,9 @@ export async function onRequestGet(context) {
   try {
     const { searchParams } = new URL(request.url);
     const universe = normalizeUniverse(searchParams.get("universe"));
-    // getUniverseMeta hits Postgres, which doubles as the keep-warm touch for ?warm=1.
     const meta = await getUniverseMeta(env, universe);
     if (searchParams.get("warm") === "1") {
+      await warmUniverse(env, universe);
       return json({ ok: true, warmed: true, ...meta }, { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } });
     }
     return json({ ok: true, ...meta }, { headers: { "Cache-Control": "no-cache, no-store, must-revalidate" } });

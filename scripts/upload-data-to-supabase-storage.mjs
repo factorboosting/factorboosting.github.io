@@ -5,6 +5,9 @@ import { gzipSync } from "node:zlib";
 import {
   BACKTEST_RUNTIME_FILE,
   LEGACY_BENCHMARK_SOURCE_FILE,
+  NIFTY_50_SOURCE_FILE,
+  NIFTY_500_SOURCE_FILE,
+  NIFTY_TOTAL_RETURN_SOURCE_FILE,
   RISK_FREE_SOURCE_FILE,
 } from "../src/server/data-source.js";
 import { UNIVERSE_FILES } from "../src/server/factor-config.js";
@@ -318,6 +321,9 @@ function getUploadFiles() {
     ...chunkFiles,
     RISK_FREE_SOURCE_FILE,
     LEGACY_BENCHMARK_SOURCE_FILE,
+    NIFTY_TOTAL_RETURN_SOURCE_FILE,
+    NIFTY_50_SOURCE_FILE,
+    NIFTY_500_SOURCE_FILE,
     // Big downloadable CSVs served via /api/download (allowlisted in
     // functions/api/download.js). Stored plain; the frontend links to signed URLs.
     "Data/Factor_Data/finalMonthlyLabels_aman.csv",

@@ -9,6 +9,9 @@ const remoteFileCache = new Map();
 export const BACKTEST_RUNTIME_FILE = "Data/Derived/backtest-runtime.json";
 export const LEGACY_BENCHMARK_SOURCE_FILE =
   "Data/Factor_Data/company_month_ALL_FACTOR_LABELS_FINAL_COMPACT.csv";
+export const NIFTY_TOTAL_RETURN_SOURCE_FILE = "Data/NIFTY Total Returns Historical Data.csv";
+export const NIFTY_50_SOURCE_FILE = "Data/Nifty 50 Historical Data.csv";
+export const NIFTY_500_SOURCE_FILE = "Data/Nifty 500 Historical Data.csv";
 export const RISK_FREE_SOURCE_FILE = "Data/Factor_Data/ff5.csv";
 
 export function getBacktestUniverseSnapshotFile(universe) {
@@ -157,6 +160,9 @@ export function getBacktestDataFiles(universeFiles) {
     ),
     RISK_FREE_SOURCE_FILE,
     LEGACY_BENCHMARK_SOURCE_FILE,
+    NIFTY_TOTAL_RETURN_SOURCE_FILE,
+    NIFTY_50_SOURCE_FILE,
+    NIFTY_500_SOURCE_FILE,
     ...Object.values(universeFiles),
   ];
 }

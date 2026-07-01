@@ -14,6 +14,9 @@ import {
   getBacktestUniverseChunkFile,
   getBacktestUniverseSnapshotFile,
   LEGACY_BENCHMARK_SOURCE_FILE,
+  NIFTY_50_SOURCE_FILE,
+  NIFTY_500_SOURCE_FILE,
+  NIFTY_TOTAL_RETURN_SOURCE_FILE,
   RISK_FREE_SOURCE_FILE,
 } from "../src/server/data-source.js";
 
@@ -81,6 +84,31 @@ function firstPresent(row, keys) {
   return "";
 }
 
+function parsePercent(raw) {
+  if (raw == null || raw === "") return null;
+  const value = Number.parseFloat(String(raw).replace("%", "").replace(/,/g, ""));
+  return Number.isFinite(value) ? value / 100 : null;
+}
+
+function parseHistoryMonth(raw) {
+  const value = String(raw || "").trim();
+  const match = value.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if (!match) return "";
+  return `${match[3]}-${match[2].padStart(2, "0")}`;
+}
+
+async function mergeBenchmarkHistory(benchmarkByMonth, relativePath, key) {
+  const text = await readTextIfExists(relativePath);
+  if (!text) return;
+  parseCSV(text, (row) => {
+    const month = parseHistoryMonth(row.Date);
+    const monthlyReturn = parsePercent(row["Change %"]);
+    if (!month || monthlyReturn == null) return;
+    if (!benchmarkByMonth[month]) benchmarkByMonth[month] = {};
+    benchmarkByMonth[month][key] = monthlyReturn;
+  });
+}
+
 async function buildRuntimeData() {
   const runtimePath = path.join(process.cwd(), BACKTEST_RUNTIME_FILE);
   const existingRuntime = existsSync(runtimePath)
@@ -120,6 +148,9 @@ async function buildRuntimeData() {
     Object.assign(benchmarkByMonth, existingRuntime.benchmarkByMonth || {});
     Object.assign(names, existingRuntime.names || {});
   }
+  await mergeBenchmarkHistory(benchmarkByMonth, NIFTY_TOTAL_RETURN_SOURCE_FILE, "nifty50");
+  await mergeBenchmarkHistory(benchmarkByMonth, NIFTY_50_SOURCE_FILE, "nifty50");
+  await mergeBenchmarkHistory(benchmarkByMonth, NIFTY_500_SOURCE_FILE, "nifty500");
 
   for (const [universe, file] of Object.entries(UNIVERSE_FILES)) {
     if (DERIVE_UNIVERSES.size && !DERIVE_UNIVERSES.has(universe)) continue;

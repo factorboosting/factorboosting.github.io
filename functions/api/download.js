@@ -12,9 +12,16 @@
 
 import { UNIVERSE_FILES } from "../../src/server/factor-config.js";
 
+const NIFTY_TOTAL_RETURN_SOURCE_FILE = "Data/NIFTY Total Returns Historical Data.csv";
+const NIFTY_50_SOURCE_FILE = "Data/Nifty 50 Historical Data.csv";
+const NIFTY_500_SOURCE_FILE = "Data/Nifty 500 Historical Data.csv";
+
 const ALLOWED_FILES = new Set([
   "Data/Factor_Data/ff5.csv",
   "Data/Factor_Data/finalMonthlyLabels_aman.csv",
+  NIFTY_TOTAL_RETURN_SOURCE_FILE,
+  NIFTY_50_SOURCE_FILE,
+  NIFTY_500_SOURCE_FILE,
   ...Object.values(UNIVERSE_FILES),
 ]);
 

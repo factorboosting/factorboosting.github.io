@@ -15,15 +15,36 @@ import {
   getPortfolioFilter,
   getPortfolioSizeColumn,
 } from "../server/factor-config.js";
+import runtimeData from "../../Data/Derived/backtest-runtime.json" with { type: "json" };
 
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-factor-portfolios-20260630-v8";
+const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260701-v12";
 const RPC_PAGE_SIZE = 1000;
+const UNIVERSE_META = {
+  all: { rowCount: 553959, firstMonth: "2003-10", lastMonth: "2026-05" },
+  top500: { rowCount: 136000, firstMonth: "2003-10", lastMonth: "2026-05" },
+  top300: { rowCount: 81600, firstMonth: "2003-10", lastMonth: "2026-05" },
+};
 
 export function normalizeUniverse(universe) {
   return UNIVERSES.has(universe) ? universe : "all";
+}
+
+function monthRange(start, end) {
+  const months = [];
+  let [year, month] = start.split("-").map(Number);
+  const [endYear, endMonth] = end.split("-").map(Number);
+  while (year < endYear || (year === endYear && month <= endMonth)) {
+    months.push(`${year}-${month.toString().padStart(2, "0")}`);
+    month++;
+    if (month > 12) {
+      month = 1;
+      year++;
+    }
+  }
+  return months;
 }
 
 // ── Supabase PostgREST helpers ───────────────────────────────────────────────
@@ -527,56 +548,36 @@ function computeAllBenchmarks(data, months) {
 }
 
 async function loadMarketData(env, start, end) {
-  const range = `month=gte.${encodeURIComponent(start)}&month=lte.${encodeURIComponent(end)}`;
-  const [bench, rf] = await Promise.all([
-    selectTable(env, "benchmark_monthly", `select=month,nifty50,nifty500&${range}&order=month.asc`),
-    selectTable(env, "rf_monthly", `select=month,rf&${range}&order=month.asc`),
-  ]);
   const benchmarkByMonth = {};
-  for (const b of bench) benchmarkByMonth[b.month] = { nifty50: b.nifty50, nifty500: b.nifty500 };
-  const rfData = {};
-  for (const r of rf) rfData[r.month] = r.rf;
-  return { benchmarkByMonth, rfData };
+  for (const [month, benchmark] of Object.entries(runtimeData.benchmarkByMonth || {})) {
+    if (month >= start && month <= end) {
+      benchmarkByMonth[month] = {
+        nifty50: benchmark.nifty50,
+        nifty500: benchmark.nifty500,
+      };
+    }
+  }
+  return { benchmarkByMonth, rfData: runtimeData.rfData || {} };
 }
 
 export async function getUniverseMeta(env, universeInput = "all") {
   const universe = normalizeUniverse(universeInput);
-  // Fetch the first and last month for the universe directly from factor_panel
-  // This avoids slow RPC timeouts and doesn't rely on rf_monthly as a date reference.
-  const [minRes, maxRes] = await Promise.all([
-    selectTable(env, "factor_panel", `select=month&order=month.asc&limit=1&universe=eq.${universe}`),
-    selectTable(env, "factor_panel", `select=month&order=month.desc&limit=1&universe=eq.${universe}`)
-  ]);
-
-  let months = [];
-  if (minRes[0] && maxRes[0]) {
-    const start = minRes[0].month;
-    const end = maxRes[0].month;
-    let [y, m] = start.split("-").map(Number);
-    const [ey, em] = end.split("-").map(Number);
-    
-    while (y < ey || (y === ey && m <= em)) {
-      months.push(`${y}-${m.toString().padStart(2, "0")}`);
-      m++;
-      if (m > 12) {
-        m = 1;
-        y++;
-      }
-    }
-  }
-  
-  let rowCount = 553959;
-  if (universe === "top500") rowCount = 136000;
-  if (universe === "top300") rowCount = 81600;
+  const meta = UNIVERSE_META[universe];
+  const months = monthRange(meta.firstMonth, meta.lastMonth);
 
   return {
     universe,
-    rowCount,
+    rowCount: meta.rowCount,
     months,
-    firstMonth: months.length > 0 ? months[0] : null,
-    lastMonth: months.length > 0 ? months[months.length - 1] : null,
-    dataQualityStats: { dropped: 0, capped: 0, total: rowCount },
+    firstMonth: meta.firstMonth,
+    lastMonth: meta.lastMonth,
+    dataQualityStats: { dropped: 0, capped: 0, total: meta.rowCount },
   };
+}
+
+export async function warmUniverse(env, universeInput = "all") {
+  const universe = normalizeUniverse(universeInput);
+  await selectTable(env, "factor_panel", `select=month&limit=1&universe=eq.${universe}`);
 }
 
 async function attachHoldings(env, universe, portfolio, sizeCol, monthsList, netByMonth) {
@@ -645,23 +646,19 @@ export async function runBacktest(env, input) {
   const benchmarkSeries = computeAllBenchmarks(data, months);
 
   const inputPorts = input.portfolios.slice(0, 5);
-  const portfolios = [];
-
-  for (let index = 0; index < inputPorts.length; index++) {
-    const portfolio = inputPorts[index];
+  const portfolios = await Promise.all(inputPorts.map(async (portfolio, index) => {
     const config = portfolio.config || {};
     const longFilters = config.longFilters || {};
     const shortFilters = config.shortFilters || {};
     const strategy = config.strategy === "long_short" ? "long_short" : "long_only";
     const usePortfolioCodes = universe === "all";
     const sizeCol = getSizeColumn(longFilters, shortFilters, { usePortfolioCodes });
-
     const includeTurnover = transactionCost.mode !== "none";
 
     const longParams = buildLegParams(longFilters, { usePortfolioCodes });
-    const longRows = await callRpc(
+    const longRowsPromise = callRpc(
       env,
-      "run_backtest_legs",
+      "run_backtest_legs_json",
       {
         p_universe: universe,
         p_start: startMonth,
@@ -671,15 +668,14 @@ export async function runBacktest(env, input) {
         p_filters: longParams.pFilters,
         p_include_turnover: includeTurnover,
       },
-      { paginate: true },
     );
 
-    let shortRows = [];
+    let shortRowsPromise = Promise.resolve([]);
     if (strategy === "long_short") {
       const shortParams = buildLegParams(shortFilters, { usePortfolioCodes });
-      shortRows = await callRpc(
+      shortRowsPromise = callRpc(
         env,
-        "run_backtest_legs",
+        "run_backtest_legs_json",
         {
           p_universe: universe,
           p_start: startMonth,
@@ -689,9 +685,10 @@ export async function runBacktest(env, input) {
           p_filters: shortParams.pFilters,
           p_include_turnover: includeTurnover,
         },
-        { paginate: true },
       );
     }
+
+    const [longRows, shortRows] = await Promise.all([longRowsPromise, shortRowsPromise]);
 
     const longIndex = rpcRowsToIndex(longRows);
     const shortIndex = rpcRowsToIndex(shortRows);
@@ -716,8 +713,8 @@ export async function runBacktest(env, input) {
     if (holdingsMonths && holdingsMonths.length) {
       await attachHoldings(env, universe, built, sizeCol, holdingsMonths, netByMonth);
     }
-    portfolios.push(built);
-  }
+    return built;
+  }));
 
   const activeBenchmark = benchmarkSeries[activeBenchmarkId];
   for (const portfolio of portfolios) {
