@@ -15,7 +15,7 @@ create or replace function public.run_backtest_legs(
 )
 returns table (
   month       text,
-  size_bucket text,
+  size_bucket text, 
   bm_bucket   text,
   n           integer,
   sum_ret     double precision,
