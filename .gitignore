@@ -20,3 +20,8 @@ dist/
 .wrangler/
 Data/Factor_Data/company_month_ALL_FACTOR_LABELS_FINAL_COMPACT.csv
 .dev.vars
+
+# Notebook-generated analysis outputs and local plotting caches
+notebooks/portfolio_sweep_output/
+.cache/
+.matplotlib-cache/

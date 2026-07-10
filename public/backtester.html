@@ -178,6 +178,14 @@
         text-align: left;
       }
 
+      .bt-compare-table tbody td:first-child,
+      .bt-compare-table tbody td:nth-child(2) {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: normal;
+        line-height: 1.25;
+      }
+
       .bt-compare-table thead tr:first-child th:nth-child(2),
       .bt-compare-table tbody td:nth-child(2) {
         text-align: left;
@@ -209,11 +217,13 @@
       }
 
       .bt-compare-name {
+        display: inline;
         font-weight: 600;
         color: var(--text-primary);
       }
 
       .bt-compare-factor {
+        display: block;
         color: var(--text-secondary);
         font-weight: 600;
       }
@@ -1061,14 +1071,14 @@
           >
             <table class="bt-compare-table">
               <colgroup>
-                <col style="width: 15%" />
                 <col style="width: 18%" />
+                <col style="width: 25%" />
                 <col style="width: 8%" />
-                <col style="width: 11%" />
-                <col style="width: 12%" />
                 <col style="width: 10%" />
-                <col style="width: 14%" />
-                <col id="bt-growth-vs-nifty-col" style="width: 12%" />
+                <col style="width: 11%" />
+                <col style="width: 8%" />
+                <col style="width: 10%" />
+                <col id="bt-growth-vs-nifty-col" style="width: 10%" />
               </colgroup>
               <thead>
                 <tr>

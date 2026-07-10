@@ -2533,7 +2533,7 @@ const BT = (() => {
 
     const period = getPeriodDescriptor();
     const benchmarkLabel = BENCHMARK_OPTIONS[activeBenchmarkId]?.label || "NIFTY";
-    const showGrowthVsNifty = currentStrategy === "long_only";
+    const showGrowthVsNifty = portfolios.some((p) => p.results && !p.results.isLongShort);
     const periodHeader = document.getElementById("bt-period-col-header");
     const growthVsHeader = document.getElementById("bt-growth-vs-nifty-header");
     const growthVsCol = document.getElementById("bt-growth-vs-nifty-col");
@@ -2577,7 +2577,9 @@ const BT = (() => {
         p.factorLabel,
         (COLORS[p.colorIdx] || COLORS[0]).line,
         m,
-        showGrowthVsNifty ? getGrowthVsBenchmark(m, benchMetrics) : null,
+        showGrowthVsNifty && !p.results.isLongShort
+          ? getGrowthVsBenchmark(m, benchMetrics)
+          : null,
       );
     });
     if (showBenchmark) {
