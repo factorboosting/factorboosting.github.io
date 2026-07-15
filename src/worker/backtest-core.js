@@ -20,7 +20,7 @@ import runtimeData from "./backtest-runtime-data.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260701-v16-top-universe-data";
+const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260715-v17-tri-benchmarks";
 const RPC_PAGE_SIZE = 1000;
 const UNIVERSE_META = {
   all: { rowCount: 553959, firstMonth: "2003-10", lastMonth: "2026-05" },
