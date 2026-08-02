@@ -560,6 +560,8 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
   const vwPort = [100];
   const ewRets = [];
   const vwRets = [];
+  const longCounts = [];
+  const shortCounts = [];
   const holdings = {};
   const holdingsMonthSet = Array.isArray(options.holdingsMonths)
     ? new Set(options.holdingsMonths)
@@ -739,6 +741,15 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
       }
     }
 
+    let usedLongCount = 0;
+    let usedShortCount = 0;
+    for (const weights of currWeights.values()) {
+      if (weights.ew > 0) usedLongCount++;
+      if (weights.ew < 0) usedShortCount++;
+    }
+    longCounts.push(usedLongCount);
+    shortCounts.push(strategy === "long_short" ? usedShortCount : 0);
+
     const ewGross = strategy === "long_short" ? longEW - shortEW : longEW;
     const vwGross = strategy === "long_short" ? longVW - shortVW : longVW;
     let ewNet = ewGross;
@@ -801,6 +812,12 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
   }
 
   const rfSeries = months.map((month) => data.rfData[month] || 0);
+  const avgCount = (values) =>
+    values.length
+      ? +(values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(1)
+      : 0;
+  const minCount = (values) => (values.length ? Math.min(...values) : 0);
+  const maxCount = (values) => (values.length ? Math.max(...values) : 0);
 
   return {
     months,
@@ -814,6 +831,16 @@ function computePortfolio(data, config, months, transactionCost, options = {}) {
     vw_drawdown: computeDrawdown(vwRets),
     holdings,
     isLongShort: strategy === "long_short",
+    longCounts,
+    shortCounts,
+    avgLongStocks: avgCount(longCounts),
+    avgShortStocks: avgCount(shortCounts),
+    lastLongStocks: longCounts.at(-1) ?? 0,
+    lastShortStocks: shortCounts.at(-1) ?? 0,
+    minLongStocks: minCount(longCounts),
+    minShortStocks: minCount(shortCounts),
+    maxLongStocks: maxCount(longCounts),
+    maxShortStocks: maxCount(shortCounts),
     avgTurnover:
       turnoverCount > 0 ? +(((totalEwTurnover + totalVwTurnover) / 2 / turnoverCount) * 100).toFixed(1) : 0,
   };
