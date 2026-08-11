@@ -20,13 +20,8 @@ import runtimeData from "./backtest-runtime-data.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260811-v24-tri-benchmarks";
+const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260811-v25-july-panel-fix";
 const RPC_PAGE_SIZE = 1000;
-const UNIVERSE_META = {
-  all: { rowCount: 557866, firstMonth: "2003-10", lastMonth: "2026-07" },
-  top500: { rowCount: 136040, firstMonth: "2003-10", lastMonth: "2026-07" },
-  top300: { rowCount: 81708, firstMonth: "2003-10", lastMonth: "2026-07" },
-};
 
 export function normalizeUniverse(universe) {
   return UNIVERSES.has(universe) ? universe : "all";
@@ -222,7 +217,11 @@ function computeIR(portRets, benchRets) {
 }
 
 function computeMetrics(rets, rfs = [], isLongShort = false) {
-  const count = rets.length;
+  const observations = (rets || [])
+    .map((ret, index) => ({ ret, rf: rfs[index] }))
+    .filter(({ ret }) => Number.isFinite(ret));
+  const cleanRets = observations.map(({ ret }) => ret);
+  const count = cleanRets.length;
   if (count === 0) {
     return {
       growth_multiple: 1,
@@ -233,21 +232,32 @@ function computeMetrics(rets, rfs = [], isLongShort = false) {
     };
   }
   let cumulativeProduct = 1;
-  for (const ret of rets) cumulativeProduct *= 1 + ret;
+  for (const ret of cleanRets) cumulativeProduct *= 1 + ret;
   const years = count / 12;
   const annualizedReturn =
     years > 0 && cumulativeProduct > 0 ? Math.pow(cumulativeProduct, 1 / years) - 1 : 0;
-  const mean = rets.reduce((sum, ret) => sum + ret, 0) / count;
+  const mean = cleanRets.reduce((sum, ret) => sum + ret, 0) / count;
   const variance =
-    rets.reduce((sum, ret) => sum + (ret - mean) ** 2, 0) / Math.max(count - 1, 1);
+    cleanRets.reduce((sum, ret) => sum + (ret - mean) ** 2, 0) / Math.max(count - 1, 1);
   const annualizedVolatility = Math.sqrt(variance * 12);
-  const excessRets = rets.map((ret, index) => ret - (isLongShort ? 0 : (rfs[index] || 0)));
-  const meanExcess = excessRets.reduce((sum, ret) => sum + ret, 0) / count;
-  const sharpe = annualizedVolatility > 0 ? (meanExcess * 12) / annualizedVolatility : 0;
+  const sharpeObservations = isLongShort
+    ? observations
+    : observations.filter(({ rf }) => Number.isFinite(rf));
+  const sharpeRets = sharpeObservations.map(({ ret }) => ret);
+  const sharpeMean =
+    sharpeRets.length > 0 ? sharpeRets.reduce((sum, ret) => sum + ret, 0) / sharpeRets.length : 0;
+  const sharpeVariance =
+    sharpeRets.reduce((sum, ret) => sum + (ret - sharpeMean) ** 2, 0) /
+    Math.max(sharpeRets.length - 1, 1);
+  const sharpeVolatility = Math.sqrt(sharpeVariance * 12);
+  const excessRets = sharpeObservations.map(({ ret, rf }) => ret - (isLongShort ? 0 : rf));
+  const meanExcess =
+    excessRets.length > 0 ? excessRets.reduce((sum, ret) => sum + ret, 0) / excessRets.length : 0;
+  const sharpe = sharpeVolatility > 0 ? (meanExcess * 12) / sharpeVolatility : 0;
   let cumulative = 1;
   let peak = 1;
   let maxDrawdown = 0;
-  for (const ret of rets) {
+  for (const ret of cleanRets) {
     cumulative *= 1 + ret;
     if (cumulative > peak) peak = cumulative;
     const drawdown = peak > 0 ? (cumulative - peak) / peak : 0;
@@ -267,6 +277,10 @@ function computeDrawdown(rets) {
   let cumulative = 1;
   let peak = 1;
   for (const ret of rets) {
+    if (!Number.isFinite(ret)) {
+      drawdown.push(null);
+      continue;
+    }
     cumulative *= 1 + ret;
     if (cumulative > peak) peak = cumulative;
     drawdown.push(+(peak > 0 ? ((cumulative - peak) / peak) * 100 : 0).toFixed(2));
@@ -499,7 +513,7 @@ function computePortfolioFromLegs(longIndex, shortIndex, config, months, transac
     };
   }
 
-  const rfSeries = months.map((month) => rfData[month] || 0);
+  const rfSeries = months.map((month) => rfData[month] ?? null);
 
   const results = {
     months,
@@ -522,20 +536,28 @@ function computePortfolioFromLegs(longIndex, shortIndex, config, months, transac
 // ── Benchmarks (verbatim from engine) ────────────────────────────────────────
 function computeIndexBenchmark(data, months, col) {
   const rets = [];
-  const port = [100];
+  const portfolio = [];
+  const missingMonths = [];
+  let cumulative = 100;
   for (const month of months) {
     const value = data.benchmarkByMonth?.[month]?.[col];
     const ret = value != null && Number.isFinite(value) ? value : null;
     rets.push(ret);
-    port.push(port[port.length - 1] * (1 + (ret == null ? 0 : ret)));
+    if (ret == null) {
+      missingMonths.push(month);
+      portfolio.push(null);
+      continue;
+    }
+    cumulative *= 1 + ret;
+    portfolio.push(+cumulative.toFixed(4));
   }
-  const rfSeries = months.map((month) => data.rfData[month] || 0);
-  const zeroFilledRets = rets.map((ret) => (ret == null ? 0 : ret));
+  const rfSeries = months.map((month) => data.rfData[month] ?? null);
   return {
     rets,
-    portfolio: port.slice(1).map((value) => +value.toFixed(4)),
-    metrics: computeMetrics(zeroFilledRets, rfSeries),
-    drawdown: computeDrawdown(zeroFilledRets),
+    portfolio,
+    metrics: computeMetrics(rets, rfSeries),
+    drawdown: computeDrawdown(rets),
+    missingMonths,
   };
 }
 
@@ -563,8 +585,11 @@ async function loadMarketData(env, start, end) {
 
 export async function getUniverseMeta(env, universeInput = "all") {
   const universe = normalizeUniverse(universeInput);
-  const meta = UNIVERSE_META[universe];
-  const months = monthRange(meta.firstMonth, meta.lastMonth);
+  const meta = runtimeData.universes?.[universe];
+  if (!meta) throw new Error(`No runtime metadata for universe ${universe}.`);
+  const months = Array.isArray(meta.months)
+    ? meta.months.slice()
+    : monthRange(meta.firstMonth, meta.lastMonth);
 
   return {
     universe,
@@ -572,7 +597,7 @@ export async function getUniverseMeta(env, universeInput = "all") {
     months,
     firstMonth: meta.firstMonth,
     lastMonth: meta.lastMonth,
-    dataQualityStats: { dropped: 0, capped: 0, total: meta.rowCount },
+    dataQualityStats: meta.dataQualityStats || { dropped: 0, capped: 0, total: meta.rowCount },
   };
 }
 
@@ -728,6 +753,12 @@ export async function runBacktest(env, input) {
     benchmarkSeries,
     months,
     portfolios,
+    marketDataCoverage: {
+      benchmarkMissingMonths: Object.fromEntries(
+        Object.entries(benchmarkSeries).map(([id, series]) => [id, series.missingMonths]),
+      ),
+      riskFreeMissingMonths: months.filter((month) => !Number.isFinite(data.rfData[month])),
+    },
     meta: {
       universe,
       rowCount: meta.rowCount,

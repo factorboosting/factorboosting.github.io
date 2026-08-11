@@ -55,6 +55,20 @@ const SNAPSHOT_COLUMNS = [
 const CHUNK_YEAR_SPAN = 1;
 const BACKTEST_START_MONTH = "2003-10";
 const WORKER_RUNTIME_MODULE_FILE = "src/worker/backtest-runtime-data.js";
+const RETURN_COLUMNS = [
+  "monthly_return",
+  "monthly_ret",
+  "Monthly_Return",
+  "monthly_ret_sv",
+  "monthly_ret_mom",
+  "monthly_ret_bav",
+  "monthly_ret_str",
+  "monthly_ret_rmw",
+  "monthly_ret_cma",
+  "monthly_ret_at",
+  "monthly_ret_sg",
+  "monthly_ret_acc",
+];
 
 function sanitizeReturn(raw) {
   const value = Number.parseFloat(raw);
@@ -195,20 +209,14 @@ async function buildRuntimeData() {
 async function buildUniverseSnapshot(universe, file, names) {
   const rows = [];
   const dataQualityStats = { dropped: 0, capped: 0, total: 0 };
-  let retCol = null;
 
   parseCSV(await readText(file), (row) => {
     dataQualityStats.total++;
-    if (!retCol) {
-      if ("monthly_return" in row) retCol = "monthly_return";
-      else if ("monthly_ret" in row) retCol = "monthly_ret";
-      else if ("Monthly_Return" in row) retCol = "Monthly_Return";
-      else if ("monthly_ret_sv" in row) retCol = "monthly_ret_sv";
-      else if ("monthly_ret_mom" in row) retCol = "monthly_ret_mom";
-    }
-    if (!retCol) return;
-
-    const sanitized = sanitizeReturn(row[retCol]);
+    // The full-universe July refresh stores the same stock return in several
+    // factor-specific columns, with blanks depending on factor eligibility.
+    // Resolve the return per row so a blank SV return does not discard a valid
+    // momentum, reversal, profitability, or investment observation.
+    const sanitized = sanitizeReturn(firstPresent(row, RETURN_COLUMNS));
     if (sanitized.action === "drop") {
       dataQualityStats.dropped++;
       return;
@@ -223,7 +231,14 @@ async function buildUniverseSnapshot(universe, file, names) {
       _month: month,
       _ret: sanitized.value,
       _size: Number.parseFloat(
-        firstPresent(row, ["mktcap", "eom_mcap", "Size", "lagged_mktcap", "prev_mcap"]),
+        firstPresent(row, [
+          "mktcap",
+          "eom_mcap",
+          "Size",
+          "lagged_mktcap",
+          "prev_mcap",
+          "mcap_group_1_any",
+        ]),
       ),
       prev_Size: null,
       Size_Label:
@@ -276,6 +291,8 @@ async function buildUniverseSnapshot(universe, file, names) {
       normalized.prev_Size = Number.parseFloat(row.prev_mcap);
     } else if (row.lagged_mktcap !== undefined && row.lagged_mktcap !== "") {
       normalized.prev_Size = Number.parseFloat(row.lagged_mktcap);
+    } else if (row.mcap_group_1_any !== undefined && row.mcap_group_1_any !== "") {
+      normalized.prev_Size = Number.parseFloat(row.mcap_group_1_any);
     } else if (row.prev_Size !== undefined && row.prev_Size !== "") {
       normalized.prev_Size = Number.parseFloat(row.prev_Size);
     }
@@ -325,6 +342,14 @@ async function buildUniverseSnapshot(universe, file, names) {
     for (let i = 1; i < stockRows.length; i++) {
       if (stockRows[i].prev_Size == null) stockRows[i].prev_Size = stockRows[i - 1]._size;
     }
+  }
+
+  dataQualityStats.positiveWeightRows = rows.reduce(
+    (count, row) => count + (Number.isFinite(row.prev_Size) && row.prev_Size > 0 ? 1 : 0),
+    0,
+  );
+  if (rows.length > 0 && dataQualityStats.positiveWeightRows === 0) {
+    throw new Error(`${universe} produced no positive value-weight rows from ${file}.`);
   }
 
   const monthGroups = {};
