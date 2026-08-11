@@ -1,0 +1,9 @@
+comparison,method,correlation,p_value,n,expected_sign
+Gibbs vs feasible Roll,spearman,0.8188247668118772,0.0,16021,positive
+Gibbs vs feasible Roll,pearson,0.8770320549342924,0.0,16021,positive
+Gibbs vs log market cap,spearman,-0.47426457372247655,0.0,37819,negative
+Gibbs vs log market cap,pearson,-0.4264208847708396,0.0,37819,negative
+Gibbs vs zero-price-change share,spearman,0.342640850512893,0.0,37819,positive
+Gibbs vs zero-price-change share,pearson,0.22402394570327347,0.0,37819,positive
+Gibbs vs Amihud,spearman,0.49531567870773835,0.0,37819,positive
+Gibbs vs Amihud,pearson,0.03572945378736571,3.64420480056554e-12,37819,positive

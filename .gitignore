@@ -25,3 +25,5 @@ Data/Factor_Data/company_month_ALL_FACTOR_LABELS_FINAL_COMPACT.csv
 notebooks/portfolio_sweep_output/
 .cache/
 .matplotlib-cache/
+Data/Factor_Data/firm_labels_top300_may_26.csv
+Data/Factor_Data/firm_labels_top500_may_26.csv

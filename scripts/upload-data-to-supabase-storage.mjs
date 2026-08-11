@@ -344,7 +344,11 @@ function getUploadFiles() {
 }
 
 for (const file of getUploadFiles()) {
-  await uploadFile(file);
+  if (existsSync(path.join(root, file))) {
+    await uploadFile(file);
+  } else {
+    console.warn(`Skipping missing file: ${file}`);
+  }
 }
 
 console.log("Backtester data upload complete.");
