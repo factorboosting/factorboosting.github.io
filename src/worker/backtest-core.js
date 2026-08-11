@@ -607,7 +607,7 @@ async function attachHoldings(env, universe, portfolio, sizeCol, monthsList, net
       p_size_col: sizeCol,
       p_size_labels: longParams.sizeLabels,
       p_filters: longParams.pFilters,
-    });
+    }, { paginate: true });
     let shortRows = [];
     if (strategy === "long_short") {
       shortRows = await callRpc(env, "get_holdings", {
@@ -616,7 +616,7 @@ async function attachHoldings(env, universe, portfolio, sizeCol, monthsList, net
         p_size_col: sizeCol,
         p_size_labels: shortParams.sizeLabels,
         p_filters: shortParams.pFilters,
-      });
+      }, { paginate: true });
     }
     const net = netByMonth[month] || { ew_ret: 0, vw_ret: 0 };
     portfolio.results.holdings[month] = {
