@@ -203,6 +203,8 @@ async function buildUniverseSnapshot(universe, file, names) {
       if ("monthly_return" in row) retCol = "monthly_return";
       else if ("monthly_ret" in row) retCol = "monthly_ret";
       else if ("Monthly_Return" in row) retCol = "Monthly_Return";
+      else if ("monthly_ret_sv" in row) retCol = "monthly_ret_sv";
+      else if ("monthly_ret_mom" in row) retCol = "monthly_ret_mom";
     }
     if (!retCol) return;
 

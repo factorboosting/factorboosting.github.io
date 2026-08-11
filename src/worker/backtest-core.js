@@ -142,7 +142,18 @@ function buildLegParams(filters = {}, options = {}) {
     }
     const def = FACTORS[factor];
     if (!def) continue;
-    pFilters[def.col] = labels.slice();
+
+    const mappedLabels = [];
+    for (const l of labels) {
+      const k = Object.keys(def.labels).find(
+        (key) => def.labels[key].toLowerCase() === l.toLowerCase(),
+      );
+      if (k) mappedLabels.push(k);
+    }
+    
+    if (mappedLabels.length > 0) {
+      pFilters[def.col] = mappedLabels;
+    }
   }
   return { pFilters, sizeLabels };
 }
