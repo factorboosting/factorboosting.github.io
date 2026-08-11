@@ -132,12 +132,19 @@ async function buildRuntimeData() {
     Object.assign(rfData, existingRuntime.rfData || {});
   }
 
+  const namesText = await readTextIfExists("Data/Factor_Data/co_code_co_name_mapping.csv");
+  if (namesText) {
+    parseCSV(namesText, (row) => {
+      const code = row["Prowess company code"] || row.co_code || row.Co_Code;
+      const name = row["Company Name"] || row.Co_Name;
+      if (code && name) names[code] = name;
+    });
+  }
+
   const benchmarkText = await readTextIfExists(LEGACY_BENCHMARK_SOURCE_FILE);
   if (benchmarkText) {
     parseCSV(benchmarkText, (row) => {
       const month = row.Month ? row.Month.substring(0, 7) : "";
-      const code = row.Co_Code || row.co_code;
-      if (code && row.Co_Name) names[code] = row.Co_Name;
       if (!month) return;
       if (!benchmarkByMonth[month]) benchmarkByMonth[month] = {};
 
@@ -148,7 +155,10 @@ async function buildRuntimeData() {
     });
   } else {
     Object.assign(benchmarkByMonth, existingRuntime.benchmarkByMonth || {});
-    Object.assign(names, existingRuntime.names || {});
+    // Fall back to existing names if mapping failed
+    if (Object.keys(names).length === 0) {
+      Object.assign(names, existingRuntime.names || {});
+    }
   }
   await mergeBenchmarkHistory(benchmarkByMonth, NIFTY_TOTAL_RETURN_SOURCE_FILE, "nifty50");
   await mergeBenchmarkHistory(benchmarkByMonth, NIFTY_50_SOURCE_FILE, "nifty50");
