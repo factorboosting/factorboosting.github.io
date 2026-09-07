@@ -238,6 +238,7 @@ async function buildUniverseSnapshot(universe, file, names) {
           "lagged_mktcap",
           "prev_mcap",
           "mcap_group_1_any",
+          "lagged_mktcap_weight_any",
         ]),
       ),
       prev_Size: null,
@@ -293,6 +294,8 @@ async function buildUniverseSnapshot(universe, file, names) {
       normalized.prev_Size = Number.parseFloat(row.lagged_mktcap);
     } else if (row.mcap_group_1_any !== undefined && row.mcap_group_1_any !== "") {
       normalized.prev_Size = Number.parseFloat(row.mcap_group_1_any);
+    } else if (row.lagged_mktcap_weight_any !== undefined && row.lagged_mktcap_weight_any !== "") {
+      normalized.prev_Size = Number.parseFloat(row.lagged_mktcap_weight_any);
     } else if (row.prev_Size !== undefined && row.prev_Size !== "") {
       normalized.prev_Size = Number.parseFloat(row.prev_Size);
     }
