@@ -232,6 +232,50 @@ for (const sort of SORT_PORTFOLIOS) {
   console.log(sort.file + " updated (" + rows.length + " rows, last: " + rows[rows.length - 1].Month + ")");
 }
 
+// ---------------------------------------------------------------------------
+// 3. Fill missing Fama-French Factor Returns in ff5.csv
+// ---------------------------------------------------------------------------
+console.log("\nCalculating missing factor returns for ff5.csv...");
+const bmData = parseCSVRows(readFileSync(path.join(ROOT, "Data/Factor_Data/BM_Size.csv"), "utf8")).rows;
+const opData = parseCSVRows(readFileSync(path.join(ROOT, "Data/Factor_Data/OP_Size.csv"), "utf8")).rows;
+const invData = parseCSVRows(readFileSync(path.join(ROOT, "Data/Factor_Data/INV_Size.csv"), "utf8")).rows;
+const momData = parseCSVRows(readFileSync(path.join(ROOT, "Data/Factor_Data/MOM_Size.csv"), "utf8")).rows;
+
+const indexByMonth = (rows) => rows.reduce((acc, r) => { acc[r.Month] = r; return acc; }, {});
+const bm = indexByMonth(bmData);
+const op = indexByMonth(opData);
+const inv = indexByMonth(invData);
+const mom = indexByMonth(momData);
+
+let ff5Updated = false;
+for (const row of ff5Rows) {
+  const m = row.Month;
+  if (!row.SMB || row.SMB === "") {
+    if (bm[m] && op[m] && inv[m] && mom[m]) {
+      const v = (col) => parseFloat(col || "0");
+      const SMB = (v(bm[m].SV) + v(bm[m].SN) + v(bm[m].SG)) / 3 - (v(bm[m].BV) + v(bm[m].BN) + v(bm[m].BG)) / 3;
+      const HML = (v(bm[m].SV) + v(bm[m].BV)) / 2 - (v(bm[m].SG) + v(bm[m].BG)) / 2;
+      const RMW = (v(op[m].SR) + v(op[m].BR)) / 2 - (v(op[m].SW) + v(op[m].BW)) / 2;
+      const CMA = (v(inv[m].SC) + v(inv[m].BC)) / 2 - (v(inv[m].SA) + v(inv[m].BA)) / 2;
+      const WML = (v(mom[m].SW_mom) + v(mom[m].BW_mom)) / 2 - (v(mom[m].SL_mom) + v(mom[m].BL_mom)) / 2;
+
+      row.SMB = String(SMB);
+      row.HML = String(HML);
+      row.RMW = String(RMW);
+      row.CMA = String(CMA);
+      row.WML = String(WML);
+      
+      console.log(`  Calculated factors for ${m}: SMB=${(SMB*100).toFixed(2)}%, HML=${(HML*100).toFixed(2)}%, WML=${(WML*100).toFixed(2)}%, RMW=${(RMW*100).toFixed(2)}%, CMA=${(CMA*100).toFixed(2)}%`);
+      ff5Updated = true;
+    }
+  }
+}
+
+if (ff5Updated) {
+  writeFileSync(FF5_PATH, rowsToCsv(ff5Headers, ff5Rows), "utf8");
+  console.log("ff5.csv updated with calculated factor returns.");
+}
+
 console.log("\nAll download CSVs updated.");
 const latestMonth = ff5Rows[ff5Rows.length - 1].Month;
 const [yr, mo] = latestMonth.split("-");
