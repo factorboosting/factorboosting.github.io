@@ -87,9 +87,19 @@ const newMonths = Object.keys(benchmarkByMonth)
   )
   .sort();
 
+// Find the last known Rf to use as a carry-forward fallback
+const lastKnownRf = ff5Rows
+  .slice()
+  .reverse()
+  .find((r) => r.Rf && r.Rf !== "")?.Rf ?? null;
+
 for (const m of newMonths) {
   const n500 = benchmarkByMonth[m].nifty500;
   const rf = rfData[m];
+  // If runtime doesn't have Rf for this month yet, carry forward the last known
+  // value as a placeholder. Log a clear warning so the operator can verify.
+  const rfValue = rf != null ? String(rf) : lastKnownRf;
+  const rfSource = rf != null ? "runtime" : "carried-forward (⚠️  verify manually)";
   ff5Rows.push({
     Month: m,
     SMB: "",
@@ -98,10 +108,12 @@ for (const m of newMonths) {
     RMW: "",
     CMA: "",
     MKT: String(n500),
-    Rf: rf != null ? String(rf) : "",
+    Rf: rfValue ?? "",
   });
   console.log(
-    "  ff5: appended " + m + " - MKT=" + (n500 * 100).toFixed(4) + "% Rf=" + (rf != null ? (rf * 100).toFixed(4) + "%" : "N/A")
+    "  ff5: appended " + m +
+    " - MKT=" + (n500 * 100).toFixed(4) + "%" +
+    " Rf=" + (rfValue != null ? (parseFloat(rfValue) * 100).toFixed(4) + "% [" + rfSource + "]" : "N/A")
   );
 }
 
