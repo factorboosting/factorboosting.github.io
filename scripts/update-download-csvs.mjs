@@ -4,8 +4,9 @@
  * Updates all downloadable CSV files with the latest data:
  *  1. ff5.csv  - replaces MKT column with Nifty 500 TRI returns and appends
  *                missing months (Jun-Aug 2026, or whatever the runtime has).
- *  2. BM_Size / OP_Size / INV_Size / MOM_Size - appends missing months by
+ *  2. BM_Size / OP_Size / INV_Size / MOM_Size - regenerates every month by
  *                running the JS backtest engine for each 2x3 sort portfolio.
+ *  3. Recalculates every FF factor month from eligible, matched 2x3 cells.
  *
  * Usage:
  *   node scripts/update-download-csvs.mjs
@@ -35,6 +36,29 @@ function rowsToCsv(headers, rows) {
     lines.push(headers.map((h) => row[h] ?? "").join(","));
   }
   return lines.join("\n") + "\n";
+}
+
+function parseFiniteCell(value) {
+  if (value == null || String(value).trim() === "") return null;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+// Match the analysis engine's n<5 and size-neutrality rules. A size bucket is
+// eligible only when both sides of the spread survived the five-firm minimum.
+// The engine averages the remaining paired spreads and emits 0 when none remain.
+function pairedSpread(row, pairs) {
+  const eligibleSpreads = [];
+  for (const [longColumn, shortColumn] of pairs) {
+    const longReturn = parseFiniteCell(row?.[longColumn]);
+    const shortReturn = parseFiniteCell(row?.[shortColumn]);
+    if (longReturn != null && shortReturn != null) {
+      eligibleSpreads.push(longReturn - shortReturn);
+    }
+  }
+
+  if (eligibleSpreads.length === 0) return 0;
+  return eligibleSpreads.reduce((sum, value) => sum + value, 0) / eligibleSpreads.length;
 }
 
 const ROOT = path.resolve(process.cwd());
@@ -179,11 +203,8 @@ for (const sort of SORT_PORTFOLIOS) {
   }
 
   const text = readFileSync(filePath, "utf8");
-  const { headers, rows } = parseCSVRows(text);
-  const existingMonths = new Set(rows.map((r) => r.Month));
-  const lastMonth = [...existingMonths].sort().pop();
-
-  console.log("\nRunning backtest for " + sort.file + " (last month: " + lastMonth + ")...");
+  const { headers } = parseCSVRows(text);
+  console.log("\nRegenerating " + sort.file + " from the analysis engine...");
 
   // The engine caps at 5 portfolios. Split into two batches of 3 (Small, Big).
   const smallPortfolios = sort.portfolios.filter((p) => p.name.startsWith("S"));
@@ -224,47 +245,44 @@ for (const sort of SORT_PORTFOLIOS) {
       const ret   = smallRes.portfolios[bi].results.vw_rets[mi];
       const count = smallRes.portfolios[bi].results.longCounts?.[mi] ?? 0;
       const name  = smallPortfolios[bi].name;
-      // Apply n<5 rule: blank months where engine returns 0 due to insufficient stocks
-      returnsByMonth[m][name] = (ret === 0 && count < 5) ? "" : (ret ?? "");
+      // Apply the same n<5 eligibility rule as the analysis engine. Do not use
+      // ret===0 as the signal: a valid portfolio can genuinely return zero.
+      returnsByMonth[m][name] = count < 5 ? "" : (ret ?? "");
     }
     for (let bi = 0; bi < bigRes.portfolios.length; bi++) {
       const ret   = bigRes.portfolios[bi].results.vw_rets[mi];
       const count = bigRes.portfolios[bi].results.longCounts?.[mi] ?? 0;
       const name  = bigPortfolios[bi].name;
-      returnsByMonth[m][name] = (ret === 0 && count < 5) ? "" : (ret ?? "");
+      returnsByMonth[m][name] = count < 5 ? "" : (ret ?? "");
     }
   }
 
-  const newPortfolioMonths = months.filter((m) => m > lastMonth).sort();
-
-  if (newPortfolioMonths.length === 0) {
-    console.log("  No new months to add for " + sort.file);
-    continue;
-  }
-
-  for (const m of newPortfolioMonths) {
+  const regeneratedRows = [];
+  for (const m of months) {
     const ret = returnsByMonth[m];
     const newRow = { Month: m };
     for (const col of colNames) {
       const v = ret[col];
       newRow[col] = v !== "" && v != null ? String(v) : "";
     }
-
-    rows.push(newRow);
-    console.log(
-      "  Appended " + m + ": " + colNames.map((c) => c + "=" + (+newRow[c] * 100).toFixed(2) + "%").join(", ")
-    );
+    regeneratedRows.push(newRow);
   }
 
-  rows.sort((a, b) => a.Month.localeCompare(b.Month));
-  writeFileSync(filePath, rowsToCsv(headers, rows), "utf8");
-  console.log(sort.file + " updated (" + rows.length + " rows, last: " + rows[rows.length - 1].Month + ")");
+  writeFileSync(filePath, rowsToCsv(headers, regeneratedRows), "utf8");
+  const blankCells = regeneratedRows.reduce(
+    (total, row) => total + colNames.filter((column) => row[column] === "").length,
+    0,
+  );
+  console.log(
+    sort.file + " regenerated (" + regeneratedRows.length + " rows, " +
+    blankCells + " n<5 cells, last: " + regeneratedRows.at(-1).Month + ")"
+  );
 }
 
 // ---------------------------------------------------------------------------
 // 3. Fill missing Fama-French Factor Returns in ff5.csv
 // ---------------------------------------------------------------------------
-console.log("\nCalculating missing factor returns for ff5.csv...");
+console.log("\nRecalculating all factor returns for ff5.csv...");
 const bmData = parseCSVRows(readFileSync(path.join(ROOT, "Data/Factor_Data/BM_Size.csv"), "utf8")).rows;
 const opData = parseCSVRows(readFileSync(path.join(ROOT, "Data/Factor_Data/OP_Size.csv"), "utf8")).rows;
 const invData = parseCSVRows(readFileSync(path.join(ROOT, "Data/Factor_Data/INV_Size.csv"), "utf8")).rows;
@@ -276,33 +294,34 @@ const op = indexByMonth(opData);
 const inv = indexByMonth(invData);
 const mom = indexByMonth(momData);
 
-let ff5Updated = false;
+const factorDefinitions = {
+  SMB: { rows: bm, pairs: [["SV", "BV"], ["SN", "BN"], ["SG", "BG"]] },
+  HML: { rows: bm, pairs: [["SV", "SG"], ["BV", "BG"]] },
+  WML: { rows: mom, pairs: [["SW_mom", "SL_mom"], ["BW_mom", "BL_mom"]] },
+  RMW: { rows: op, pairs: [["SR", "SW"], ["BR", "BW"]] },
+  CMA: { rows: inv, pairs: [["SC", "SA"], ["BC", "BA"]] },
+};
+
+let factorRowsUpdated = 0;
 for (const row of ff5Rows) {
   const m = row.Month;
-  if (!row.SMB || row.SMB === "") {
-    if (bm[m] && op[m] && inv[m] && mom[m]) {
-      const v = (col) => parseFloat(col || "0");
-      const SMB = (v(bm[m].SV) + v(bm[m].SN) + v(bm[m].SG)) / 3 - (v(bm[m].BV) + v(bm[m].BN) + v(bm[m].BG)) / 3;
-      const HML = (v(bm[m].SV) + v(bm[m].BV)) / 2 - (v(bm[m].SG) + v(bm[m].BG)) / 2;
-      const RMW = (v(op[m].SR) + v(op[m].BR)) / 2 - (v(op[m].SW) + v(op[m].BW)) / 2;
-      const CMA = (v(inv[m].SC) + v(inv[m].BC)) / 2 - (v(inv[m].SA) + v(inv[m].BA)) / 2;
-      const WML = (v(mom[m].SW_mom) + v(mom[m].BW_mom)) / 2 - (v(mom[m].SL_mom) + v(mom[m].BL_mom)) / 2;
-
-      row.SMB = String(SMB);
-      row.HML = String(HML);
-      row.RMW = String(RMW);
-      row.CMA = String(CMA);
-      row.WML = String(WML);
-      
-      console.log(`  Calculated factors for ${m}: SMB=${(SMB*100).toFixed(2)}%, HML=${(HML*100).toFixed(2)}%, WML=${(WML*100).toFixed(2)}%, RMW=${(RMW*100).toFixed(2)}%, CMA=${(CMA*100).toFixed(2)}%`);
-      ff5Updated = true;
-    }
+  if (!Object.values(factorDefinitions).every((definition) => definition.rows[m])) {
+    console.warn("  Missing 2x3 portfolio data for " + m + "; retaining existing FF factors.");
+    continue;
   }
+
+  for (const [factor, definition] of Object.entries(factorDefinitions)) {
+    row[factor] = String(pairedSpread(definition.rows[m], definition.pairs));
+  }
+  factorRowsUpdated++;
 }
 
-if (ff5Updated) {
+if (factorRowsUpdated > 0) {
   writeFileSync(FF5_PATH, rowsToCsv(ff5Headers, ff5Rows), "utf8");
-  console.log("ff5.csv updated with calculated factor returns.");
+  console.log(
+    "ff5.csv recalculated for " + factorRowsUpdated +
+    " months using matched n>=5 size buckets."
+  );
 }
 
 console.log("\nAll download CSVs updated.");

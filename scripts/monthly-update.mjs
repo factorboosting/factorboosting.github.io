@@ -58,6 +58,10 @@ run(
   "Step 2/5 – Update downloadable CSVs (portfolios, factors, Rf)",
   "node scripts/update-download-csvs.mjs"
 );
+run(
+  "Step 2/5 – Verify downloadable factors against the analysis engine",
+  "node scripts/verify-download-csvs.mjs"
+);
 
 // ---------------------------------------------------------------------------
 // Step 3: Update HTML date labels in public/index.html
