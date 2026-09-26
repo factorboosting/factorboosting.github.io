@@ -185,38 +185,53 @@ for (const sort of SORT_PORTFOLIOS) {
 
   console.log("\nRunning backtest for " + sort.file + " (last month: " + lastMonth + ")...");
 
-  let response;
-  try {
-    response = await computeBacktest({
+  // The engine caps at 5 portfolios. Split into two batches of 3 (Small, Big).
+  const smallPortfolios = sort.portfolios.filter((p) => p.name.startsWith("S"));
+  const bigPortfolios   = sort.portfolios.filter((p) => p.name.startsWith("B"));
+
+  async function runBatch(batchPortfolios) {
+    return computeBacktest({
       activeBenchmarkId: "nifty500",
       endMonth: null,
       holdingsMonths: [],
-      portfolios: sort.portfolios.map((p, i) => ({
-        colorIdx: i,
-        config: p.config,
-        factorLabel: "",
-        id: i + 1,
-        name: p.name,
+      portfolios: batchPortfolios.map((p, i) => ({
+        colorIdx: i, config: p.config, factorLabel: "", id: i + 1, name: p.name,
       })),
       startMonth: "2003-10",
       transactionCost: { mode: "none" },
-      universe: "top500",
+      universe: "all",
     });
+  }
+
+  let smallRes, bigRes;
+  try {
+    smallRes = await runBatch(smallPortfolios);
+    bigRes   = await runBatch(bigPortfolios);
   } catch (err) {
     console.error("Backtest failed for " + sort.file + ": " + err.message);
     continue;
   }
 
-  const { months, portfolios } = response;
+  const months = smallRes.months; // same months for both batches
   const colNames = sort.portfolios.map((p) => p.name);
 
+  // Merge both batch results into a single month→col→value map
   const returnsByMonth = {};
   for (let mi = 0; mi < months.length; mi++) {
     const m = months[mi];
     returnsByMonth[m] = {};
-    for (let pi = 0; pi < portfolios.length; pi++) {
-      const vwRets = portfolios[pi].results.vw_rets;
-      returnsByMonth[m][colNames[pi]] = vwRets[mi] ?? "";
+    for (let bi = 0; bi < smallRes.portfolios.length; bi++) {
+      const ret   = smallRes.portfolios[bi].results.vw_rets[mi];
+      const count = smallRes.portfolios[bi].results.longCounts?.[mi] ?? 0;
+      const name  = smallPortfolios[bi].name;
+      // Apply n<5 rule: blank months where engine returns 0 due to insufficient stocks
+      returnsByMonth[m][name] = (ret === 0 && count < 5) ? "" : (ret ?? "");
+    }
+    for (let bi = 0; bi < bigRes.portfolios.length; bi++) {
+      const ret   = bigRes.portfolios[bi].results.vw_rets[mi];
+      const count = bigRes.portfolios[bi].results.longCounts?.[mi] ?? 0;
+      const name  = bigPortfolios[bi].name;
+      returnsByMonth[m][name] = (ret === 0 && count < 5) ? "" : (ret ?? "");
     }
   }
 
@@ -231,8 +246,10 @@ for (const sort of SORT_PORTFOLIOS) {
     const ret = returnsByMonth[m];
     const newRow = { Month: m };
     for (const col of colNames) {
-      newRow[col] = ret[col] != null ? String(ret[col]) : "";
+      const v = ret[col];
+      newRow[col] = v !== "" && v != null ? String(v) : "";
     }
+
     rows.push(newRow);
     console.log(
       "  Appended " + m + ": " + colNames.map((c) => c + "=" + (+newRow[c] * 100).toFixed(2) + "%").join(", ")
