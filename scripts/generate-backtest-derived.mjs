@@ -239,6 +239,16 @@ async function buildUniverseSnapshot(universe, file, names) {
           "prev_mcap",
           "mcap_group_1_any",
           "lagged_mktcap_weight_any",
+          // factor-specific mcap columns in newer label files
+          "lagged_mktcap_weight_sv",
+          "lagged_mktcap_weight_mom",
+          "lagged_mktcap_weight_bav",
+          "lagged_mktcap_weight_str",
+          "prev_mcap_rmw",
+          "prev_mcap_cma",
+          "prev_mcap_at",
+          "prev_mcap_sg",
+          "prev_mcap_acc",
         ]),
       ),
       prev_Size: null,
@@ -296,6 +306,19 @@ async function buildUniverseSnapshot(universe, file, names) {
       normalized.prev_Size = Number.parseFloat(row.mcap_group_1_any);
     } else if (row.lagged_mktcap_weight_any !== undefined && row.lagged_mktcap_weight_any !== "") {
       normalized.prev_Size = Number.parseFloat(row.lagged_mktcap_weight_any);
+    // factor-specific mcap columns in newer label files — use first non-empty
+    } else if (row.lagged_mktcap_weight_sv !== undefined && row.lagged_mktcap_weight_sv !== "") {
+      normalized.prev_Size = Number.parseFloat(row.lagged_mktcap_weight_sv);
+    } else if (row.lagged_mktcap_weight_mom !== undefined && row.lagged_mktcap_weight_mom !== "") {
+      normalized.prev_Size = Number.parseFloat(row.lagged_mktcap_weight_mom);
+    } else if (row.lagged_mktcap_weight_bav !== undefined && row.lagged_mktcap_weight_bav !== "") {
+      normalized.prev_Size = Number.parseFloat(row.lagged_mktcap_weight_bav);
+    } else if (row.lagged_mktcap_weight_str !== undefined && row.lagged_mktcap_weight_str !== "") {
+      normalized.prev_Size = Number.parseFloat(row.lagged_mktcap_weight_str);
+    } else if (row.prev_mcap_rmw !== undefined && row.prev_mcap_rmw !== "") {
+      normalized.prev_Size = Number.parseFloat(row.prev_mcap_rmw);
+    } else if (row.prev_mcap_cma !== undefined && row.prev_mcap_cma !== "") {
+      normalized.prev_Size = Number.parseFloat(row.prev_mcap_cma);
     } else if (row.prev_Size !== undefined && row.prev_Size !== "") {
       normalized.prev_Size = Number.parseFloat(row.prev_Size);
     }

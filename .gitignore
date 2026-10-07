@@ -27,3 +27,4 @@ notebooks/portfolio_sweep_output/
 .matplotlib-cache/
 Data/Factor_Data/firm_labels_top300_aug.csv
 Data/Factor_Data/firm_labels_top500_aug.csv
+sep_files/
