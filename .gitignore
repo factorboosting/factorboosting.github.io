@@ -28,3 +28,6 @@ notebooks/portfolio_sweep_output/
 Data/Factor_Data/firm_labels_top300_aug.csv
 Data/Factor_Data/firm_labels_top500_aug.csv
 sep_files/
+Data/Factor_Data/company_month_ALL_FACTOR_LABELS_SEP.csv
+Data/Factor_Data/firm_labels_top300_sep.csv
+Data/Factor_Data/firm_labels_top500_sep.csv
