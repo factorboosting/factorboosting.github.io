@@ -124,8 +124,13 @@ run("Step 4/5 – Rebuild static site (dist/)", "node scripts/build-site.mjs");
 // ---------------------------------------------------------------------------
 if (!SKIP_SUPABASE) {
   run(
-    "Step 5/5 – Upload to Supabase storage",
+    "Step 5/6 – Upload to Supabase storage",
     "node scripts/upload-data-to-supabase-storage.mjs"
+  );
+  
+  run(
+    "Step 6/6 – Load panel to Postgres (for UI Holdings slider)",
+    "node scripts/load-panel-to-postgres.mjs"
   );
 } else {
   console.log("\n⏭  Skipping Supabase upload (SKIP_SUPABASE=true)");
