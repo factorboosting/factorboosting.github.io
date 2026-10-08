@@ -20,7 +20,7 @@ import runtimeData from "./backtest-runtime-data.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20260811-v25-july-panel-fix";
+const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20261008-v26-sep-panel-update";
 const RPC_PAGE_SIZE = 1000;
 
 export function normalizeUniverse(universe) {
