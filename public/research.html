@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Working papers and published research from the SCDLDS quantitative finance group at Ashoka University." />
+  <title>Research | SCDLDS Quantitative Finance</title>
+  <link rel="icon" href="Data/scdlds_ashoka_logo.jpeg" />
+  <link rel="stylesheet" href="styles.css?v=6" />
+</head>
+
+<body class="research-page">
+  <div class="beta-banner">
+    This website is currently in <strong>beta</strong>. If you encounter any
+    bugs or issues, please
+    <a href="mailto:aman.foujdar_ug2023@ashoka.edu.in">report them here</a>.
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <a href="index.html" aria-label="SCDLDS Financial Factor Data Library home">
+          <img src="Data/scdlds_ashoka_logo.jpeg" alt="SCDLDS Ashoka Logo"
+            style="height: 72px; width: auto; vertical-align: middle;" />
+        </a>
+      </div>
+      <button class="nav-toggle" type="button" aria-label="Toggle menu" aria-controls="primary-navigation"
+        aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-menu" id="primary-navigation">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="backtester.html">Analysis</a></li>
+        <li><a href="research.html" class="active" aria-current="page">Research</a></li>
+        <li><a href="index.html#downloads">Downloads</a></li>
+        <li><a href="Data/Papers/SCDLDS_Documentation.pdf" target="_blank" rel="noopener">Documentation</a></li>
+        <li><a href="team.html">Team</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="research-hero">
+    <div class="research-hero-inner">
+      <div class="research-hero-copy">
+        <span class="research-kicker">SCDLDS · Quantitative Finance</span>
+        <h1>Research</h1>
+        <p>
+          Working papers and published research on portfolio construction,
+          Indian equity markets, machine learning, and data-driven finance.
+        </p>
+      </div>
+      <div class="research-summary" aria-label="Research catalogue summary">
+        <div>
+          <strong>01</strong>
+          <span>Working paper</span>
+        </div>
+        <div>
+          <strong>00</strong>
+          <span>Published papers</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="research-main">
+    <section class="research-catalogue" aria-labelledby="research-catalogue-title">
+      <div class="research-heading-row">
+        <div>
+          <span class="research-section-label">Research library</span>
+          <h2 id="research-catalogue-title">Papers and publications</h2>
+        </div>
+        <p id="research-result-count" class="research-result-count" aria-live="polite">1 paper</p>
+      </div>
+
+      <form class="research-controls" id="research-controls" role="search">
+        <label class="research-search">
+          <span class="sr-only">Search papers</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+            <path d="m21 21-4.35-4.35m2.35-5.65a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          </svg>
+          <input id="research-search" type="search" placeholder="Search by title, author, or topic" autocomplete="off" />
+        </label>
+
+        <label class="research-filter-label">
+          <span class="sr-only">Filter by publication status</span>
+          <select id="research-status">
+            <option value="all">All research</option>
+            <option value="working">Working papers</option>
+            <option value="published">Published papers</option>
+          </select>
+        </label>
+
+        <button class="research-reset" id="research-reset" type="reset">Reset</button>
+      </form>
+
+      <div class="research-list" id="research-list">
+        <article class="paper-card" data-status="working"
+          data-search="directionally correct views portfolio optimization ojas kumar sreejit dey sarvesh r iyer sandeep juneja markowitz black litterman expert views machine learning quantitative finance">
+          <div class="paper-index" aria-hidden="true">01</div>
+          <div class="paper-content">
+            <div class="paper-labels">
+              <span class="paper-status">Working paper</span>
+              <span>October 2026</span>
+              <span>Portfolio management</span>
+            </div>
+
+            <h3>Directionally Correct Views in Portfolio Optimization</h3>
+            <p class="paper-authors">Ojas Kumar, Sreejit Dey, Sarvesh R. Iyer, and Sandeep Juneja</p>
+            <p class="paper-abstract">
+              How valuable is expert information that gets the direction right, even when it is imperfect? This paper
+              shows that modest, directionally correct views can materially improve portfolio allocations. It develops
+              results for Markowitz portfolios, extends the idea to end-to-end machine-learning models, and compares
+              both approaches using Indian equity data.
+            </p>
+
+            <dl class="paper-metadata">
+              <div>
+                <dt>Identifier</dt>
+                <dd>arXiv:2610.31074v1</dd>
+              </div>
+              <div>
+                <dt>Category</dt>
+                <dd>q-fin.PM</dd>
+              </div>
+              <div>
+                <dt>Affiliation</dt>
+                <dd>Ashoka University</dd>
+              </div>
+            </dl>
+
+            <div class="paper-actions">
+              <a class="paper-primary-action" href="https://arxiv.org/html/2610.31074v1" target="_blank"
+                rel="noopener">
+                Read paper
+                <span aria-hidden="true">↗</span>
+              </a>
+              <a class="paper-secondary-action" href="https://arxiv.org/pdf/2610.31074v1" target="_blank"
+                rel="noopener">Download PDF</a>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="research-empty" id="research-empty" hidden>
+        <h3>No papers found</h3>
+        <p>Try another search term or clear the current filter.</p>
+      </div>
+    </section>
+
+    <aside class="research-contact">
+      <div>
+        <span class="research-section-label">Collaborate with us</span>
+        <h2>Interested in quantitative finance research?</h2>
+      </div>
+      <p>
+        We welcome conversations with researchers and practitioners working on portfolio optimization, factor
+        investing, market microstructure, and machine learning in finance.
+      </p>
+      <a href="mailto:factor.boosting@gmail.com?cc=sandeep.juneja@ashoka.edu.in">Get in touch <span
+          aria-hidden="true">→</span></a>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <p>&copy; 2026 Safexpress Center for Data Learning and Decision Sciences | All rights reserved</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      var toggle = document.querySelector(".nav-toggle");
+      var menu = document.querySelector(".nav-menu");
+      var search = document.getElementById("research-search");
+      var status = document.getElementById("research-status");
+      var controls = document.getElementById("research-controls");
+      var cards = Array.prototype.slice.call(document.querySelectorAll(".paper-card"));
+      var empty = document.getElementById("research-empty");
+      var resultCount = document.getElementById("research-result-count");
+
+      if (toggle && menu) {
+        toggle.addEventListener("click", function () {
+          var isOpen = menu.classList.toggle("open");
+          toggle.classList.toggle("open", isOpen);
+          toggle.setAttribute("aria-expanded", String(isOpen));
+        });
+
+        menu.querySelectorAll("a").forEach(function (link) {
+          link.addEventListener("click", function () {
+            toggle.classList.remove("open");
+            menu.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+          });
+        });
+      }
+
+      function filterResearch() {
+        var query = search.value.trim().toLowerCase();
+        var selectedStatus = status.value;
+        var visibleCount = 0;
+
+        cards.forEach(function (card) {
+          var matchesQuery = !query || card.dataset.search.indexOf(query) !== -1;
+          var matchesStatus = selectedStatus === "all" || card.dataset.status === selectedStatus;
+          var isVisible = matchesQuery && matchesStatus;
+          card.hidden = !isVisible;
+          if (isVisible) visibleCount += 1;
+        });
+
+        empty.hidden = visibleCount !== 0;
+        resultCount.textContent = visibleCount + (visibleCount === 1 ? " paper" : " papers");
+      }
+
+      search.addEventListener("input", filterResearch);
+      status.addEventListener("change", filterResearch);
+      controls.addEventListener("reset", function () {
+        window.setTimeout(filterResearch, 0);
+      });
+    })();
+  </script>
+  <!-- Cloudflare Web Analytics -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+    data-cf-beacon='{"token": "06a1ab7bf94643b1bee48c0b40959906"}'></script>
+  <!-- End Cloudflare Web Analytics -->
+</body>
+
+</html>

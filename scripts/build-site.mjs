@@ -21,6 +21,7 @@ const DIST = path.join(ROOT, "dist");
 const SITE_FILES = [
   "public/index.html",
   "public/backtester.html",
+  "public/research.html",
   "public/team.html",
   "public/styles.css",
   "public/script.js",
