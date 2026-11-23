@@ -7,9 +7,10 @@
  *   1. generate-backtest-derived  → refresh runtime JSON from latest label CSVs
  *   2. update-download-csvs       → append new months to ff5 + portfolio CSVs,
  *                                   calculate factor returns, carry Rf forward
- *   3. update HTML date labels    → e.g. "Oct 2003 – Jul 2026" → "Aug 2026"
+ *   3. update homepage            → refresh date labels and return statistics
  *   4. build-site                 → rebuild dist/
  *   5. upload-data-to-supabase    → push everything to Supabase storage
+ *   6. load-panel-to-postgres     → refresh the live holdings data
  *
  * Usage:
  *   node scripts/monthly-update.mjs
@@ -44,7 +45,7 @@ function run(label, cmd) {
 // ---------------------------------------------------------------------------
 if (!SKIP_DERIVE) {
   run(
-    "Step 1/5 – Generate backtest runtime data",
+    "Step 1/6 – Generate backtest runtime data",
     "node scripts/generate-backtest-derived.mjs"
   );
 } else {
@@ -55,11 +56,11 @@ if (!SKIP_DERIVE) {
 // Step 2: Update static download CSVs (portfolios + ff5 factors + Rf)
 // ---------------------------------------------------------------------------
 run(
-  "Step 2/5 – Update downloadable CSVs (portfolios, factors, Rf)",
+  "Step 2/6 – Update downloadable CSVs (portfolios, factors, Rf)",
   "node scripts/update-download-csvs.mjs"
 );
 run(
-  "Step 2/5 – Verify downloadable factors against the analysis engine",
+  "Step 2/6 – Verify downloadable factors against the analysis engine",
   "node scripts/verify-download-csvs.mjs"
 );
 
@@ -67,7 +68,7 @@ run(
 // Step 3: Update HTML date labels in public/index.html
 // ---------------------------------------------------------------------------
 console.log(`\n${"─".repeat(60)}`);
-console.log(`▶  Step 3/5 – Update HTML date labels`);
+console.log(`▶  Step 3/6 – Update HTML date labels`);
 console.log(`${"─".repeat(60)}`);
 
 // Read the last month from ff5.csv (most authoritative source)
@@ -114,10 +115,15 @@ for (const htmlFile of HTML_FILES) {
   }
 }
 
+run(
+  "Step 3/6 – Refresh homepage return statistics",
+  "node scripts/update-homepage-stats.mjs"
+);
+
 // ---------------------------------------------------------------------------
 // Step 4: Rebuild static site
 // ---------------------------------------------------------------------------
-run("Step 4/5 – Rebuild static site (dist/)", "node scripts/build-site.mjs");
+run("Step 4/6 – Rebuild static site (dist/)", "node scripts/build-site.mjs");
 
 // ---------------------------------------------------------------------------
 // Step 5: Upload to Supabase

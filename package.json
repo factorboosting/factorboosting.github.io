@@ -13,6 +13,7 @@
     "data:load": "node scripts/load-panel-to-postgres.mjs",
     "data:update-csvs": "node scripts/update-download-csvs.mjs",
     "data:verify-csvs": "node scripts/verify-download-csvs.mjs",
+    "data:update-homepage": "node scripts/update-homepage-stats.mjs",
     "data:monthly-update": "node scripts/monthly-update.mjs"
   },
   "devDependencies": {

@@ -20,7 +20,9 @@ import runtimeData from "./backtest-runtime-data.js";
 const UNIVERSES = new Set(["all", "top500", "top300"]);
 const MIN_FIRMS = 5;
 const PORT_CAP = 2;
-const BACKTEST_CACHE_VERSION = "rpc-json-benchmarks-20261008-v26-sep-panel-update";
+// Regenerating the runtime data starts a fresh KV namespace automatically, so a
+// monthly data release cannot serve cached results from the previous panel.
+const BACKTEST_CACHE_VERSION = `rpc-json-benchmarks-v27-${runtimeData.generatedAt}`;
 const RPC_PAGE_SIZE = 1000;
 
 export function normalizeUniverse(universe) {
