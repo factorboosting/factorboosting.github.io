@@ -69,9 +69,9 @@ export const BENCHMARK_OPTIONS = {
 };
 
 export const UNIVERSE_FILES = {
-  all: "Data/Factor_Data/company_month_ALL_FACTOR_LABELS_SEP.csv",
-  top500: "Data/Factor_Data/firm_labels_top500_sep.csv",
-  top300: "Data/Factor_Data/firm_labels_top300_sep.csv",
+  all: "Data/Factor_Data/company_month_ALL_FACTOR_LABELS_OCT.csv",
+  top500: "Data/Factor_Data/firm_labels_top500_oct.csv",
+  top300: "Data/Factor_Data/firm_labels_top300_oct.csv",
 };
 
 function activeNonSizeFactors(filters = {}) {

@@ -143,9 +143,10 @@ async function readChunk(file) {
 async function upsert(table, rows, onConflict) {
   if (rows.length === 0) return;
   const url = `${TARGET_URL}/rest/v1/${table}?on_conflict=${onConflict}`;
-  let res;
-  let lastErr;
-  for (let attempt = 1; attempt <= 10; attempt++) {
+  const maxAttempts = 10;
+  let lastError;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let res;
     try {
       res = await fetch(url, {
         method: "POST",
@@ -158,18 +159,29 @@ async function upsert(table, rows, onConflict) {
         body: JSON.stringify(rows),
       });
       await new Promise(r => setTimeout(r, 500)); // Cool down
-      break;
     } catch (e) {
-      lastErr = e;
-      if (attempt === 20) throw e;
-      console.log(`  Retry ${attempt} for ${table}...`);
-      await new Promise(r => setTimeout(r, 2000 * attempt));
+      lastError = e;
+      if (attempt === maxAttempts) throw e;
+      console.log(`  Retry ${attempt}/${maxAttempts} for ${table} after network error...`);
+      await new Promise(r => setTimeout(r, Math.min(2000 * attempt, 10000)));
+      continue;
     }
-  }
-  if (!res.ok) {
+
+    if (res.ok) return;
     const body = await res.text().catch(() => "");
+    const transient = res.status === 408 || res.status === 429 || res.status >= 500;
+    lastError = new Error(
+      `Upsert into ${table} failed (${res.status}): ${body.slice(0, 500)}`,
+    );
+    if (transient && attempt < maxAttempts) {
+      console.log(`  Retry ${attempt}/${maxAttempts} for ${table} after HTTP ${res.status}...`);
+      await new Promise(r => setTimeout(r, Math.min(2000 * attempt, 10000)));
+      continue;
+    }
     throw new Error(`Upsert into ${table} failed (${res.status}): ${body.slice(0, 500)}`);
   }
+
+  throw lastError || new Error(`Upsert into ${table} failed after ${maxAttempts} attempts.`);
 }
 
 async function deleteUniverseRange(universe, firstMonth, lastMonth) {
